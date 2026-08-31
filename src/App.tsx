@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import heroImg from './assets/hero.png'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
@@ -7,6 +7,24 @@ import { supabase } from '../utils/supabase'
 
 function App() {
   const [count, setCount] = useState(0)
+  
+  const [todos, setTodos] = useState<any[]>([]) // placeholder
+
+  // placeholder function
+  useEffect(() => {
+    async function getTodos() {
+      const { data: todos } = await supabase.from('todos').select()
+
+      if (todos) {
+        setTodos(todos)
+      }
+    }
+
+
+    getTodos()
+  })
+
+
 
   return (
     <>
@@ -116,6 +134,14 @@ function App() {
 
       <div className="ticks"></div>
       <section id="spacer"></section>
+
+      {/* placeholder */}
+      <ul>
+        {todos.map((todo) => (
+          <li key={todo.id}>{todo.name}</li>
+        ))}  
+      </ul>
+      
     </>
   )
 }
