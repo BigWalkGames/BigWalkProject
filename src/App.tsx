@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState } from "react";
+import heroImg from "./assets/hero.png";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "./assets/vite.svg";
+import "./App.css";
 // @ts-expect-error
-import { supabase } from '../utils/supabase'
+import { supabase } from "../utils/supabase";
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [count2, setCount2] = useState(0)
+  const [count, setCount] = useState(0);
+  const [count2, setCount2] = useState(0);
 
   return (
     <>
@@ -19,7 +19,7 @@ function App() {
           <img src={viteLogo} className="vite" alt="Vite logo" />
         </div>
         <div>
-          <h1>Hello Justin Brandon Matthew </h1>
+          <h1>Hello Justin Brandon Matthew Kevin</h1>
           <p>
             Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
           </p>
@@ -27,15 +27,13 @@ function App() {
         <button
           type="button"
           className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
+          onClick={() => setCount((count) => count + 1)}>
           Count is {count}
         </button>
         <button
           type="button"
           className="counter"
-          onClick={() => setCount2((count2) => count2 + 1)}
-        >
+          onClick={() => setCount2((count2) => count2 + 1)}>
           Count is {count2}
         </button>
       </section>
@@ -76,8 +74,7 @@ function App() {
                 <svg
                   className="button-icon"
                   role="presentation"
-                  aria-hidden="true"
-                >
+                  aria-hidden="true">
                   <use href="/icons.svg#github-icon"></use>
                 </svg>
                 GitHub
@@ -88,8 +85,7 @@ function App() {
                 <svg
                   className="button-icon"
                   role="presentation"
-                  aria-hidden="true"
-                >
+                  aria-hidden="true">
                   <use href="/icons.svg#discord-icon"></use>
                 </svg>
                 Discord
@@ -100,8 +96,7 @@ function App() {
                 <svg
                   className="button-icon"
                   role="presentation"
-                  aria-hidden="true"
-                >
+                  aria-hidden="true">
                   <use href="/icons.svg#x-icon"></use>
                 </svg>
                 X.com
@@ -112,8 +107,7 @@ function App() {
                 <svg
                   className="button-icon"
                   role="presentation"
-                  aria-hidden="true"
-                >
+                  aria-hidden="true">
                   <use href="/icons.svg#bluesky-icon"></use>
                 </svg>
                 Bluesky
@@ -126,7 +120,7 @@ function App() {
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
