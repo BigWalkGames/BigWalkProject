@@ -8,8 +8,7 @@ import { supabase } from '../utils/supabase'
 
 function App() {
   const [count, setCount] = useState(0)
-
-
+  const [count2, setCount2] = useState(0)
 
   return (
     <>
@@ -20,7 +19,7 @@ function App() {
           <img src={viteLogo} className="vite" alt="Vite logo" />
         </div>
         <div>
-          <h1>Hello Justin</h1>
+          <h1>Hello Brandon</h1>
           <p>
             Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
           </p>
@@ -31,6 +30,13 @@ function App() {
           onClick={() => setCount((count) => count + 1)}
         >
           Count is {count}
+        </button>
+        <button
+          type="button"
+          className="counter"
+          onClick={() => setCount2((count2) => count2 + 1)}
+        >
+          Count is {count2}
         </button>
       </section>
 
