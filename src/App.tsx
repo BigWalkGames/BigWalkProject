@@ -1,14 +1,27 @@
-import { useState } from "react";
-import heroImg from "./assets/hero.png";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "./assets/vite.svg";
-import "./App.css";
+import { useState } from "react"
+import heroImg from "./assets/hero.png"
+import reactLogo from "./assets/react.svg"
+import viteLogo from "./assets/vite.svg"
+import "./App.css"
 // @ts-expect-error
-import { supabase } from "../utils/supabase";
+import { supabase } from "../utils/supabase"
 
 function App() {
-  const [count, setCount] = useState(0);
-  const [count2, setCount2] = useState(0);
+  const [count, setCount] = useState(0)
+  const [count2, setCount2] = useState(0)
+
+  const handleSecondClick = async () => {
+    const nextCount = count2 + 1
+    setCount2(nextCount)
+
+    const { error } = await supabase
+      .from('click_counts')
+      .upsert({ id: 1, count: nextCount }, { onConflict: 'id' })
+
+    if (error) {
+      console.error('Failed to save second counter:', error)
+    }
+  }
 
   return (
     <>
@@ -33,7 +46,8 @@ function App() {
         <button
           type="button"
           className="counter"
-          onClick={() => setCount2((count2) => count2 + 1)}>
+          onClick={handleSecondClick}
+        >
           Count is {count2}
         </button>
       </section>
