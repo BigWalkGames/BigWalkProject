@@ -1,22 +1,47 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import heroImg from "./assets/hero.png"
 import reactLogo from "./assets/react.svg"
 import viteLogo from "./assets/vite.svg"
 import "./App.css"
-// @ts-expect-error
 import { supabase } from "../utils/supabase"
 
 function App() {
   const [count, setCount] = useState(0)
   const [count2, setCount2] = useState(0)
+  const [count2Loaded, setCount2Loaded] = useState(false)
+
+  useEffect(() => {
+    let isCurrent = true
+
+    const loadCount = async () => {
+      const { data, error } = await supabase
+        .from('click_count')
+        .select('count')
+        .eq('id', 1)
+        .maybeSingle()
+
+      if (error) {
+        console.error('Failed to load second counter:', error)
+      } else if (isCurrent) {
+        setCount2(data?.count ?? 0)
+      }
+
+      if (isCurrent) {
+        setCount2Loaded(true)
+      }
+    }
+
+    void loadCount()
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
 
   const handleSecondClick = async () => {
-    const nextCount = count2 + 1
-    setCount2(nextCount)
+    setCount2((currentCount) => currentCount + 1)
 
-    const { error } = await supabase
-      .from('click_counts')
-      .upsert({ id: 1, count: nextCount }, { onConflict: 'id' })
+    const { error } = await supabase.rpc('increment', { id: 1 })
 
     if (error) {
       console.error('Failed to save second counter:', error)
@@ -47,6 +72,7 @@ function App() {
           type="button"
           className="counter"
           onClick={handleSecondClick}
+          disabled={!count2Loaded}
         >
           Count is {count2}
         </button>
