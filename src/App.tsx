@@ -15,7 +15,7 @@ function App() {
 
     const loadCount = async () => {
       const { data, error } = await supabase
-        .from('click_count')
+        .from('click_counts')
         .select('count')
         .eq('id', 1)
         .maybeSingle()
