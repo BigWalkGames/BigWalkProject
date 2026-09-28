@@ -74,7 +74,7 @@ function App() {
           onClick={handleSecondClick}
           disabled={!count2Loaded}
         >
-          Count is {count2}
+          Count isn't {count2}
         </button>
       </section>
 
