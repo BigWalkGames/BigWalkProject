@@ -4,7 +4,7 @@ import type { WordBankSourceName } from '../wordbank/types'
 export interface Keystroke {
   /** Character the test expected (a-z or ' '). */
   expected: string
-  /** Character actually typed (any printable key, including capitals). */
+  /** Character actually typed, lowercased (typing is case-insensitive). */
   typed: string
   correct: boolean
   /** Milliseconds since the test started. */

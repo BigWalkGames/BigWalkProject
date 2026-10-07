@@ -1,8 +1,11 @@
-// TODO: replace this placeholder list with the real fallback word bank.
-// Words are cleaned on load (lowercased, anything except a-z removed), so
-// they can be pasted in as-is.
-export const FALLBACK_WORDS: string[] = [
-  'the', 'quick', 'brown', 'fox', 'jumps', 'over', 'lazy', 'dog',
-  'walk', 'path', 'light', 'stone', 'river', 'green', 'house', 'water',
-  'small', 'world', 'place', 'sound', 'think', 'every', 'great', 'night',
-]
+// TODO: paste the fallback word bank between the backticks.
+// Any text works: it's split on spaces and line breaks, then cleaned on load
+// (lowercased, anything except a-z removed), so line breaks, capitals and
+// apostrophes are fine to leave in.
+const FALLBACK_TEXT = `
+the quick brown fox jumps over the lazy dog
+walk path light stone river green house water
+small world place sound think every great night
+`
+
+export const FALLBACK_WORDS: string[] = FALLBACK_TEXT.split(/\s+/).filter(Boolean)

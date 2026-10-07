@@ -67,14 +67,16 @@ function reducer(state: State, action: Action): State {
         return next === board ? state : { ...state, board: next }
       }
 
+      // Case-insensitive: word banks are lowercase, so lowercase the key too.
+      const typed = action.key.toLowerCase()
       const expected = getCurrentLetter(board)?.char
-      const next = typeChar(board, action.key)
+      const next = typeChar(board, typed)
       if (expected === undefined || next === board) return state
 
       const keystroke: Keystroke = {
         expected,
-        typed: action.key,
-        correct: expected === action.key,
+        typed,
+        correct: expected === typed,
         t: action.at - startedAt,
       }
       const done = isFinished(next)
