@@ -1,0 +1,192 @@
+.tt {
+  --tt-correct: #15803d;
+  --tt-incorrect: #dc2626;
+  --tt-incorrect-bg: rgba(220, 38, 38, 0.18);
+  --tt-pending: var(--text);
+  --tt-cursor: var(--accent);
+
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 16px;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tt {
+    --tt-correct: #4ade80;
+    --tt-incorrect: #f87171;
+    --tt-incorrect-bg: rgba(248, 113, 113, 0.2);
+  }
+}
+
+/* Stats */
+
+.tt-stats {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.tt-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.tt-stat-value {
+  font: 600 28px/1.1 var(--mono);
+  color: var(--text-h);
+  font-variant-numeric: tabular-nums;
+}
+
+.tt-stat-label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Words: three lines visible, the current line kept second. */
+
+.tt-words {
+  --tt-line: 1.6em;
+
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  height: calc(var(--tt-line) * 3);
+  overflow: hidden;
+  font: 26px/1.6 var(--mono);
+  user-select: none;
+}
+
+.tt-placeholder {
+  align-items: center;
+  font-size: 18px;
+}
+
+.tt-word {
+  display: inline-flex;
+  height: var(--tt-line);
+}
+
+.tt-letter {
+  position: relative;
+  white-space: pre;
+  border-radius: 2px;
+}
+
+.tt-letter.is-initial {
+  color: var(--tt-pending);
+  opacity: 0.6;
+}
+
+.tt-letter.is-success {
+  color: var(--tt-correct);
+}
+
+.tt-letter.is-fail {
+  color: var(--tt-incorrect);
+}
+
+/* A red space is invisible, so mark missed spaces with a background. */
+.tt-letter.is-space.is-fail {
+  background: var(--tt-incorrect-bg);
+}
+
+.tt-letter.is-cursor::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 15%;
+  bottom: 15%;
+  width: 2px;
+  background: var(--tt-cursor);
+  animation: tt-blink 1s step-end infinite;
+}
+
+@keyframes tt-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-letter.is-cursor::before {
+    animation: none;
+  }
+}
+
+/* Actions */
+
+.tt-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tt-restart {
+  font: inherit;
+  padding: 6px 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  background: var(--accent-bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.tt-restart:hover {
+  border-color: var(--accent);
+}
+
+.tt-hint {
+  font-size: 14px;
+}
+
+/* Results */
+
+.tt-results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.tt-save {
+  margin: 0;
+  font-size: 14px;
+}
+
+.tt-save.is-error {
+  color: var(--tt-incorrect);
+}
+
+.tt-keys {
+  border-collapse: collapse;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tt-keys th,
+.tt-keys td {
+  padding: 4px 16px 4px 0;
+  text-align: left;
+}
+
+.tt-keys thead th {
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+}
+
+.tt-key {
+  font-family: var(--mono);
+  color: var(--text-h);
+}
