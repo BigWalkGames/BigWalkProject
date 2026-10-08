@@ -25,7 +25,7 @@
 //     raw_wpm          real not null,
 //     accuracy         real not null,   -- 0..1, correct / all keystrokes
 //     per_key          jsonb not null,  -- { "a": { attempts, correct, accuracy, mistypedAs }, " ": {...} }
-//     word_bank_source text not null,   -- 'supabase' | 'fallback'
+//     word_bank_source text not null,   -- 'supabase' | 'server' | 'fallback'
 //     completed_at     timestamptz not null
 //   );
 //

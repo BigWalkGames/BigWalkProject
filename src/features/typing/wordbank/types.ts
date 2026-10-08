@@ -1,4 +1,4 @@
-export type WordBankSourceName = 'supabase' | 'fallback'
+export type WordBankSourceName = 'supabase' | 'server' | 'fallback'
 
 /**
  * Anything that can supply words for a test. The game only depends on this
