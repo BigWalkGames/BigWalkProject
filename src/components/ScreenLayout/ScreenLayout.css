@@ -1,0 +1,21 @@
+.screen {
+  min-height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.screen__header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.screen__title {
+  margin: 0;
+  font-size: 48px;
+  font-weight: normal;
+}
+
+.screen__body { flex: 1; }

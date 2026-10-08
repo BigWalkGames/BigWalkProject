@@ -1,0 +1,43 @@
+.home {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: 16px;
+}
+
+.home__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;   
+  padding-top: 15vh;            
+  gap: 32px;
+}
+
+.home__title {
+  margin: 0;
+  font-size: 250px;
+  font-weight: normal;
+  line-height: 1;
+  letter-spacing: 4px;
+  color: var(--ink);
+  text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25); 
+  user-select: none;
+}
+
+.home__keys {
+  display: flex;
+  align-items: center;
+  gap: 67px;
+}
+
+.home__plus { 
+    font-size: 100px; 
+    color: #3A2C22;
+}
+
+.home__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+}
