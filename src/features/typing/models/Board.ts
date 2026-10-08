@@ -2,8 +2,8 @@
 // Copyright Eyal Lapid, licensed under Apache-2.0 (see ../LICENSE-typing-test.txt).
 // Modified: word bank passed in instead of imported, KeyCode replaced with
 // KeyboardEvent.key, random pick can now return the last item, space mid-word
-// skips to the next word instead of stopping on the space, end of board
-// detected, and helper functions consolidated.
+// counts as a wrong letter, end of board detected, and helper functions
+// consolidated.
 
 import { withStatus, type Letter } from './Letter'
 import { createWord, replaceLetter, type Word } from './Word'
@@ -55,20 +55,10 @@ export function typeChar(board: Board, char: string): Board {
   const current = getCurrentLetter(board)
   if (!current) return board
 
-  // Space in the middle of a word: abandon the rest of it and jump to the
-  // next real word, marking the separating space as typed.
-  if (char === ' ' && current.char !== ' ') {
-    if (board.letterIndex === 0) return board
-    if (board.wordIndex >= board.words.length - 1) return board
-
-    const spaceIndex = board.wordIndex + 1
-    const space = board.words[spaceIndex]
-    const withSpace = replaceWordAt(
-      board,
-      spaceIndex,
-      replaceLetter(space, 0, withStatus(space.letters[0], 'success')),
-    )
-    return { ...withSpace, wordIndex: spaceIndex + 1, letterIndex: 0 }
+  // Space at the start of a word is ignored (e.g. a double space). Anywhere
+  // else in a word it falls through and counts as a wrong letter.
+  if (char === ' ' && current.char !== ' ' && board.letterIndex === 0) {
+    return board
   }
 
   const status: SuccessStatus = current.char === char ? 'success' : 'fail'
@@ -94,12 +84,9 @@ export function backspace(board: Board): Board {
   if (letterIndex > 0) {
     letterIndex -= 1
   } else {
-    // Step back into the previous word: land on its first untyped letter
-    // (if it was skipped part-way) or its last letter.
+    // Step back onto the last letter of the previous word.
     wordIndex -= 1
-    const letters = board.words[wordIndex].letters
-    const firstUntyped = letters.findIndex((l) => l.status === 'initial')
-    letterIndex = firstUntyped >= 0 ? firstUntyped : letters.length - 1
+    letterIndex = board.words[wordIndex].letters.length - 1
   }
 
   const word = board.words[wordIndex]
