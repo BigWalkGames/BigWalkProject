@@ -11,7 +11,7 @@ import {
 import { computeAccuracy, computeResult, computeWpm } from './stats/computeStats'
 import type { Keystroke, TestResult } from './stats/types'
 import { loadWordBank } from './wordbank/loadWordBank'
-import type { WordBankSourceName } from './wordbank/types'
+import type { LoadedWordBank, WordBankSourceName } from './wordbank/types'
 
 export type TestStatus = 'loading' | 'idle' | 'running' | 'finished'
 
@@ -108,8 +108,15 @@ function initState(durationMs: number): State {
  * A timed typing test. Loads words (Supabase, else fallback), captures
  * keystrokes from the whole document, starts the clock on the first key, and
  * produces a TestResult when time runs out or every word is typed.
+ *
+ * `loadBank` picks the words (default: loadWordBank). Pass a stable function
+ * (module-level or created once), e.g. the WordEngine's adaptive loader;
+ * a new function every render would reload the words every render.
  */
-export function useTypingTest(durationMs: number) {
+export function useTypingTest(
+  durationMs: number,
+  loadBank: () => Promise<LoadedWordBank> = loadWordBank,
+) {
   const [state, dispatch] = useReducer(reducer, durationMs, initState)
   const [now, setNow] = useState(0)
   const loadRequest = useRef(0)
@@ -117,11 +124,11 @@ export function useTypingTest(durationMs: number) {
   // Each load retries Supabase; only the newest request is applied.
   const load = useCallback(() => {
     const request = ++loadRequest.current
-    void loadWordBank().then(({ words, source }) => {
+    void loadBank().then(({ words, source }) => {
       if (request !== loadRequest.current) return
       dispatch({ type: 'loaded', board: createBoard(words), source, durationMs })
     })
-  }, [durationMs])
+  }, [durationMs, loadBank])
 
   useEffect(() => {
     load()

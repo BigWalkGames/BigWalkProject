@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { consoleStatsSink } from '../stats/consoleStatsSink'
 import type { StatsSink, TestResult } from '../stats/types'
 import { useTypingTest } from '../useTypingTest'
+import type { LoadedWordBank } from '../wordbank/types'
 import { ResultsPanel, type SaveStatus } from './ResultsPanel'
 import { StatsBar } from './StatsBar'
 import { WordsDisplay } from './WordsDisplay'
@@ -13,11 +14,14 @@ const DEFAULT_STATS_SINK: StatsSink = consoleStatsSink
 export function TypingTest({
   durationMs = 60_000,
   statsSink = DEFAULT_STATS_SINK,
+  loadBank,
 }: {
   durationMs?: number
   statsSink?: StatsSink
+  /** Where words come from (default: loadWordBank). Must be a stable function. */
+  loadBank?: () => Promise<LoadedWordBank>
 }) {
-  const test = useTypingTest(durationMs)
+  const test = useTypingTest(durationMs, loadBank)
   const { result } = test
 
   // Save each finished result once; the status is tied to that result so a

@@ -1,0 +1,51 @@
+.we-debug {
+  margin: 1.5rem auto 0;
+  max-width: 60rem;
+  padding: 0.75rem 1rem;
+  border: 1px dashed #c0a180;
+  border-radius: 6px;
+  font: 0.85rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-align: left;
+}
+
+.we-debug summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.we-debug dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0.75rem 0;
+}
+
+.we-debug dt {
+  opacity: 0.7;
+}
+
+.we-debug dd {
+  margin: 0;
+}
+
+.we-debug-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.we-debug-words .is-weak {
+  color: #9a5f54;
+  font-weight: 600;
+}
+
+.we-debug-error {
+  color: #9a5f54;
+}
+
+.we-debug-reset {
+  font: inherit;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+}
