@@ -1,0 +1,94 @@
+# When a tester (listed in PREVIEW_TESTERS) approves a PR into Development:
+#   1. merge the PR into Development (this closes it)
+#   2. if SYNC_FEATURE_BRANCHES == 'true', merge Development into every
+#      feature/* branch. Branches that would conflict are skipped, never forced.
+#
+# Opt-in for now: only PRs with the `preview` label (same as vercel-preview.yml).
+#
+# Rejections need no automation: the tester requests changes with a reason
+# and closes the PR.
+#
+# Variables: PREVIEW_TESTERS, SYNC_FEATURE_BRANCHES (optional, 'true' to enable)
+name: Merge on Tester Approval
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: >-
+      github.event.review.state == 'approved' &&
+      github.event.pull_request.base.ref == 'Development' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(github.event.pull_request.labels.*.name, 'preview')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge PR and sync feature branches
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_TESTERS: ${{ vars.PREVIEW_TESTERS }}
+          SYNC_FEATURE_BRANCHES: ${{ vars.SYNC_FEATURE_BRANCHES }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const reviewer = context.payload.review.user.login.toLowerCase();
+            const testers = (process.env.PREVIEW_TESTERS || '')
+              .split(',')
+              .map(t => t.trim().replace(/^@/, '').toLowerCase())
+              .filter(Boolean);
+
+            if (!testers.includes(reviewer)) {
+              core.info(`${reviewer} is not in PREVIEW_TESTERS; not auto-merging.`);
+              return;
+            }
+
+            const comment = body =>
+              github.rest.issues.createComment({ owner, repo, issue_number: pr.number, body });
+
+            // Branch protection still applies: this fails if the deploy-preview
+            // check hasn't passed or the PR has conflicts.
+            try {
+              await github.rest.pulls.merge({
+                owner, repo,
+                pull_number: pr.number,
+                sha: pr.head.sha, // don't merge commits the tester didn't see
+                merge_method: 'merge',
+              });
+            } catch (e) {
+              await comment(`Approved by @${reviewer}, but auto-merge failed: ${e.message}\n\nFix the issue and merge manually, or push a fix for a new preview.`);
+              core.setFailed(e.message);
+              return;
+            }
+
+            if (process.env.SYNC_FEATURE_BRANCHES !== 'true') return;
+
+            const branches = (await github.paginate(github.rest.repos.listBranches, { owner, repo, per_page: 100 }))
+              .map(b => b.name)
+              .filter(name => name.startsWith('feature/'));
+
+            const updated = [], current = [], conflicts = [], failed = [];
+            for (const base of branches) {
+              try {
+                const res = await github.rest.repos.merge({
+                  owner, repo, base, head: 'Development',
+                  commit_message: `Merge Development into ${base} (after #${pr.number})`,
+                });
+                (res.status === 204 ? current : updated).push(base);
+              } catch (e) {
+                (e.status === 409 ? conflicts : failed).push(e.status === 409 ? base : `${base} (${e.message})`);
+              }
+            }
+
+            const list = items => items.map(i => `- \`${i}\``).join('\n');
+            const lines = [`Merged by @${reviewer}'s approval. Synced \`Development\` into feature branches:`];
+            if (updated.length) lines.push('', '**Updated:**', list(updated));
+            if (current.length) lines.push('', `Already up to date: ${current.length}`);
+            if (conflicts.length) lines.push('', '**Skipped, merge conflicts (owners must merge Development manually):**', list(conflicts));
+            if (failed.length) lines.push('', '**Failed:**', list(failed));
+            await comment(lines.join('\n'));
