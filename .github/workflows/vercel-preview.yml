@@ -6,17 +6,13 @@
 # The job is named `deploy-preview`; make it a required status check on
 # Development so a PR whose merged code fails to build can't be merged.
 #
-# Opt-in for now: only PRs with the `preview` label run. Remove the label
-# check in `if:` below to run on every PR. (A skipped job still satisfies a
-# required status check, so unlabeled PRs aren't blocked.)
-#
 # Secrets:   VERCEL_TOKEN, TRELLO_API_KEY, TRELLO_TOKEN
 # Variables: PREVIEW_TESTERS (comma-separated GitHub usernames)
 name: Vercel Preview
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened]
     branches: [Development]
 
 permissions:
@@ -29,13 +25,8 @@ env:
 
 jobs:
   deploy-preview:
-    # Secrets aren't available to PRs from forks. Adding any other label
-    # shouldn't trigger a redeploy.
-    if: >-
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      contains(github.event.pull_request.labels.*.name, 'preview') &&
-      (github.event.action != 'labeled' || github.event.label.name == 'preview')
-    # Job-level so skipped runs (e.g. other labels) don't cancel a deploy.
+    # Secrets aren't available to PRs from forks.
+    if: github.event.pull_request.head.repo.full_name == github.repository
     concurrency:
       group: vercel-preview-${{ github.event.pull_request.number }}
       cancel-in-progress: true
