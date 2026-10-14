@@ -24,7 +24,7 @@ export default function Home() {
     r: () => navigate('/settings'),
   });
 
-  useKeyChord(['f', 'j'], () => navigate('/solo'));
+  useKeyChord(['f', 'j'], () => navigate('/solo/time-attack'));
   const keysDown = useKeysDown(['f', 'j']);
 
   return (

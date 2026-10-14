@@ -16,7 +16,7 @@ export function ScreenLayout({ title, children }: ScreenLayoutProps) {
   return (
     <main className="screen">
       <header className="screen__header">
-        <NavButton to="/" hotkey="←">Back</NavButton>
+        <NavButton to="/" hotkey="exc">Back</NavButton>
         <h1 className="screen__title">{title}</h1>
       </header>
       <div className="screen__body">{children}</div>

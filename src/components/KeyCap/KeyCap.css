@@ -1,13 +1,13 @@
 .keycap {
-  display: inline-grid;        
+  display: inline-grid;
   place-items: center;
-  color: #3A2C22;
+  color: var(--color-frame);
   user-select: none;
   line-height: 1;
 }
 
-.keycap--lg { width: 100px; height: 100px; font-size: 90px; }
-.keycap--sm { width: 35px; height: 35px; font-size: 30px; }
+.keycap--lg { width: 100px; height: 100px; font-size: var(--fs-key); }
+.keycap--sm { width: 35px; height: 35px; font-size: var(--fs-chat); }
 
 .keycap__img {
   grid-area: 1 / 1;
@@ -17,7 +17,7 @@
 }
 
 .keycap__label {
-  grid-area: 1 / 1;           
+  grid-area: 1 / 1;
   transform: translateY(-3px);
 }
 
@@ -25,18 +25,21 @@
 
 .keycap.is-pressed .keycap__img--normal,
 .keycap:active .keycap__img--normal,
-.nav-btn:active .keycap .keycap__img--normal {
+.nav-btn:active .keycap .keycap__img--normal,
+.menu-btn:active .keycap .keycap__img--normal {
   visibility: hidden;
 }
 
 .keycap.is-pressed .keycap__img--pressed,
 .keycap:active .keycap__img--pressed,
-.nav-btn:active .keycap .keycap__img--pressed {
+.nav-btn:active .keycap .keycap__img--pressed,
+.menu-btn:active .keycap .keycap__img--pressed {
   visibility: visible;
 }
 
 .keycap.is-pressed,
 .keycap:active,
-.nav-btn:active .keycap {
-  color: #D98E36;
+.nav-btn:active .keycap,
+.menu-btn:active .keycap {
+  color: var(--color-accent);
 }

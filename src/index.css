@@ -5,11 +5,64 @@
 }
 
 :root {
-  --bg: #ede6da;
-  --ink: #1c1412;
-  --nav-bg: #3a2a24;
-  --nav-text: #ede6da;
+  /* General base */
+  --color-screen: #ede7da;         /* screen background */
+  --color-light: #e8dcc8;          /* input boxes, light containers, table rows, text on dark backgrounds */
+  --color-outline-light: #c0a180;  /* keycap outline, card outline, drop-down options */
+  --color-container: #a6a09b;      /* secondary containers: chat box, text samples, log in, leaderboards, history */
+
+  /* Leaderboard */
+  --color-place-1: #d9ae47;          /* first place background */
+  --color-place-1-outline: #8b6914;
+  --color-place-2: #b7b0a0;          /* second place background */
+  --color-place-2-outline: #7d776a;
+  --color-place-3: #b97a46;          /* third place background */
+  --color-place-3-outline: #7a4e28;
+
+  /* UI structure */
+  --color-ink: #1c1410;            /* title backgrounds (History, Account, Settings), text on light backgrounds */
+  --color-frame: #3a2c22;          /* button background, header background, UI frame (player cards) */
+
+  /* Accent */
+  --color-shade: #4a3a2c;          /* button hover background, container shading/outline */
+  --color-depth: #55432f;          /* button outlines, depth shadows */
+  --color-accent: #d98e36;         /* button select background, outline highlight on hover */
+
+  /* Feedback */
+  --color-positive: #90946f;       /* correct keystroke, positive heatmap */
+  --color-negative: #9a5f54;       /* incorrect keystroke, negative heatmap */
+
+  /* Shadow Effect */
+  --shadow-soft: rgba(0, 0, 0, 0.25);    /* inset lip, text shadow */
+  --shadow-strong: rgba(0, 0, 0, 0.35);  /* button drop shadow */
+
+  /* Button states */
+  --btn-bg: var(--color-frame);
+  --btn-border: var(--color-depth);
+  --btn-text: var(--color-light);
+
+  --btn-bg-hover: var(--color-shade);
+  --btn-border-hover: var(--color-accent);
+
+  --btn-bg-active: var(--color-accent);
+  --btn-border-active: var(--color-accent);
+  --btn-text-active: var(--color-ink);
+
   --font: 'Jersey10', monospace;
+  --fs-logo: 250px;           /* logo title */
+  --fs-state-title: 150px;    /* state titles */
+  --fs-menu-primary: 100px;   /* primary main menu buttons */
+  --fs-key: 90px;             /* keyboard key letters */
+  --fs-title: 85px;           /* header titles, secondary main menu buttons */
+  --fs-setting-label: 75px;   /* settings labels */
+  --fs-tab: 70px;             /* tab labels, history stats */
+  --fs-stat-compact: 65px;    /* leaderboard stat compact, settings headings */
+  --fs-list-value: 60px;      /* buttons list row values and keycap letter inside main menu buttons */
+  --fs-filter: 50px;          /* filter tab, column header */
+  --fs-body: 45px;            /* button label, body text */
+  --fs-hud-stat: 40px;        /* HUD stat labels */
+  --fs-chat: 30px;            /* keybinds, chat */
+  --fs-hud-label: 25px;       /* header HUD label */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -17,8 +70,8 @@
 html, body, #root { height: 100%; margin: 0; }
 
 body {
-  background: var(--bg);
-  color: var(--ink);
+  background: var(--color-screen);
+  color: var(--color-ink);
   font-family: var(--font);
   -webkit-font-smoothing: none;
 }
