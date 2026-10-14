@@ -4,7 +4,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import './App.css'
 // @ts-expect-error
-import { supabase } from '../utils/supabase'
+import { supabase } from './lib/supabase'
 
 function App() {
   const [count, setCount] = useState(0)
