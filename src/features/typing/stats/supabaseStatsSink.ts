@@ -35,7 +35,7 @@
 // The raw keystroke log (result.keystrokes) is not stored by default.
 // ============================================================================
 
-import { supabase } from '../../../lib/supabase'
+import { getSupabase } from '../../../lib/supabase'
 import type { StatsSink, TestResult } from './types'
 
 // TODO(stats team): replace with the real table name.
@@ -43,6 +43,7 @@ const RESULTS_TABLE = 'typing_results'
 
 export const supabaseStatsSink: StatsSink = {
   async saveResult(result) {
+    const supabase = getSupabase()
     const { data: auth } = await supabase.auth.getUser()
 
     const { error } = await supabase

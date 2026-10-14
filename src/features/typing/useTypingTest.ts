@@ -137,6 +137,9 @@ export function useTypingTest(durationMs: number) {
     if (!acceptingInput) return
 
     function onKeyDown(event: KeyboardEvent) {
+      // Auto-repeat is ignored so keys still held from the menu (F+J, Q)
+      // don't type into the test.
+      if (event.repeat) return
       if (event.ctrlKey || event.metaKey || event.altKey) return
       if (event.key !== 'Backspace' && event.key.length !== 1) return
       event.preventDefault()

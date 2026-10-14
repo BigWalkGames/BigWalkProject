@@ -1,34 +1,28 @@
+/* Colors and fonts come from the design tokens in src/index.css. */
+
 .tt {
-  --tt-correct: #15803d;
-  --tt-incorrect: #dc2626;
-  --tt-incorrect-bg: rgba(220, 38, 38, 0.18);
-  --tt-pending: var(--text);
-  --tt-cursor: var(--accent);
+  --tt-correct: var(--color-positive);
+  --tt-incorrect: var(--color-negative);
+  --tt-incorrect-bg: color-mix(in srgb, var(--color-negative) 30%, transparent);
+  --tt-pending: var(--color-ink);
+  --tt-cursor: var(--color-accent);
 
   display: flex;
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 16px;
-  box-sizing: border-box;
   text-align: left;
-}
-
-@media (prefers-color-scheme: dark) {
-  .tt {
-    --tt-correct: #4ade80;
-    --tt-incorrect: #f87171;
-    --tt-incorrect-bg: rgba(248, 113, 113, 0.2);
-  }
+  font-family: var(--font);
+  color: var(--color-ink);
 }
 
 /* Stats */
 
 .tt-stats {
   display: flex;
-  gap: 32px;
+  gap: 40px;
   flex-wrap: wrap;
 }
 
@@ -38,13 +32,13 @@
 }
 
 .tt-stat-value {
-  font: 600 28px/1.1 var(--mono);
-  color: var(--text-h);
+  font-size: var(--fs-tab);
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .tt-stat-label {
-  font-size: 13px;
+  font-size: var(--fs-hud-label);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -52,20 +46,20 @@
 /* Words: three lines visible, the current line kept second. */
 
 .tt-words {
-  --tt-line: 1.6em;
+  --tt-line: 1.4em;
 
   position: relative;
   display: flex;
   flex-wrap: wrap;
   height: calc(var(--tt-line) * 3);
   overflow: hidden;
-  font: 26px/1.6 var(--mono);
+  font-size: var(--fs-body);
+  line-height: 1.4;
   user-select: none;
 }
 
 .tt-placeholder {
   align-items: center;
-  font-size: 18px;
 }
 
 .tt-word {
@@ -76,12 +70,11 @@
 .tt-letter {
   position: relative;
   white-space: pre;
-  border-radius: 2px;
 }
 
 .tt-letter.is-initial {
   color: var(--tt-pending);
-  opacity: 0.6;
+  opacity: 0.45;
 }
 
 .tt-letter.is-success {
@@ -103,7 +96,7 @@
   left: -1px;
   top: 15%;
   bottom: 15%;
-  width: 2px;
+  width: 3px;
   background: var(--tt-cursor);
   animation: tt-blink 1s step-end infinite;
 }
@@ -125,26 +118,34 @@
 .tt-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
 .tt-restart {
   font: inherit;
-  padding: 6px 16px;
-  border: 1px solid var(--accent-border);
-  border-radius: 6px;
-  background: var(--accent-bg);
-  color: var(--text-h);
+  font-size: var(--fs-chat);
+  padding: 4px 20px;
+  border: 3px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  box-shadow: 0 4px 0 var(--shadow-strong);
   cursor: pointer;
 }
 
 .tt-restart:hover {
-  border-color: var(--accent);
+  background: var(--btn-bg-hover);
+  border-color: var(--btn-border-hover);
+}
+
+.tt-restart:active {
+  background: var(--btn-bg-active);
+  border-color: var(--btn-border-active);
+  color: var(--btn-text-active);
 }
 
 .tt-hint {
-  font-size: 14px;
+  font-size: var(--fs-hud-label);
 }
 
 /* Results */
@@ -154,12 +155,12 @@
   flex-direction: column;
   gap: 16px;
   padding-top: 16px;
-  border-top: 1px solid var(--border);
+  border-top: 3px solid var(--color-outline-light);
 }
 
 .tt-save {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--fs-hud-label);
 }
 
 .tt-save.is-error {
@@ -167,26 +168,25 @@
 }
 
 .tt-keys {
+  /* Scroll inside its own box on narrow screens instead of widening the page. */
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
-  font-size: 15px;
+  font-size: var(--fs-chat);
   font-variant-numeric: tabular-nums;
 }
 
 .tt-keys th,
 .tt-keys td {
-  padding: 4px 16px 4px 0;
+  padding: 2px 32px 2px 0;
   text-align: left;
+  font-weight: normal;
 }
 
 .tt-keys thead th {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--fs-hud-label);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  border-bottom: 1px solid var(--border);
-}
-
-.tt-key {
-  font-family: var(--mono);
-  color: var(--text-h);
+  border-bottom: 3px solid var(--color-outline-light);
 }

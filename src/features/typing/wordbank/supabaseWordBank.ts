@@ -15,7 +15,7 @@
 //   [ ] Optional: add filters (difficulty, language, ...) where marked below.
 // ============================================================================
 
-import { supabase } from '../../../lib/supabase'
+import { getSupabase } from '../../../lib/supabase'
 import type { WordBankSource } from './types'
 
 // TODO(word bank team): replace with the real table and column names.
@@ -26,7 +26,9 @@ export const supabaseWordBank: WordBankSource = {
   name: 'supabase',
 
   async fetchWords(signal) {
-    const { data, error } = await supabase
+    // getSupabase() throws on bad env vars; loadWordBank catches it and
+    // falls back to the offline word bank.
+    const { data, error } = await getSupabase()
       .from(WORDS_TABLE)
       .select(WORD_COLUMN)
       // TODO(word bank team): add filters here if needed, e.g.
