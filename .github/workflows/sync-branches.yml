@@ -52,10 +52,9 @@ jobs:
                 echo "$branch: conflict PR already open"
                 echo "$branch (merge conflict, PR already open)" >> problems.txt
               else
-                git checkout -q -b "$sync"
                 git add -A
                 git commit -q --no-edit
-                git push --force origin "$sync"
+                git push --force origin "HEAD:refs/heads/$sync"
                 body="Development could not be merged into $branch automatically. Branch $sync holds that merge with the conflict markers committed. Check it out, resolve the conflicts, push, mark this PR ready and merge it. DO NOT merge while conflict markers remain in the files."
                 pr=$(gh pr create --draft --base "$branch" --head "$sync" \
                   --title "Resolve conflicts: merge Development into $branch" \
