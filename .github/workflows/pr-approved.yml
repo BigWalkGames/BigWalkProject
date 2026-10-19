@@ -1,14 +1,10 @@
-# When a tester (listed in PREVIEW_TESTERS) approves a PR into Development:
-#   1. merge the PR into Development (this closes it)
-#   2. if SYNC_FEATURE_BRANCHES == 'true', merge Development into every
-#      feature/* branch. Branches that would conflict are skipped, never forced.
+# When a tester (listed in PREVIEW_TESTERS) approves a PR into Development,
+# merge it (this closes it).
 #
-# Opt-in for now: only PRs with the `preview` label (same as vercel-preview.yml).
+# Rejections need no automation: the tester requests changes and leaves the
+# PR open; the developer's next push rebuilds the preview and re-requests review.
 #
-# Rejections need no automation: the tester requests changes with a reason
-# and closes the PR.
-#
-# Variables: PREVIEW_TESTERS, SYNC_FEATURE_BRANCHES (optional, 'true' to enable)
+# Variables: PREVIEW_TESTERS
 name: Merge on Tester Approval
 
 on:
@@ -24,15 +20,13 @@ jobs:
     if: >-
       github.event.review.state == 'approved' &&
       github.event.pull_request.base.ref == 'Development' &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      contains(github.event.pull_request.labels.*.name, 'preview')
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - name: Merge PR and sync feature branches
+      - name: Merge PR
         uses: actions/github-script@v7
         env:
           PREVIEW_TESTERS: ${{ vars.PREVIEW_TESTERS }}
-          SYNC_FEATURE_BRANCHES: ${{ vars.SYNC_FEATURE_BRANCHES }}
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -48,11 +42,9 @@ jobs:
               return;
             }
 
-            const comment = body =>
-              github.rest.issues.createComment({ owner, repo, issue_number: pr.number, body });
-
-            // Branch protection still applies: this fails if the deploy-preview
-            // check hasn't passed or the PR has conflicts.
+            // Branch rules still apply: this fails if the deploy-preview check
+            // hasn't passed, the branch is behind Development, or another
+            // reviewer's "Request changes" is still open.
             try {
               await github.rest.pulls.merge({
                 owner, repo,
@@ -61,34 +53,13 @@ jobs:
                 merge_method: 'merge',
               });
             } catch (e) {
-              await comment(`Approved by @${reviewer}, but auto-merge failed: ${e.message}\n\nFix the issue and merge manually, or push a fix for a new preview.`);
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: pr.number,
+                body: [
+                  `Approved by @${reviewer}, but auto-merge failed: ${e.message}`,
+                  '',
+                  'Common causes: the branch is behind `Development` (click **Update branch**, then the tester re-tests and approves), the `deploy-preview` check hasn\'t passed yet, or another reviewer\'s **Request changes** is still open.',
+                ].join('\n'),
+              });
               core.setFailed(e.message);
-              return;
             }
-
-            if (process.env.SYNC_FEATURE_BRANCHES !== 'true') return;
-
-            const branches = (await github.paginate(github.rest.repos.listBranches, { owner, repo, per_page: 100 }))
-              .map(b => b.name)
-              .filter(name => name.startsWith('feature/'));
-
-            const updated = [], current = [], conflicts = [], failed = [];
-            for (const base of branches) {
-              try {
-                const res = await github.rest.repos.merge({
-                  owner, repo, base, head: 'Development',
-                  commit_message: `Merge Development into ${base} (after #${pr.number})`,
-                });
-                (res.status === 204 ? current : updated).push(base);
-              } catch (e) {
-                (e.status === 409 ? conflicts : failed).push(e.status === 409 ? base : `${base} (${e.message})`);
-              }
-            }
-
-            const list = items => items.map(i => `- \`${i}\``).join('\n');
-            const lines = [`Merged by @${reviewer}'s approval. Synced \`Development\` into feature branches:`];
-            if (updated.length) lines.push('', '**Updated:**', list(updated));
-            if (current.length) lines.push('', `Already up to date: ${current.length}`);
-            if (conflicts.length) lines.push('', '**Skipped, merge conflicts (owners must merge Development manually):**', list(conflicts));
-            if (failed.length) lines.push('', '**Failed:**', list(failed));
-            await comment(lines.join('\n'));
