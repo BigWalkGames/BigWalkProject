@@ -15,8 +15,18 @@ export default defineConfig(({ mode }) => {
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error(
-      'Missing Supabase env vars: set SUPABASE_URL and SUPABASE_ANON_KEY ' +
-        '(or the VITE_-prefixed equivalents).',
+      'Missing Supabase env vars: set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY ' +
+        '(or SUPABASE_ANON_KEY, or the VITE_-prefixed equivalents).',
+    )
+  }
+
+  // `vercel pull` writes "[SENSITIVE]" for Sensitive env vars, which would
+  // otherwise build fine and crash createClient() at runtime (blank page).
+  if (!/^https?:\/\//.test(supabaseUrl) || supabaseKey === '[SENSITIVE]') {
+    throw new Error(
+      'Invalid Supabase env vars: SUPABASE_URL is not an http(s) URL or the key ' +
+        'is "[SENSITIVE]". In a CI build this usually means the Vercel env vars ' +
+        'are marked Sensitive, so `vercel pull` cannot read them.',
     )
   }
 
