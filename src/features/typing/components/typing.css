@@ -1,0 +1,192 @@
+/* Colors and fonts come from the design tokens in src/index.css. */
+
+.tt {
+  --tt-correct: var(--color-positive);
+  --tt-incorrect: var(--color-negative);
+  --tt-incorrect-bg: color-mix(in srgb, var(--color-negative) 30%, transparent);
+  --tt-pending: var(--color-ink);
+  --tt-cursor: var(--color-accent);
+
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: left;
+  font-family: var(--font);
+  color: var(--color-ink);
+}
+
+/* Stats */
+
+.tt-stats {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.tt-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.tt-stat-value {
+  font-size: var(--fs-tab);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.tt-stat-label {
+  font-size: var(--fs-hud-label);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Words: three lines visible, the current line kept second. */
+
+.tt-words {
+  --tt-line: 1.4em;
+
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  height: calc(var(--tt-line) * 3);
+  overflow: hidden;
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  user-select: none;
+}
+
+.tt-placeholder {
+  align-items: center;
+}
+
+.tt-word {
+  display: inline-flex;
+  height: var(--tt-line);
+}
+
+.tt-letter {
+  position: relative;
+  white-space: pre;
+}
+
+.tt-letter.is-initial {
+  color: var(--tt-pending);
+  opacity: 0.45;
+}
+
+.tt-letter.is-success {
+  color: var(--tt-correct);
+}
+
+.tt-letter.is-fail {
+  color: var(--tt-incorrect);
+}
+
+/* A red space is invisible, so mark missed spaces with a background. */
+.tt-letter.is-space.is-fail {
+  background: var(--tt-incorrect-bg);
+}
+
+.tt-letter.is-cursor::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 15%;
+  bottom: 15%;
+  width: 3px;
+  background: var(--tt-cursor);
+  animation: tt-blink 1s step-end infinite;
+}
+
+@keyframes tt-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-letter.is-cursor::before {
+    animation: none;
+  }
+}
+
+/* Actions */
+
+.tt-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.tt-restart {
+  font: inherit;
+  font-size: var(--fs-chat);
+  padding: 4px 20px;
+  border: 3px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  box-shadow: 0 4px 0 var(--shadow-strong);
+  cursor: pointer;
+}
+
+.tt-restart:hover {
+  background: var(--btn-bg-hover);
+  border-color: var(--btn-border-hover);
+}
+
+.tt-restart:active {
+  background: var(--btn-bg-active);
+  border-color: var(--btn-border-active);
+  color: var(--btn-text-active);
+}
+
+.tt-hint {
+  font-size: var(--fs-hud-label);
+}
+
+/* Results */
+
+.tt-results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 3px solid var(--color-outline-light);
+}
+
+.tt-save {
+  margin: 0;
+  font-size: var(--fs-hud-label);
+}
+
+.tt-save.is-error {
+  color: var(--tt-incorrect);
+}
+
+.tt-keys {
+  /* Scroll inside its own box on narrow screens instead of widening the page. */
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: var(--fs-chat);
+  font-variant-numeric: tabular-nums;
+}
+
+.tt-keys th,
+.tt-keys td {
+  padding: 2px 32px 2px 0;
+  text-align: left;
+  font-weight: normal;
+}
+
+.tt-keys thead th {
+  font-size: var(--fs-hud-label);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 3px solid var(--color-outline-light);
+}
