@@ -12,8 +12,10 @@
   border-radius: 15px;
   color: var(--text);
   text-decoration: none;
+  font-family: inherit;
   font-size: var(--fs-body);
   line-height: 1;
+  cursor: pointer;
 
   box-shadow:
     inset 0 -4px 0 var(--shadow-soft),
@@ -27,19 +29,24 @@
     box-shadow 80ms steps(2);
 }
 
-.nav-btn:hover,
+.nav-btn:hover:not(:disabled),
 .nav-btn:focus-visible {
   --bg: var(--btn-bg-hover);
   --border: var(--btn-border-hover);
   outline: none;
 }
 
-.nav-btn:active {
+.nav-btn:active:not(:disabled) {
   --bg: var(--btn-bg-active);
   --border: var(--btn-border-active);
   --text: var(--btn-text-active);
   box-shadow: none;
   transform: translate(4px, 4px);
+}
+
+.nav-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .nav-btn__icon {
@@ -55,5 +62,5 @@
 
 .nav-btn__img--pressed { visibility: hidden; }
 
-.nav-btn:active .nav-btn__img--normal  { visibility: hidden; }
-.nav-btn:active .nav-btn__img--pressed { visibility: visible; }
+.nav-btn:active:not(:disabled) .nav-btn__img--normal  { visibility: hidden; }
+.nav-btn:active:not(:disabled) .nav-btn__img--pressed { visibility: visible; }
