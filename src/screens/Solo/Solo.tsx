@@ -1,3 +1,4 @@
+import './Solo.css';
 import { useNavigate } from 'react-router';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { MenuButton } from '../../components/MenuButton/MenuButton';
@@ -15,21 +16,29 @@ export default function Solo() {
 
   return (
     <ScreenLayout title="Solo">
-      <div className="menu-btn-group">
-        <MenuButton
-          hotkey="Q"
-          to="/solo/time-attack"
-          icon={{ normal: hourglass, pressed: hourglassPressed }}
-        >
-          Time Attack
-        </MenuButton>
-      </div>
+      <div className="solo">
+        <div className="solo__menu">
+          <div className="menu-btn-group">
+            <MenuButton
+              hotkey="Q"
+              to="/solo/time-attack"
+              icon={{ normal: hourglass, pressed: hourglassPressed }}
+            >
+              Time Attack
+            </MenuButton>
+          </div>
 
-      {/* TEMPORARY: will replace with the History panel from the Figma */}
-      <div className="menu-btn-group" style={{ marginTop: 20 }}>
-        <MenuButton hotkey="H" to="/history">
-          History
-        </MenuButton>
+          {/* TEMPORARY: remove when the History panel exists */}
+          <div className="menu-btn-group">
+            <MenuButton hotkey="H" to="/history">
+              History
+            </MenuButton>
+          </div>
+        </div>
+
+        <aside className="solo__panel">
+          {/* History panel goes here later */}
+        </aside>
       </div>
     </ScreenLayout>
   );
