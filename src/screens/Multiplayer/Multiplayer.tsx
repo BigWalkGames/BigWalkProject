@@ -1,3 +1,4 @@
+import './Multiplayer.css';
 import { useNavigate } from 'react-router';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { MenuButton } from '../../components/MenuButton/MenuButton';
@@ -10,30 +11,38 @@ export default function Multiplayer() {
 
   useHotkeys({
     q: () => navigate('/multiplayer/versus'),
-    r: () => navigate('/history'),
+    r: () => navigate('/matchhistory'),
     a: () => navigate('/leaderboards'),
   });
 
   return (
     <ScreenLayout title="Multiplayer">
-      <div className="menu-btn-group">
-        <MenuButton
-          hotkey="Q"
-          to="/multiplayer/versus"
-          icon={{ normal: hourglass, pressed: hourglassPressed }}
-        >
-          Quick Match
-        </MenuButton>
-        <MenuButton hotkey="R" to="/history">
-          Match History
-        </MenuButton>
-      </div>
+      <div className="multiplayer">
+        <div className="multiplayer__menu">
+          <div className="menu-btn-group">
+            <MenuButton
+              hotkey="Q"
+              to="/multiplayer/versus"
+              icon={{ normal: hourglass, pressed: hourglassPressed }}
+            >
+              Quick Match
+            </MenuButton>
+            <MenuButton hotkey="R" to="/matchhistory">
+              Match History
+            </MenuButton>
+          </div>
 
-      {/* TEMPORARY: will replace with the Leaderboards panel from the Figma */}
-      <div className="menu-btn-group" style={{ marginTop: 20 }}>
-        <MenuButton hotkey="A" to="/leaderboards">
-          Leaderboards
-        </MenuButton>
+          {/* TEMPORARY: remove when the Leaderboards panel exists */}
+          <div className="menu-btn-group">
+            <MenuButton hotkey="A" to="/leaderboards">
+              Leaderboards
+            </MenuButton>
+          </div>
+        </div>
+
+        <aside className="multiplayer__panel">
+          {/* Leaderboards panel goes here later */}
+        </aside>
       </div>
     </ScreenLayout>
   );
