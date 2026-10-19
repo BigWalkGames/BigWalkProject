@@ -2,11 +2,17 @@ import { DEFAULT_CONFIG, getWordBank, type Word } from '../../../features/word-e
 import { FALLBACK_WORDS } from './fallbackWordBank'
 import { supabaseWordBank } from './supabaseWordBank'
 import type { LoadedWordBank, WordBankSource } from './types'
+import { loadPlayer } from '../player/playerStore'
 
 const DEFAULT_TIMEOUT_MS = 3000
 
 // The word list doesn't change during a session, so fetch it once and reuse it.
 let cachedWords: Word[] | null = null
+
+const RECENT_BANK_COUNT = 3
+
+// Words from the last few banks, so consecutive matches don't repeat targeted words.
+let recentBanks: string[][] = []
 
 /**
  * Tries `primary` (Supabase by default), builds the next bank with the word
@@ -21,9 +27,17 @@ export async function loadWordBank(
 ): Promise<LoadedWordBank> {
   try {
     cachedWords ??= await primary.fetchWords(AbortSignal.timeout(timeoutMs))
-    // No player data yet, so this is common words only.
-    const words = getWordBank(cachedWords, DEFAULT_CONFIG.bankSize, null).map((w) => w.word)
-    if (words.length > 0) return { words, source: primary.name }
+    // A player failure only costs personalization, not the Supabase word list.
+    const player = await loadPlayer().catch((error) => {
+      console.warn('[wordbank] player load failed; using common words only.', error)
+      return null
+    })
+    const recent = new Set(recentBanks.flat())
+    const words = getWordBank(cachedWords, DEFAULT_CONFIG.bankSize, player, recent).map((w) => w.word)
+    if (words.length > 0) {
+      recentBanks = [...recentBanks, words].slice(-RECENT_BANK_COUNT)
+      return { words, source: primary.name }
+    }
     console.warn(`[wordbank] "${primary.name}" returned no usable words; using fallback.`)
   } catch (error) {
     console.warn(`[wordbank] "${primary.name}" failed; using fallback.`, error)
