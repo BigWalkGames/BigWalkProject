@@ -9,6 +9,7 @@ import Settings from './screens/Settings/Settings';
 import TimeAttack from './screens/TimeAttack/TimeAttack';
 import Versus from './screens/Versus/Versus';
 import History from './screens/History/History';
+import MatchHistory from './screens/MatchHistory/MatchHistory';
 import Leaderboards from './screens/Leaderboards/Leaderboards';
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/multiplayer" element={<Multiplayer />} />
         <Route path="/multiplayer/versus" element={<Versus />} />
         <Route path="/history" element={<History />} />
+        <Route path="/matchhistory" element={<MatchHistory />} />
         <Route path="/leaderboards" element={<Leaderboards />} />
         <Route path="/account" element={<Account />} />
         <Route path="/settings" element={<Settings />} />
