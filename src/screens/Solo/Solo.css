@@ -1,0 +1,37 @@
+.solo {
+  flex: 1;                                   /* fill the screen body */
+  width: 100%;
+  max-width: var(--canvas-width);
+  margin-inline: auto;
+  padding-inline: var(--margin);             /* 193-219px content margins */
+
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-items: center;                       /* centers menu and panel vertically */
+}
+
+/* left: the menu buttons, spanning 2 columns */
+.solo__menu {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* right: slot for the History panel, 1 column */
+.solo__panel {
+  grid-column: span 1;
+  min-width: 0;
+}
+
+/* narrow windows: stack them */
+@media (max-width: 1100px) {
+  .solo {
+    grid-template-columns: 1fr;
+    row-gap: var(--gutter);
+    padding-inline: 24px;
+  }
+  .solo__menu,
+  .solo__panel { grid-column: 1; }
+}
