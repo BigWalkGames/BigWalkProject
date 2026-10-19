@@ -91,15 +91,16 @@ function WordChip({ word, weak }: { word: Word, weak: Set<string> }) {
       title={`rank ${word.rank} · ${word.hand} · ${word.bigrams.join(' ')}`}
       style={{
         padding: '8px 12px',
-        border: `1px solid ${marked.size ? 'var(--accent-border)' : 'var(--border)'}`,
-        background: marked.size ? 'var(--accent-bg)' : undefined,
+        border: `1px solid ${marked.size ? 'var(--color-accent)' : 'var(--border)'}`,
+        background: marked.size ? 'var(--color-frame)' : undefined,
+        color: marked.size ? 'var(--color-light)' : undefined,
         borderRadius: 6,
         fontFamily: 'var(--mono)',
         fontSize: 18,
       }}
     >
       {[...word.word].map((ch, i) => (
-        <span key={i} style={marked.has(i) ? { color: 'var(--accent)', fontWeight: 700 } : undefined}>
+        <span key={i} style={marked.has(i) ? { color: 'var(--color-accent)', fontWeight: 700 } : undefined}>
           {ch}
         </span>
       ))}
