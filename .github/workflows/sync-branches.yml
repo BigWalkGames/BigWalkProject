@@ -41,12 +41,13 @@ jobs:
 
             git checkout -q -B "$branch" "$ref"
             if ! git merge --no-edit -m "Merge Development into $branch (auto-sync)" origin/Development; then
+              files=$(git diff --name-only --diff-filter=U | paste -sd, -)
               git merge --abort
               echo "$branch: merge conflict"
-              echo "$branch (merge conflict)" >> problems.txt
+              printf '%s\t%s\t%s\n' "$branch" "merge conflict" "$files" >> problems.txt
             elif ! git push origin "$branch"; then
               echo "$branch: push failed"
-              echo "$branch (push failed, likely a concurrent push)" >> problems.txt
+              printf '%s\t%s\t%s\n' "$branch" "push failed, likely a concurrent push" "" >> problems.txt
             else
               echo "$branch: synced"
             fi
@@ -59,7 +60,10 @@ jobs:
             const fs = require('fs');
             const { owner, repo } = context.repo;
             const title = 'Branches out of sync with Development';
-            const problems = fs.readFileSync('problems.txt', 'utf8').split('\n').filter(Boolean);
+            const problems = fs.readFileSync('problems.txt', 'utf8').split('\n').filter(Boolean).map(line => {
+              const [branch, reason, files] = line.split('\t');
+              return { branch, reason, files: files ? files.split(',') : [] };
+            });
 
             const open = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: 'open' });
             const existing = open.find(i => !i.pull_request && i.title === title);
@@ -72,10 +76,18 @@ jobs:
               return;
             }
 
+            const lines = [];
+            for (const p of problems) {
+              const { data: tip } = await github.rest.repos.getCommit({ owner, repo, ref: p.branch });
+              const who = tip.author && tip.author.type === 'User' ? ` (last commit by @${tip.author.login})` : '';
+              lines.push(`- \`${p.branch}\`: ${p.reason}${who}`);
+              for (const f of p.files) lines.push(`  - \`${f}\``);
+            }
+
             const body = [
               'The last sync of `Development` could not update these branches:',
               '',
-              ...problems.map(p => `- \`${p}\``),
+              ...lines,
               '',
               'To fix a conflict, locally run `git checkout <branch>`, `git merge origin/Development`, resolve the conflicts, then push. This issue updates on the next sync and closes when every branch is clean.',
               '',
