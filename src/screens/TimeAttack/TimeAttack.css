@@ -1,0 +1,52 @@
+/* Center the whole typing block vertically in the body */
+.time-attack {
+  flex: 1;                      /* fill the space between header and footer */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Only the top stats bar (a direct child of .tt), not the one inside the results panel */
+
+/* Stats row: only the timer stays in the body, centered above the words */
+.time-attack .tt > .tt-stats {
+  justify-content: center;
+}
+
+/* 1st stat = TIME */
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(1) .tt-stat-value {
+  font-size: var(--fs-stat-compact);
+}
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(1) .tt-stat-label {
+  display: none;              
+}
+
+/* 2nd and 3rd stats = WPM and ACCURACY, lifted into the header */
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(2),
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(3) {
+  position: absolute;                 /* relative to .screen */
+  top: 8px;                           /* nudges the text down to the header's center */
+  height: var(--header-height);       /* fills the header... */
+  display: flex;
+  flex-direction: column-reverse;     /* label on top, value below */
+  justify-content: center;            /* ...and centers its content in it */
+  z-index: 1;
+  color: var(--color-light);
+}
+
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(2) { left: var(--margin); }
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(3) { left: calc(var(--margin) + 85px); }
+
+/* titles: WPM / ACCURACY */
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(2) .tt-stat-label,
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(3) .tt-stat-label {
+  font-size: var(--fs-hud-label);
+  line-height: 0.2;
+}
+
+/* numbers: 0 / 100% */
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(2) .tt-stat-value,
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(3) .tt-stat-value {
+  font-size: var(--fs-filter);
+  line-height: 1;
+}
