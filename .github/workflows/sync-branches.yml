@@ -1,7 +1,9 @@
 # After anything lands on Development, merge Development into every
 # feature/* and fix/* branch so they stay current. A branch that conflicts is
-# left untouched and listed in a single open issue, which closes itself once
-# no branch conflicts.
+# left untouched. Instead a sync/<branch> branch holding the conflicted merge is
+# pushed and a draft PR into the branch is opened for whoever owns it to
+# resolve. All conflicts are also listed in a single open issue, which closes
+# itself once no branch conflicts.
 name: Sync Branches
 
 on:
@@ -12,6 +14,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 concurrency:
   group: sync-branches
@@ -26,6 +29,8 @@ jobs:
           fetch-depth: 0
 
       - name: Merge Development into feature/* and fix/*
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -41,9 +46,22 @@ jobs:
 
             git checkout -q -B "$branch" "$ref"
             if ! git merge --no-edit -m "Merge Development into $branch (auto-sync)" origin/Development; then
-              git merge --abort
               echo "$branch: merge conflict"
-              echo "$branch (merge conflict)" >> problems.txt
+              sync="sync/$branch"
+              if [ -n "$(gh pr list --head "$sync" --state open --json number --jq '.[].number')" ]; then
+                echo "$branch: conflict PR already open"
+                echo "$branch (merge conflict, PR already open)" >> problems.txt
+              else
+                git checkout -q -b "$sync"
+                git add -A
+                git commit -q --no-edit
+                git push --force origin "$sync"
+                body="Development could not be merged into $branch automatically. Branch $sync holds that merge with the conflict markers committed. Check it out, resolve the conflicts, push, mark this PR ready and merge it. DO NOT merge while conflict markers remain in the files."
+                pr=$(gh pr create --draft --base "$branch" --head "$sync" \
+                  --title "Resolve conflicts: merge Development into $branch" \
+                  --body "$body")
+                echo "$branch (merge conflict, $pr)" >> problems.txt
+              fi
             elif ! git push origin "$branch"; then
               echo "$branch: push failed"
               echo "$branch (push failed, likely a concurrent push)" >> problems.txt
