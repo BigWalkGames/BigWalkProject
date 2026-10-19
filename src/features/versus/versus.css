@@ -1,0 +1,23 @@
+/* Quick Match results reuse the Time Attack results panel. Results are not saved yet,
+   so hide its "Saved" line. */
+.versus-results {
+  order: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.versus-results .tt-save { display: none; }
+
+.versus-headline {
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-tab);
+  font-weight: normal;
+}
+.versus-opponent { justify-content: center; }
+.versus-playagain {
+  order: 6;
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-hud-label);
+}
