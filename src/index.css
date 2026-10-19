@@ -48,6 +48,7 @@
   --btn-border-active: var(--color-accent);
   --btn-text-active: var(--color-ink);
 
+  /* Typography */
   --font: 'Jersey10', monospace;
   --fs-logo: 250px;           /* logo title */
   --fs-state-title: 150px;    /* state titles */
@@ -63,6 +64,21 @@
   --fs-hud-stat: 40px;        /* HUD stat labels */
   --fs-chat: 30px;            /* keybinds, chat */
   --fs-hud-label: 25px;       /* header HUD label */
+
+  /* Grid & spacing (designed on a 1920px canvas) */
+  --canvas-width: 1920px;
+  --header-height: 105px;      /* general screen header */
+
+  --margin-min: 193px;         /* content margin range: 193-219px */
+  --margin-max: 219px;
+  --margin: clamp(var(--margin-min), 10.7vw, var(--margin-max));
+
+  --cols: 3;                   /* 3 column template grid (override per grid) */
+  --col-width: 300px;
+  --gutter: 36px;
+
+  --row-height: 120px;         /* leaderboard / history rows */
+  --row-gap: clamp(11px, 0.68vw, 15px);   /* 11-15px between rows */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -77,3 +93,36 @@ body {
 }
 
 img { image-rendering: pixelated; }
+
+/* 193-219px content margins and stops at the 1920px canvas */
+.container {
+  width: 100%;
+  max-width: var(--canvas-width);
+  margin-inline: auto;
+  padding-inline: var(--margin);
+}
+
+/* Column grid: --cols columns with 36px gutters, filling the area inside the margins */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--row-gap);
+}
+
+/* Variant: exact 300px columns, centered */
+.grid--fixed {
+  grid-template-columns: repeat(var(--cols), var(--col-width));
+  justify-content: center;
+}
+
+/* Spanning columns */
+.span-2 { grid-column: span 2; }
+.span-3 { grid-column: span 3; }
+
+/* List rows: 120px tall with 11-15px gaps (leaderboards, history) */
+.rows {
+  display: grid;
+  grid-auto-rows: var(--row-height);
+  row-gap: var(--row-gap);
+}

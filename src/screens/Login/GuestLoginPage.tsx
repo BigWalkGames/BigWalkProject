@@ -1,6 +1,7 @@
+import './GuestLoginPage.css';
 import { useNavigate } from 'react-router';
 import { useCallback, useEffect, useState } from 'react';
-
+import { NavButton } from '../../components/NavButton/NavButton';
 import { useAuth } from '../../hooks/auth/useAuth';
 import { signInAsGuest, signOut } from '../../hooks/auth/authActions';
 
@@ -59,7 +60,7 @@ export default function GuestLoginPage() {
 
   return (
     <main className="at">
-      <section className="at-card" style={{ maxWidth: 420, margin: '0 auto' }}>
+      <section className="at-card">
         {user ? (
           <>
             <h2>{isGuest ? "You're in as a guest" : "You're signed in"}</h2>
@@ -69,16 +70,20 @@ export default function GuestLoginPage() {
           </>
         ) : (
           <>
-            <h2>Welcome</h2>
-            <button className="primary" onClick={handleGuest} disabled={busy}>
-              {busy ? 'Starting…' : 'Continue as guest'}
-            </button>
-            <p className="hint">No account needed. You can also press G.</p>
+            <h2>WELCOME</h2>
+
+            <div className="at-login">
+              {/* TODO: add login functionality */}
+              <NavButton hotkey="L">Login</NavButton>
+
+              <NavButton hotkey="G" onClick={handleGuest} disabled={busy}>
+                {busy ? 'Starting…' : 'Guest'}
+              </NavButton>
+            </div>
+
+            <p className="hint">Log in to save your scores, or continue as a guest.</p>
             {error && (
-              <div
-                className="at-msg err"
-                role="alert"
-                style={{ marginTop: 12 }}>
+              <div className="at-msg err" role="alert">
                 {error}
               </div>
             )}
