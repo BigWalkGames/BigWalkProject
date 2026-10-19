@@ -8,15 +8,17 @@ type NavIcon = {
 };
 
 type NavButtonProps = {
-  to: string;
   hotkey: string;
   children: React.ReactNode;
   icon?: NavIcon;
+  to?: string;
+  onClick?: () => void;
+  disabled?: boolean;
 };
 
-export function NavButton({ to, hotkey, children, icon }: NavButtonProps) {
-  return (
-    <Link to={to} className="nav-btn" aria-keyshortcuts={hotkey}>
+export function NavButton({ hotkey, children, icon, to, onClick, disabled }: NavButtonProps) {
+  const content = (
+    <>
       <KeyCap label={hotkey} size="sm" />
       <span>{children}</span>
       {icon && (
@@ -25,6 +27,26 @@ export function NavButton({ to, hotkey, children, icon }: NavButtonProps) {
           <img src={icon.pressed} alt="" className="nav-btn__img nav-btn__img--pressed" />
         </span>
       )}
-    </Link>
+    </>
+  );
+
+  if (to) {
+    return (
+      <Link to={to} className="nav-btn" aria-keyshortcuts={hotkey}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className="nav-btn"
+      onClick={onClick}
+      disabled={disabled}
+      aria-keyshortcuts={hotkey}
+    >
+      {content}
+    </button>
   );
 }
