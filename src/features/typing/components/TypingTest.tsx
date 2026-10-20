@@ -1,50 +1,67 @@
-import { useEffect, useState } from 'react';
-import { supabaseStatsSink } from '../stats/supabaseStatsSink';
-import type { StatsSink, TestResult } from '../stats/types';
-import { useTypingTest } from '../useTypingTest';
-import { ResultsPanel, type SaveStatus } from './ResultsPanel';
-import { StatsBar } from './StatsBar';
-import { WordsDisplay } from './WordsDisplay';
-import './typing.css';
+import { useEffect, useState } from 'react'
+import { supabaseStatsSink } from '../stats/supabaseStatsSink'
+import { NavButton } from '../../../components/NavButton/NavButton'
+import type { StatsSink, TestResult } from '../stats/types'
+import { useTypingTest } from '../useTypingTest'
+import { ResultsPanel, type SaveStatus } from './ResultsPanel'
+import { StatsBar } from './StatsBar'
+import { WordsDisplay } from './WordsDisplay'
+import './typing.css'
 
-const DEFAULT_STATS_SINK: StatsSink = supabaseStatsSink;
+const DEFAULT_STATS_SINK: StatsSink = supabaseStatsSink
 
 export function TypingTest({
   durationMs = 60_000,
   statsSink = DEFAULT_STATS_SINK,
   onFinish,
 }: {
-  durationMs?: number;
-  statsSink?: StatsSink;
-  onFinish?: (result: TestResult) => void;
+  durationMs?: number
+  statsSink?: StatsSink
+  onFinish?: (result: TestResult) => void
 }) {
-  const test = useTypingTest(durationMs);
-  const { result } = test;
+  const test = useTypingTest(durationMs)
+  const { result, restart } = test
 
   // Save each finished result once; the status is tied to that result so a
   // restart can't show a stale "Saved".
   const [saved, setSaved] = useState<{
-    result: TestResult;
-    status: SaveStatus;
-  } | null>(null);
+    result: TestResult
+    status: SaveStatus
+  } | null>(null)
 
   useEffect(() => {
-    if (!result || onFinish) return;
+    if (!result || onFinish) return
     statsSink.saveResult(result).then(
       () => setSaved({ result, status: 'saved' }),
       (error: unknown) => {
-        console.error('[stats] failed to save result', error);
-        setSaved({ result, status: 'error' });
+        console.error('[stats] failed to save result', error)
+        setSaved({ result, status: 'error' })
       },
-    );
-  }, [result, statsSink, onFinish]);
+    )
+  }, [result, statsSink, onFinish])
 
   const saveStatus: SaveStatus =
-    saved?.result === result ? saved.status : 'saving';
+    saved?.result === result ? saved.status : 'saving'
 
   useEffect(() => {
-    if (result) onFinish?.(result);
-  }, [result, onFinish]);
+    if (result) onFinish?.(result)
+  }, [result, onFinish])
+
+  // Shift + R (or Ctrl + Shift + R) restarts. Runs in the capture phase and stops
+  // the event so the typing handler never sees it as a typed "r".
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.repeat) return
+      if (!event.shiftKey || event.altKey || event.metaKey) return
+      if (event.key.toLowerCase() !== 'r') return
+      event.preventDefault() // also blocks the browser's hard reload on Ctrl+Shift+R
+      event.stopPropagation()
+      ;(document.activeElement as HTMLElement | null)?.blur()
+      restart()
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [restart])
 
   return (
     <div className="tt">
@@ -65,17 +82,18 @@ export function TypingTest({
       )}
 
       <div className="tt-actions">
-        <button
-          type="button"
-          className="tt-restart"
-          onClick={(event) => {
-            // Drop focus so the next space bar press types instead of
-            // clicking the button again.
-            event.currentTarget.blur();
-            test.restart();
-          }}>
-          Restart
-        </button>
+        <div className="tt-restart">
+          <NavButton
+            hotkey={['Sh', 'R']}
+            onClick={() => {
+              // Drop focus so the next space bar press types instead of
+              // clicking the button again.
+              ;(document.activeElement as HTMLElement | null)?.blur()
+              restart()
+            }}>
+            Restart
+          </NavButton>
+        </div>
         <span className="tt-hint">
           {test.status === 'idle' && 'Start typing to begin the timer.'}
           {test.wordBankSource === 'fallback' &&
@@ -85,5 +103,5 @@ export function TypingTest({
 
       {result && <ResultsPanel result={result} saveStatus={saveStatus} />}
     </div>
-  );
+  )
 }

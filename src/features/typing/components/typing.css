@@ -147,25 +147,6 @@
 
 .tt-restart {
   align-self: center;
-  font: inherit;
-  font-size: var(--fs-chat);
-  padding: 4px 20px;
-  border: 3px solid var(--btn-border);
-  background: var(--btn-bg);
-  color: var(--btn-text);
-  box-shadow: 0 4px 0 var(--shadow-strong);
-  cursor: pointer;
-}
-
-.tt-restart:hover {
-  background: var(--btn-bg-hover);
-  border-color: var(--btn-border-hover);
-}
-
-.tt-restart:active {
-  background: var(--btn-bg-active);
-  border-color: var(--btn-border-active);
-  color: var(--btn-text-active);
 }
 
 .tt-hint {
