@@ -1,5 +1,11 @@
 /* Quick Match results reuse the Time Attack results panel. Results are not saved yet,
    so hide its "Saved" line. */
+/* Progress bars: placeholder colours, to be replaced by the styling pass. */
+.player-progress { display: flex; flex-wrap: wrap; gap: 8px; }
+.pp-word { display: inline-flex; }
+.pp-block { display: inline-block; width: 8px; height: 8px; background: #ccc; }
+.pp-block.is-typed { background: #555; }
+
 .versus-results {
   order: 5;
   display: flex;

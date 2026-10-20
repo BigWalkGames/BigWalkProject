@@ -6,6 +6,7 @@ import { Stat, StatsBar } from '../../features/typing/components/StatsBar';
 import { computePerKey, computeWpm } from '../../features/typing/stats/computeStats';
 import type { TestResult } from '../../features/typing/stats/types';
 import { WordsDisplay } from '../../features/typing/components/WordsDisplay';
+import { PlayerProgress } from '../../features/versus/PlayerProgress';
 import { useVersusRace } from '../../features/versus/useVersusRace';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import { useQuickMatch } from '../../net/useQuickMatch';
@@ -103,6 +104,8 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
           />
 
           <WordsDisplay board={race.board} showCursor={racing} />
+
+          <PlayerProgress words={words} typed={opponent.typed} />
 
           <p className="tt-hint">
             {countdown !== null && `Starting in ${countdown}...`}
