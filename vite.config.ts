@@ -30,7 +30,15 @@ export default defineConfig(({ mode }) => {
     )
   }
 
+  // `vite build` only bundles index.html by default; also ship the word-engine
+  // test page, except to production (VERCEL_ENV is unset for local builds).
+  const input: Record<string, string> = { main: 'index.html' }
+  if (env.VERCEL_ENV !== 'production') input.banktest = 'banktest.html'
+
   return {
+    build: {
+      rolldownOptions: { input },
+    },
     plugins: [
       react(),
       babel({ presets: [reactCompilerPreset()] }),

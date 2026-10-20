@@ -1,0 +1,138 @@
+<mxfile host="Electron">
+  <diagram id="word-engine-io" name="Word Engine I/O">
+    <mxGraphModel dx="1750" dy="953" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="860" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="h_in" parent="1" style="text;html=1;fontStyle=1;fontSize=14;align=center;" value="INPUTS" vertex="1">
+          <mxGeometry height="30" width="240" x="40" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="h_out" parent="1" style="text;html=1;fontStyle=1;fontSize=14;align=center;" value="OUTPUTS" vertex="1">
+          <mxGeometry height="30" width="250" x="980" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="engine" parent="1" style="rounded=1;arcSize=3;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=8;" value="Word Engine&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:11px&quot;&gt;import from features/word-engine · pure functions · never calls Supabase, network or UI&lt;/span&gt;" vertex="1">
+          <mxGeometry height="760" width="580" x="340" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="in_words" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1F9D63;strokeWidth=2;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;Word[]&lt;/b&gt; words&lt;hr&gt;9,048 rows, sorted by rank&lt;br&gt;&lt;font color=&quot;#1F9D63&quot;&gt;&lt;b&gt;◆ Supabase:&lt;/b&gt; words table&lt;br&gt;load once per session&lt;/font&gt;" vertex="1">
+          <mxGeometry height="95" width="240" x="40" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="in_player" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1F9D63;strokeWidth=2;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;PlayerData&lt;/b&gt;&lt;hr&gt;userId: string&lt;br&gt;netWpm: number&lt;br&gt;netAccuracy: number&lt;br&gt;bigramStats &lt;i&gt;(engine-owned)&lt;/i&gt;&lt;br&gt;keyStats &lt;i&gt;(engine-owned)&lt;/i&gt;&lt;br&gt;&lt;font color=&quot;#1F9D63&quot;&gt;&lt;b&gt;◆ Supabase:&lt;/b&gt; player stats&lt;br&gt;load before match&lt;/font&gt;" vertex="1">
+          <mxGeometry height="155" width="240" x="40" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="in_recent" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1F9D63;strokeWidth=2;dashed=1;align=left;spacingLeft=10;" value="&lt;b&gt;recentWords&lt;/b&gt;&lt;br&gt;Set&amp;lt;string&amp;gt; · words from last ~3 banks&lt;br&gt;&lt;font color=&quot;#1F9D63&quot;&gt;&lt;b&gt;◆ Supabase&lt;/b&gt; or in memory&lt;/font&gt;" vertex="1">
+          <mxGeometry height="65" width="240" x="40" y="345" as="geometry" />
+        </mxCell>
+        <mxCell id="in_count" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=10;" value="&lt;b&gt;count&lt;/b&gt;&lt;br&gt;number · words in the bank" vertex="1">
+          <mxGeometry height="50" width="240" x="40" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="in_keys" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;Keystroke[]&lt;/b&gt; (one match)&lt;hr&gt;expected&lt;br&gt;typed (key or BACKSPACE)&lt;br&gt;latencyMs&lt;br&gt;wordIndex, charIndex" vertex="1">
+          <mxGeometry height="120" width="240" x="40" y="495" as="geometry" />
+        </mxCell>
+        <mxCell id="in_config" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;align=left;spacingLeft=10;" value="&lt;b&gt;config?&lt;/b&gt; WordEngineConfig&lt;br&gt;optional on every method&lt;br&gt;defaults to DEFAULT_CONFIG" vertex="1">
+          <mxGeometry height="70" width="240" x="40" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="build" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" value="&lt;b&gt;1. Build&lt;/b&gt;&lt;br&gt;getWordBank()" vertex="1">
+          <mxGeometry height="70" width="220" x="660" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="learn" parent="1" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#82b366;dashed=1;fontStyle=1;fontSize=13;verticalAlign=top;align=left;spacingLeft=10;" value="2. Learn" vertex="1">
+          <mxGeometry height="120" width="530" x="370" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="clean" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="cleanKeystrokes()" vertex="1">
+          <mxGeometry height="60" width="180" x="390" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="update" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="updateStats()" vertex="1">
+          <mxGeometry height="60" width="200" x="680" y="545" as="geometry" />
+        </mxCell>
+        <mxCell id="report" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" value="&lt;b&gt;3. Report&lt;/b&gt;&lt;br&gt;getFeedback()" vertex="1">
+          <mxGeometry height="60" width="220" x="660" y="645" as="geometry" />
+        </mxCell>
+        <mxCell id="mode" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;Mode check&lt;/b&gt;&lt;br&gt;computeBaselines() → pickMode()" vertex="1">
+          <mxGeometry height="60" width="220" x="660" y="725" as="geometry" />
+        </mxCell>
+        <mxCell id="out_bank" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;Word[]&lt;/b&gt; word bank&lt;hr&gt;count words · shuffled · no duplicates&lt;br&gt;60% targeted at weak bigrams&lt;br&gt;40% common words" vertex="1">
+          <mxGeometry height="100" width="250" x="980" y="85" as="geometry" />
+        </mxCell>
+        <mxCell id="out_player" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#1F9D63;strokeWidth=2;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;PlayerData&lt;/b&gt; (updated)&lt;hr&gt;new object · input not mutated&lt;br&gt;netWpm, netAccuracy unchanged&lt;br&gt;&lt;font color=&quot;#1F9D63&quot;&gt;&lt;b&gt;◆ Supabase:&lt;/b&gt; player stats&lt;br&gt;save after match&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="250" x="980" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="out_feedback" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10;verticalAlign=top;spacingTop=6;" value="&lt;b&gt;PlayerFeedback&lt;/b&gt;&lt;hr&gt;weakestBigrams (top 5)&lt;br&gt;classSummary&lt;br&gt;handSummary" vertex="1">
+          <mxGeometry height="95" width="250" x="980" y="628" as="geometry" />
+        </mxCell>
+        <mxCell id="out_mode" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=10;" value="&lt;b&gt;Mode&lt;/b&gt;&lt;br&gt;&#39;beginner&#39; | &#39;cold_start&#39; | &#39;speed&#39;" vertex="1">
+          <mxGeometry height="50" width="250" x="980" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="e_words" edge="1" parent="1" source="in_words" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F9D63;exitX=1;exitY=0.568;entryX=0;entryY=0.2;" target="build">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p_build" edge="1" parent="1" source="in_player" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;exitX=1;exitY=0.2;entryX=0;entryY=0.75;" target="build">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="610" y="206" />
+              <mxPoint x="610" y="153" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p_update" edge="1" parent="1" source="in_player" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;exitX=1;exitY=0.2;entryX=0.5;entryY=0;" target="update">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="610" y="206" />
+              <mxPoint x="610" y="490" />
+              <mxPoint x="780" y="490" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p_report" edge="1" parent="1" source="in_player" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;exitX=1;exitY=0.8;entryX=0;entryY=0.5;" target="report">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="299" />
+              <mxPoint x="320" y="675" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p_mode" edge="1" parent="1" source="in_player" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;exitX=1;exitY=0.8;entryX=0;entryY=0.5;" target="mode">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="299" />
+              <mxPoint x="320" y="755" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_recent" edge="1" parent="1" source="in_recent" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.5;entryX=0.25;entryY=1;" target="build">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="715" y="378" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_count" edge="1" parent="1" source="in_count" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.5;entryX=0.75;entryY=1;" target="build">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="825" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_keys" edge="1" parent="1" source="in_keys" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6c8ebf;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.625;entryX=0;entryY=0.5;" target="clean">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_clean_update" edge="1" parent="1" source="clean" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#82b366;fontSize=11;" target="update" value="CleanedSamples">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_out_bank" edge="1" parent="1" source="build" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#d79b00;" target="out_bank">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_out_player" edge="1" parent="1" source="update" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#d79b00;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="out_player">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_out_feedback" edge="1" parent="1" source="report" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#d79b00;" target="out_feedback">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_out_mode" edge="1" parent="1" source="mode" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#d79b00;" target="out_mode">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" parent="1" style="text;html=1;align=left;fontSize=11;" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;color:#6c8ebf&quot;&gt;■&lt;/span&gt; you provide &amp;nbsp; &lt;span style=&quot;color:#82b366&quot;&gt;■&lt;/span&gt; engine method &amp;nbsp; &lt;span style=&quot;color:#d79b00&quot;&gt;■&lt;/span&gt; you receive&lt;br&gt;&lt;span style=&quot;color:#1F9D63&quot;&gt;&lt;b&gt;◆&lt;/b&gt; green border&lt;/span&gt; = Supabase call point (dashed = optional)" vertex="1">
+          <mxGeometry height="55" width="280" x="980" y="790" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
