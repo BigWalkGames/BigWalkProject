@@ -1,39 +1,50 @@
-import { useEffect, useState } from 'react'
-import { consoleStatsSink } from '../stats/consoleStatsSink'
-import type { StatsSink, TestResult } from '../stats/types'
-import { useTypingTest } from '../useTypingTest'
-import { ResultsPanel, type SaveStatus } from './ResultsPanel'
-import { StatsBar } from './StatsBar'
-import { WordsDisplay } from './WordsDisplay'
-import './typing.css'
+import { useEffect, useState } from 'react';
+import { supabaseStatsSink } from '../stats/supabaseStatsSink';
+import type { StatsSink, TestResult } from '../stats/types';
+import { useTypingTest } from '../useTypingTest';
+import { ResultsPanel, type SaveStatus } from './ResultsPanel';
+import { StatsBar } from './StatsBar';
+import { WordsDisplay } from './WordsDisplay';
+import './typing.css';
 
-// Switch to `supabaseStatsSink` (../stats/supabaseStatsSink) once it's finished.
-const DEFAULT_STATS_SINK: StatsSink = consoleStatsSink
+const DEFAULT_STATS_SINK: StatsSink = supabaseStatsSink;
 
 export function TypingTest({
   durationMs = 60_000,
   statsSink = DEFAULT_STATS_SINK,
+  onFinish,
 }: {
-  durationMs?: number
-  statsSink?: StatsSink
+  durationMs?: number;
+  statsSink?: StatsSink;
+  onFinish?: (result: TestResult) => void;
 }) {
-  const test = useTypingTest(durationMs)
-  const { result } = test
+  const test = useTypingTest(durationMs);
+  const { result } = test;
 
   // Save each finished result once; the status is tied to that result so a
   // restart can't show a stale "Saved".
-  const [saved, setSaved] = useState<{ result: TestResult; status: SaveStatus } | null>(null)
+  const [saved, setSaved] = useState<{
+    result: TestResult;
+    status: SaveStatus;
+  } | null>(null);
+
   useEffect(() => {
-    if (!result) return
+    if (!result || onFinish) return;
     statsSink.saveResult(result).then(
       () => setSaved({ result, status: 'saved' }),
       (error: unknown) => {
-        console.error('[stats] failed to save result', error)
-        setSaved({ result, status: 'error' })
+        console.error('[stats] failed to save result', error);
+        setSaved({ result, status: 'error' });
       },
-    )
-  }, [result, statsSink])
-  const saveStatus: SaveStatus = saved?.result === result ? saved.status : 'saving'
+    );
+  }, [result, statsSink, onFinish]);
+
+  const saveStatus: SaveStatus =
+    saved?.result === result ? saved.status : 'saving';
+
+  useEffect(() => {
+    if (result) onFinish?.(result);
+  }, [result, onFinish]);
 
   return (
     <div className="tt">
@@ -45,7 +56,10 @@ export function TypingTest({
       />
 
       {test.board ? (
-        <WordsDisplay board={test.board} showCursor={test.status !== 'finished'} />
+        <WordsDisplay
+          board={test.board}
+          showCursor={test.status !== 'finished'}
+        />
       ) : (
         <div className="tt-words tt-placeholder">Loading words…</div>
       )}
@@ -57,19 +71,19 @@ export function TypingTest({
           onClick={(event) => {
             // Drop focus so the next space bar press types instead of
             // clicking the button again.
-            event.currentTarget.blur()
-            test.restart()
-          }}
-        >
+            event.currentTarget.blur();
+            test.restart();
+          }}>
           Restart
         </button>
         <span className="tt-hint">
           {test.status === 'idle' && 'Start typing to begin the timer.'}
-          {test.wordBankSource === 'fallback' && ' Using the offline word bank.'}
+          {test.wordBankSource === 'fallback' &&
+            ' Using the offline word bank.'}
         </span>
       </div>
 
       {result && <ResultsPanel result={result} saveStatus={saveStatus} />}
     </div>
-  )
+  );
 }
