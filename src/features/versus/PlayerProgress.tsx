@@ -1,18 +1,16 @@
 /**
- * One block per letter, grouped by word. `typed` is the player's keystroke count,
- * so for the opponent (server totals, sent on an interval) the bar is approximate.
+ * One block per letter, grouped by word. `wordResults` has one letter per completed
+ * word ('g' no mistakes, 'r' had a mistake). Words still in progress stay neutral.
  */
-export function PlayerProgress({ words, typed }: { words: string[]; typed: number }) {
-  let offset = 0
+export function PlayerProgress({ words, wordResults }: { words: string[]; wordResults: string }) {
   return (
     <div className="player-progress">
       {words.map((word, w) => {
-        const start = offset
-        offset += word.length + 1 // +1 for the space after the word
+        const state = wordResults[w] === 'g' ? ' is-correct' : wordResults[w] === 'r' ? ' is-incorrect' : ''
         return (
-          <span key={w} className="pp-word">
+          <span key={w} className={`pp-word${state}`}>
             {[...word].map((_, i) => (
-              <span key={i} className={start + i < typed ? 'pp-block is-typed' : 'pp-block'} />
+              <span key={i} className="pp-block" />
             ))}
           </span>
         )

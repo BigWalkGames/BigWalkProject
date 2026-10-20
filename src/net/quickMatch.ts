@@ -21,7 +21,8 @@ export type MatchFound = {
   durationSeconds: number;
 };
 
-export type Progress = { typed: number; correct: number };
+/** wordResults: one letter per completed word, "g" no mistakes, "r" had a mistake. */
+export type Progress = { typed: number; correct: number; wordResults?: string };
 
 export type PlayerResult = { wpm: number; accuracy: number; correct: number; typed: number };
 
@@ -157,8 +158,8 @@ function attach(joined: ClientRoom) {
 }
 
 /** Send the player's running totals since "go". Call at most about 10 times a second. */
-export function sendProgress(typed: number, correct: number) {
-  room?.send('progress', { typed, correct });
+export function sendProgress(typed: number, correct: number, wordResults: string) {
+  room?.send('progress', { typed, correct, wordResults });
 }
 
 // A screen that is part of Quick Match "claims" the session while it is on screen.

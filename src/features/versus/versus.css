@@ -4,7 +4,8 @@
 .player-progress { display: flex; flex-wrap: wrap; gap: 8px; }
 .pp-word { display: inline-flex; }
 .pp-block { display: inline-block; width: 8px; height: 8px; background: #ccc; }
-.pp-block.is-typed { background: #555; }
+.pp-word.is-correct .pp-block { background: var(--tt-correct); }
+.pp-word.is-incorrect .pp-block { background: var(--tt-incorrect); }
 
 .versus-results {
   order: 5;

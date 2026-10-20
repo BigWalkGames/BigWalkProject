@@ -20,6 +20,15 @@ interface State {
 
 type Action = { type: 'key'; key: string; t: number }
 
+/** One letter per completed real word: 'g' if it has no wrong letters, 'r' if it has. */
+function wordResults(board: Board): string {
+  let out = ''
+  for (let i = 0; i < board.wordIndex && i < board.words.length; i += 2) {
+    out += board.words[i].letters.some((letter) => letter.status === 'fail') ? 'r' : 'g'
+  }
+  return out
+}
+
 function reducer(state: State, action: Action): State {
   if (action.key === 'Backspace') {
     const board = backspace(state.board)
@@ -89,18 +98,19 @@ export function useVersusRace(words: string[], racing: boolean, startedAt: numbe
   }, [acceptingInput, startedAt])
 
   // Send the running totals while racing, only when they changed.
-  const latest = useRef({ typed: 0, correct: 0 })
-  const lastSent = useRef({ typed: -1, correct: -1 })
+  const latest = useRef({ typed: 0, correct: 0, wordResults: '' })
+  const lastSent = useRef({ typed: -1, correct: -1, wordResults: '' })
   useEffect(() => {
-    latest.current = { typed: state.typed, correct: state.correct }
-  }, [state.typed, state.correct])
+    latest.current = { typed: state.typed, correct: state.correct, wordResults: wordResults(state.board) }
+  }, [state.typed, state.correct, state.board])
   useEffect(() => {
     if (!racing) return
     const id = setInterval(() => {
-      const { typed, correct } = latest.current
-      if (typed === lastSent.current.typed && correct === lastSent.current.correct) return
-      lastSent.current = { typed, correct }
-      sendProgress(typed, correct)
+      const { typed, correct, wordResults } = latest.current
+      const sent = lastSent.current
+      if (typed === sent.typed && correct === sent.correct && wordResults === sent.wordResults) return
+      lastSent.current = { typed, correct, wordResults }
+      sendProgress(typed, correct, wordResults)
     }, PROGRESS_INTERVAL_MS)
     return () => clearInterval(id)
   }, [racing])

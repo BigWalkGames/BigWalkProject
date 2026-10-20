@@ -10,7 +10,7 @@ import { PlayerProgress } from '../../features/versus/PlayerProgress';
 import { useVersusRace } from '../../features/versus/useVersusRace';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import { useQuickMatch } from '../../net/useQuickMatch';
-import { getState } from '../../net/quickMatch';
+import { getState, type Progress } from '../../net/quickMatch';
 import '../../features/typing/components/typing.css';
 import '../TimeAttack/TimeAttack.css';
 import '../../features/versus/versus.css';
@@ -65,7 +65,7 @@ type RaceProps = {
   startedAt: number | null;
   countdown: number | null;
   finished: boolean;
-  opponent: { typed: number; correct: number };
+  opponent: Progress;
   result: ReturnType<typeof useQuickMatch>['result'];
   sessionId: string | null;
 };
@@ -105,7 +105,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
 
           <WordsDisplay board={race.board} showCursor={racing} />
 
-          <PlayerProgress words={words} typed={opponent.typed} />
+          <PlayerProgress words={words} wordResults={opponent.wordResults ?? ''} />
 
           <p className="tt-hint">
             {countdown !== null && `Starting in ${countdown}...`}
