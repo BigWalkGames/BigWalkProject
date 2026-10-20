@@ -1,26 +1,33 @@
+import { Fragment } from 'react';
 import { Link } from 'react-router';
 import { KeyCap } from '../KeyCap/KeyCap';
 import './NavButton.css';
 
-type NavIcon = {
-  normal: string;
-  pressed: string;
-};
-
 type NavButtonProps = {
-  hotkey: string;
+  hotkey: string | string[];
   children: React.ReactNode;
-  icon?: NavIcon;
+  icon?: { normal: string; pressed: string };
   to?: string;
   onClick?: () => void;
   disabled?: boolean;
 };
 
 export function NavButton({ hotkey, children, icon, to, onClick, disabled }: NavButtonProps) {
+  const keys = Array.isArray(hotkey) ? hotkey : [hotkey];
+
   const content = (
     <>
-      <KeyCap label={hotkey} size="sm" />
-      <span>{children}</span>
+      <span className="nav-btn__keys">
+        {keys.map((k, i) => (
+          <Fragment key={k}>
+            {i > 0 && <span className="nav-btn__plus">+</span>}
+            <KeyCap label={k} size="sm" />
+          </Fragment>
+        ))}
+      </span>
+
+      <span className="nav-btn__text">{children}</span>
+
       {icon && (
         <span className="nav-btn__icon">
           <img src={icon.normal} alt="" className="nav-btn__img nav-btn__img--normal" />
@@ -32,7 +39,12 @@ export function NavButton({ hotkey, children, icon, to, onClick, disabled }: Nav
 
   if (to) {
     return (
-      <Link to={to} className="nav-btn" aria-keyshortcuts={hotkey}>
+      <Link
+        to={to}
+        className="nav-btn"
+        aria-keyshortcuts={keys.join('+')}
+        onClick={onClick}
+      >
         {content}
       </Link>
     );
@@ -42,9 +54,9 @@ export function NavButton({ hotkey, children, icon, to, onClick, disabled }: Nav
     <button
       type="button"
       className="nav-btn"
+      aria-keyshortcuts={keys.join('+')}
       onClick={onClick}
       disabled={disabled}
-      aria-keyshortcuts={hotkey}
     >
       {content}
     </button>
