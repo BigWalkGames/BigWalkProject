@@ -1,0 +1,42 @@
+.history {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 24px;
+}
+
+/* gray container */
+.history__panel {
+  width: 100%;
+  max-width: 1530px;
+  padding: 45px;
+  background: var(--color-container);
+  border-radius: 30px;
+  box-shadow: 4px 4px 0 var(--shadow-soft);
+}
+
+/* table */
+.history-table {
+  --hist-cols: 20% 40% 1fr;       /* Date | Words Per Minute | Accuracy */
+  --hist-indent: 20%;             /* empty space before the Date column */
+  --hist-row-height: 78px;
+  --hist-head-height: 86px;
+
+  overflow: hidden;
+  border: 2px solid var(--color-ink);
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 var(--shadow-soft);
+}
+
+.history-table__head {
+  display: grid;
+  grid-template-columns: var(--hist-cols);
+  align-items: center;
+  height: var(--hist-head-height);
+  padding-left: var(--hist-indent);
+  background: var(--color-frame);
+  color: var(--color-light);
+  font-size: var(--fs-hud-stat);
+  line-height: 1;
+}
