@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { NavButton } from '../../../components/NavButton/NavButton'
 import { consoleStatsSink } from '../stats/consoleStatsSink'
 import type { StatsSink, TestResult } from '../stats/types'
 import { useTypingTest } from '../useTypingTest'
@@ -18,7 +19,7 @@ export function TypingTest({
   statsSink?: StatsSink
 }) {
   const test = useTypingTest(durationMs)
-  const { result } = test
+  const { result, restart } = test
 
   // Save each finished result once; the status is tied to that result so a
   // restart can't show a stale "Saved".
@@ -34,6 +35,22 @@ export function TypingTest({
     )
   }, [result, statsSink])
   const saveStatus: SaveStatus = saved?.result === result ? saved.status : 'saving'
+
+  // Shift + R (or Ctrl + Shift + R) restarts. Runs in the capture phase and stops
+  // the event so the typing handler never sees it as a typed "r".
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.repeat) return
+      if (!event.shiftKey || event.altKey || event.metaKey) return
+      if (event.key.toLowerCase() !== 'r') return
+      event.preventDefault()   // also blocks the browser's hard reload on Ctrl+Shift+R
+      event.stopPropagation()
+      ;(document.activeElement as HTMLElement | null)?.blur()
+      restart()
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [restart])
 
   return (
     <div className="tt">
@@ -51,18 +68,19 @@ export function TypingTest({
       )}
 
       <div className="tt-actions">
-        <button
-          type="button"
-          className="tt-restart"
-          onClick={(event) => {
-            // Drop focus so the next space bar press types instead of
-            // clicking the button again.
-            event.currentTarget.blur()
-            test.restart()
-          }}
-        >
-          Restart
-        </button>
+        <div className="tt-restart">
+          <NavButton
+            hotkey={['Sh', 'R']}
+            onClick={() => {
+              // Drop focus so the next space bar press types instead of
+              // clicking the button again.
+              ;(document.activeElement as HTMLElement | null)?.blur()
+              restart()
+            }}
+          >
+            Restart
+          </NavButton>
+        </div>
         <span className="tt-hint">
           {test.status === 'idle' && 'Start typing to begin the timer.'}
           {test.wordBankSource === 'fallback' && ' Using the offline word bank.'}
