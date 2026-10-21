@@ -15,7 +15,7 @@ export default function Account() {
   return (
     <ScreenLayout title="Account">
       <div className="account">
-        <p>Account page goes here.</p>
+        <h1>Stats</h1>
         <button onClick={handleSignOut}>Sign out</button>
         {error && <p role="alert">{error}</p>}
 
