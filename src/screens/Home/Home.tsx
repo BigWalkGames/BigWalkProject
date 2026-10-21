@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { KeyCap } from '../../components/KeyCap/KeyCap';
 import { NavButton } from '../../components/NavButton/NavButton';
 import { useHotkeys } from '../../hooks/useHotkeys';
@@ -16,6 +16,8 @@ import './Home.css';
 
 export default function Home() {
   const navigate = useNavigate();
+  // A message from a screen that sent the player back here (for example, no opponent found).
+  const notice = (useLocation().state as { notice?: string } | null)?.notice;
 
   useHotkeys({
     s: () => navigate('/solo'),
@@ -29,6 +31,11 @@ export default function Home() {
 
   return (
     <main className="home">
+      {notice && (
+        <p role="status" style={{ position: 'absolute', top: 16, left: 0, right: 0, textAlign: 'center' }}>
+          {notice}
+        </p>
+      )}
       <section className="home__hero">
         <h1 className="home__title">B!GWALK</h1>
             <div className="home__keys">
