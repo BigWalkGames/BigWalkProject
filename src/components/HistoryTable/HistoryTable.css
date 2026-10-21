@@ -1,0 +1,58 @@
+/* gray container */
+.history-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1530px;
+  max-height: 100%;
+  min-height: 0;
+  padding: 45px;
+  background: var(--color-container);
+  border-radius: 30px;
+  box-shadow: 4px 4px 0 var(--shadow-soft);
+}
+
+/* table: this is the element that scrolls */
+.history-table {
+  --hist-cols: 20% 40% 1fr;       /* Date | Words Per Minute | Accuracy */
+  --hist-indent: 20%;             /* empty space before the Date column */
+  --hist-row-height: 78px;
+  --hist-head-height: 86px;
+
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--color-frame) var(--color-light);
+
+  border: 2px solid var(--color-ink);
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 var(--shadow-soft);
+}
+
+/* header stays pinned while the rows scroll under it */
+.history-table__head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: var(--hist-cols);
+  align-items: center;
+  height: var(--hist-head-height);
+  padding-left: var(--hist-indent);
+  background: var(--color-frame);
+  color: var(--color-light);
+  font-size: var(--fs-filter);
+  line-height: 1;
+}
+
+.history-table__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--hist-row-height);
+  border-top: 2px solid var(--color-ink);
+  background: var(--color-light);
+  color: var(--color-ink);
+  font-size: var(--fs-body);
+  line-height: 1;
+}

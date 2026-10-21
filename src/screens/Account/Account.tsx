@@ -1,5 +1,7 @@
+import './Account.css';
 import { useState } from 'react';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
+import { HistoryTable } from '../../components/HistoryTable/HistoryTable';
 import { signOut } from '../../hooks/auth/authActions';
 
 export default function Account() {
@@ -12,9 +14,15 @@ export default function Account() {
 
   return (
     <ScreenLayout title="Account">
-      <p>Account page goes here.</p>
-      <button onClick={handleSignOut}>Sign out</button>
-      {error && <p role="alert">{error}</p>}
+      <div className="account">
+        <p>Account page goes here.</p>
+        <button onClick={handleSignOut}>Sign out</button>
+        {error && <p role="alert">{error}</p>}
+
+        <div className="account__history">
+          <HistoryTable />
+        </div>
+      </div>
     </ScreenLayout>
   );
 }
