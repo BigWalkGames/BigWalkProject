@@ -8,6 +8,7 @@ import Account from './screens/Account/Account';
 import Settings from './screens/Settings/Settings';
 import TimeAttack from './screens/TimeAttack/TimeAttack';
 import Matchmaking from './screens/Matchmaking/Matchmaking';
+import Results from './screens/Results/Results';
 import Versus from './screens/Versus/Versus';
 import CustomGame from './screens/CustomGame/CustomGame';
 import JoinRoom from './screens/CustomGame/JoinRoom';
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/solo" element={<Solo />} />
         <Route path="/solo/time-attack" element={<TimeAttack />} />
+        <Route path="/solo/time-attack/results" element={<Results />} />
         <Route path="/multiplayer" element={<Multiplayer />} />
         <Route path="/multiplayer/matchmaking" element={<Matchmaking />} />
         <Route path="/multiplayer/custom" element={<CustomGame />} />
