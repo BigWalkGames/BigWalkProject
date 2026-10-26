@@ -1,0 +1,56 @@
+/* Quick Match results reuse the Time Attack results panel. Results are not saved yet,
+   so hide its "Saved" line. */
+/* Progress bars: placeholder colours, to be replaced by the styling pass. */
+
+.player-progress {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 120px;
+  padding: 24px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 12px;
+  background: var(--color-container);
+  border: 3px solid var(--color-frame);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--shadow-soft);
+}
+
+.pp-word {
+  display: inline-flex;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pp-block {
+  display: inline-block;
+  width: 12px;
+  height: 16px;
+  background: var(--color-ink);
+}
+
+.pp-word.is-correct .pp-block { background: var(--color-positive); }
+.pp-word.is-incorrect .pp-block { background: var(--color-negative); }
+
+.versus-results {
+  order: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.versus-results .tt-save { display: none; }
+
+.versus-headline {
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-tab);
+  font-weight: normal;
+}
+.versus-opponent { justify-content: center; }
+.versus-playagain {
+  order: 6;
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-hud-label);
+}
