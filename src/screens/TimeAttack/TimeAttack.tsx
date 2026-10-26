@@ -1,8 +1,11 @@
 import './TimeAttack.css';
 import { useState } from 'react';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { TypingTest } from '../../features/typing/components/TypingTest';
+import type { TestResult } from '../../features/typing/stats/types';
+import type { ResultsLocationState } from '../Results/Results';
 
 export default function TimeAttack() {
   const navigate = useNavigate();
