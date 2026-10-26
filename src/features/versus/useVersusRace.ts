@@ -45,7 +45,18 @@ function reducer(state: State, action: Action): State {
     board,
     typed: state.typed + 1,
     correct: state.correct + (expected === typed ? 1 : 0),
-    keystrokes: [...state.keystrokes, { expected, typed, correct: expected === typed, t: action.t }],
+    keystrokes: [
+      ...state.keystrokes,
+      {
+        expected,
+        typed,
+        correct: expected === typed,
+        t: action.t,
+        // Position on the board, so the results screen can find bigrams.
+        wordIndex: state.board.wordIndex,
+        letterIndex: state.board.letterIndex,
+      },
+    ],
   }
 }
 

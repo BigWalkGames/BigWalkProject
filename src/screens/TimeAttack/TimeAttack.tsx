@@ -1,25 +1,27 @@
 import './TimeAttack.css';
-import { useState } from 'react';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { TypingTest } from '../../features/typing/components/TypingTest';
+import type { Board } from '../../features/typing/models/Board';
 import type { TestResult } from '../../features/typing/stats/types';
 import type { ResultsLocationState } from '../Results/Results';
 
 export default function TimeAttack() {
   const navigate = useNavigate();
-  // The results screen has its own Menu / Restart bar, so hide Back there.
-  const [showingResults, setShowingResults] = useState(false);
+
+  const showResults = useCallback(
+    (result: TestResult, board: Board) => {
+      const state: ResultsLocationState = { result, board };
+      navigate('/solo/time-attack/results', { state, replace: true });
+    },
+    [navigate],
+  );
 
   return (
-    <ScreenLayout title="Time Attack" backTo="/solo" showBack={!showingResults}>
+    <ScreenLayout title="Time Attack" backTo="/solo">
       <div className="time-attack">
-        <TypingTest
-          durationMs={30_000}
-          onMenu={() => navigate('/solo')}
-          onFinishedChange={setShowingResults}
-        />
+        <TypingTest durationMs={30_000} onFinish={showResults} />
       </div>
     </ScreenLayout>
   );

@@ -354,41 +354,10 @@
   color: var(--tt-incorrect);
 }
 
-/* Menu / Restart bar: nav buttons with a Shift + key combo */
+/* Menu / Restart bar */
 
 .tt-results__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-}
-
-.tt-results__actions .nav-btn {
-  gap: 16px;
-}
-
-.tt-combo {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.tt-combo__plus {
-  font-size: var(--fs-chat);
-}
-
-/* A keycap sized to its label, drawn from keycap.png like the heatmap keys */
-.tt-chip {
-  display: inline-grid;
-  place-items: center;
-  min-width: 36px;
-  height: 36px;
-  padding: 0 8px 3px;
-  border-style: solid;
-  border-image-source: url('../../../assets/keycap.png');
-  border-image-slice: 6 7 8 7 fill;
-  border-image-width: 6px 7px 8px 7px;
-  image-rendering: pixelated;
-  color: var(--color-frame);
-  font-size: var(--fs-hud-label);
-  line-height: 1;
 }

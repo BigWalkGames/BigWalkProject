@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabaseStatsSink } from '../stats/supabaseStatsSink'
 import { NavButton } from '../../../components/NavButton/NavButton'
+import type { Board } from '../models/Board'
 import type { StatsSink, TestResult } from '../stats/types'
 import { useTypingTest } from '../useTypingTest'
 import { ResultsPanel, type SaveStatus } from './ResultsPanel'
@@ -13,23 +14,19 @@ const DEFAULT_STATS_SINK: StatsSink = supabaseStatsSink
 export function TypingTest({
   durationMs = 60_000,
   statsSink = DEFAULT_STATS_SINK,
-  onMenu,
-  onFinishedChange,
+  onFinish,
 }: {
   durationMs?: number
   statsSink?: StatsSink
-  /** Shown on the results screen as "Menu" (Shift+E) when provided. */
-  onMenu?: () => void
-  /** Tells the parent when the results screen opens or closes. */
-  onFinishedChange?: (finished: boolean) => void
+  /**
+   * Called once when the test ends, with the result and the final board (for
+   * the results screen's Word Bank box). When provided, the parent shows the
+   * results and saves them; otherwise TypingTest does both itself.
+   */
+  onFinish?: (result: TestResult, board: Board) => void
 }) {
   const test = useTypingTest(durationMs)
-  const { result, restart } = test
-
-  const showResults = Boolean(result && test.board)
-  useEffect(() => {
-    onFinishedChange?.(showResults)
-  }, [showResults, onFinishedChange])
+  const { result, restart, board } = test
 
   // Save each finished result once; the status is tied to that result so a
   // restart can't show a stale "Saved".
@@ -53,8 +50,8 @@ export function TypingTest({
     saved?.result === result ? saved.status : 'saving'
 
   useEffect(() => {
-    if (result) onFinish?.(result)
-  }, [result, onFinish])
+    if (result && board) onFinish?.(result, board)
+  }, [result, board, onFinish])
 
   // Shift + R (or Ctrl + Shift + R) restarts. Runs in the capture phase and stops
   // the event so the typing handler never sees it as a typed "r".
@@ -72,17 +69,9 @@ export function TypingTest({
     return () => window.removeEventListener('keydown', onKeyDown, true)
   }, [restart])
 
-  if (result && test.board) {
+  if (result && board && !onFinish) {
     return (
-      <div className="tt is-finished">
-        <ResultsPanel
-          result={result}
-          board={test.board}
-          saveStatus={saveStatus}
-          onRestart={test.restart}
-          onMenu={onMenu}
-        />
-      </div>
+      <ResultsPanel result={result} board={board} saveStatus={saveStatus} onRestart={restart} />
     )
   }
 

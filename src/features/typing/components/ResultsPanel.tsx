@@ -6,7 +6,8 @@ import type { BigramStats, TestResult } from '../stats/types'
 import { displayKey, formatPercent } from './format'
 import { Stat } from './StatsBar'
 import { WordLetters } from './WordsDisplay'
-import '../../../components/NavButton/NavButton.css'
+import { NavButton } from '../../../components/NavButton/NavButton'
+import './typing.css'
 
 export type SaveStatus = 'saving' | 'saved' | 'error'
 
@@ -19,6 +20,17 @@ const SAVE_LABEL: Record<SaveStatus, string> = {
 /** Untyped words shown after the last typed one in the Word Bank box. */
 const UPCOMING_WORDS = 10
 
+/** Shortcuts are ignored this long after the panel opens, so a key pressed
+ * as the timer runs out can't trigger Menu or Restart. */
+const HOTKEY_DELAY_MS = 700
+
+/**
+ * The results layout: bigrams, key accuracies, word bank, stats and the
+ * keyboard heatmap. Used by the Time Attack results route and by Versus.
+ * Optional parts are hidden when their prop is missing: the Word Bank box
+ * without `board`, and the Menu / Restart buttons (Shift+E / Shift+R)
+ * without `onMenu` / `onRestart`.
+ */
 export function ResultsPanel({
   result,
   board,
@@ -27,80 +39,82 @@ export function ResultsPanel({
   onMenu,
 }: {
   result: TestResult
-  board: Board
+  board?: Board
   saveStatus: SaveStatus
-  onRestart: () => void
+  onRestart?: () => void
   onMenu?: () => void
 }) {
-  // Shift+R restarts, Shift+E goes to the menu.
   useEffect(() => {
+    if (!onRestart && !onMenu) return
+    const readyAt = Date.now() + HOTKEY_DELAY_MS
+
     function onKeyDown(event: KeyboardEvent) {
-      if (event.repeat || !event.shiftKey) return
+      if (event.repeat || !event.shiftKey || Date.now() < readyAt) return
       if (event.ctrlKey || event.metaKey || event.altKey) return
-      const key = event.key.toLowerCase()
-      if (key === 'r') {
-        event.preventDefault()
-        onRestart()
-      } else if (key === 'e' && onMenu) {
-        event.preventDefault()
-        onMenu()
-      }
+      const action = { r: onRestart, e: onMenu }[event.key.toLowerCase()]
+      if (!action) return
+      event.preventDefault()
+      action()
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [onRestart, onMenu])
 
   return (
-    <section className="tt-results" aria-label="Results">
-      <div className="tt-results__col">
-        <Box title="Bigrams" className="tt-box--bigrams">
-          <BigramLists bigrams={result.bigrams} />
-        </Box>
+    <div className="tt is-finished">
+      <section className="tt-results" aria-label="Results">
+        <div className="tt-results__col">
+          <Box title="Bigrams" className="tt-box--bigrams">
+            <BigramLists bigrams={result.bigrams} />
+          </Box>
 
-        <Box title="Key Accuracies" className="tt-box--keys">
-          <KeyAccuracies perKey={result.perKey} />
-        </Box>
+          <Box title="Key Accuracies" className="tt-box--keys">
+            <KeyAccuracies perKey={result.perKey} />
+          </Box>
 
-        <div className="tt-results__actions">
-          {onMenu && (
-            <button type="button" className="nav-btn" onClick={onMenu} aria-keyshortcuts="Shift+E">
-              <HotkeyCombo letter="E" />
-              <span>Menu</span>
-            </button>
+          {(onMenu || onRestart) && (
+            <div className="tt-results__actions">
+              {onMenu && (
+                <NavButton hotkey={['Sh', 'E']} onClick={onMenu}>
+                  Menu
+                </NavButton>
+              )}
+              {onRestart && (
+                <NavButton
+                  hotkey={['Sh', 'R']}
+                  onClick={() => {
+                    ;(document.activeElement as HTMLElement | null)?.blur()
+                    onRestart()
+                  }}
+                >
+                  Restart
+                </NavButton>
+              )}
+            </div>
           )}
-          <button
-            type="button"
-            className="nav-btn"
-            onClick={(event) => {
-              event.currentTarget.blur()
-              onRestart()
-            }}
-            aria-keyshortcuts="Shift+R"
-          >
-            <HotkeyCombo letter="R" />
-            <span>Restart</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="tt-results__col">
-        <Box title="Word Bank" className="tt-box--words">
-          <WordReview board={board} />
-        </Box>
-
-        <div className="tt-results__summary">
-          <Stat className="tt-stat--hero" label="WPM" value={Math.round(result.wpm).toString()} />
-          <Stat label="Accuracy" value={formatPercent(result.accuracy)} />
-          <Stat
-            label="Bigram Latency"
-            value={result.bigramLatencyMs === null ? '—' : `${Math.round(result.bigramLatencyMs)}ms`}
-          />
-          <p className={`tt-save is-${saveStatus}`}>{SAVE_LABEL[saveStatus]}</p>
         </div>
 
-        <KeyboardHeatmap perKey={result.perKey} />
-      </div>
-    </section>
+        <div className="tt-results__col">
+          {board && (
+            <Box title="Word Bank" className="tt-box--words">
+              <WordReview board={board} />
+            </Box>
+          )}
+
+          <div className="tt-results__summary">
+            <Stat className="tt-stat--hero" label="WPM" value={Math.round(result.wpm).toString()} />
+            <Stat label="Accuracy" value={formatPercent(result.accuracy)} />
+            <Stat
+              label="Bigram Latency"
+              value={result.bigramLatencyMs === null ? '—' : `${Math.round(result.bigramLatencyMs)}ms`}
+            />
+            <p className={`tt-save is-${saveStatus}`}>{SAVE_LABEL[saveStatus]}</p>
+          </div>
+
+          <KeyboardHeatmap perKey={result.perKey} />
+        </div>
+      </section>
+    </div>
   )
 }
 
@@ -111,16 +125,6 @@ function Box({ title, className, children }: { title: string; className: string;
       <h2 className="tt-box__title">{title}</h2>
       <div className="tt-box__scroll">{children}</div>
     </section>
-  )
-}
-
-function HotkeyCombo({ letter }: { letter: string }) {
-  return (
-    <span className="tt-combo" aria-hidden="true">
-      <span className="tt-chip">^Sh</span>
-      <span className="tt-combo__plus">+</span>
-      <span className="tt-chip">{letter}</span>
-    </span>
   )
 }
 
