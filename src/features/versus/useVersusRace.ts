@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { sendProgress } from '../../net/quickMatch'
-import { backspace, countLetters, getCurrentLetter, typeChar, type Board } from '../typing/models/Board'
+import { backspace, countLetters, getCurrentLetter, isFinished, typeChar, type Board } from '../typing/models/Board'
 import { computeWpm } from '../typing/stats/computeStats'
 import type { Keystroke } from '../typing/stats/types'
 import { boardFromWords } from './boardFromWords'
@@ -103,6 +103,14 @@ export function useVersusRace(words: string[], racing: boolean, startedAt: numbe
   useEffect(() => {
     latest.current = { typed: state.typed, correct: state.correct, wordResults: wordResults(state.board) }
   }, [state.typed, state.correct, state.board])
+  // Typed the very last letter: tell the server right away so the race ends now.
+  const finishedTyping = isFinished(state.board)
+  useEffect(() => {
+    if (!racing || !finishedTyping) return
+    const { typed, correct, wordResults } = latest.current
+    lastSent.current = { typed, correct, wordResults }
+    sendProgress(typed, correct, wordResults)
+  }, [racing, finishedTyping])
   useEffect(() => {
     if (!racing) return
     const id = setInterval(() => {
@@ -120,6 +128,7 @@ export function useVersusRace(words: string[], racing: boolean, startedAt: numbe
     typed: state.typed,
     correct: state.correct,
     keystrokes: state.keystrokes,
+    finishedTyping,
     timeLeftMs,
     // Live numbers for the stats bar. The server's numbers in `match_result` are the official ones.
     wpm: computeWpm(countLetters(state.board, 'success'), elapsedMs),

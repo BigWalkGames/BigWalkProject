@@ -10,7 +10,7 @@ import { PlayerProgress } from '../../features/versus/PlayerProgress';
 import { useVersusRace } from '../../features/versus/useVersusRace';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import { useQuickMatch } from '../../net/useQuickMatch';
-import { getState, type Progress } from '../../net/quickMatch';
+import { getState, setReady, type Progress } from '../../net/quickMatch';
 import '../../features/typing/components/typing.css';
 import '../TimeAttack/TimeAttack.css';
 import '../../features/versus/versus.css';
@@ -24,7 +24,12 @@ import '../../features/versus/versus.css';
  */
 export default function Versus() {
   const navigate = useNavigate();
-  const { status, mode, match, countdown, raceStartedAt, opponent, result, sessionId } = useQuickMatch();
+  const { status, mode, match, countdown, raceStartedAt, opponent, result, sessionId, lobby, matchNumber, roomEnded } =
+    useQuickMatch();
+
+  // Custom Game rematch: who has pressed Ready again.
+  const me = lobby?.players.find((player) => player.id === sessionId);
+  const friend = lobby?.players.find((player) => player.id !== sessionId);
 
   // Opened directly (a refresh, or typing the address): there is no match, so go back.
   // Only checked once on arrival: a match that ends badly also goes idle, and
@@ -35,6 +40,10 @@ export default function Versus() {
   }, []);
 
   useHotkeys({
+    r: () => {
+      // Custom Game rematch: ready up again (press again to undo). The room stays open.
+      if (status === 'finished' && mode === 'custom' && !roomEnded) setReady(!me?.ready);
+    },
     q: () => {
       if (status !== 'finished') return;
       // Quick Match: queue again. Custom Game: the room is closed, so go back to make or join another.
@@ -45,8 +54,17 @@ export default function Versus() {
   if (!match) {
     return <ScreenLayout title="Versus" backTo="/multiplayer"><p>Waiting for the match...</p></ScreenLayout>;
   }
+  let playAgain = 'Press Q to play again, or Esc for the Main Menu.';
+  if (mode === 'custom') {
+    if (roomEnded) playAgain = 'Your friend left, so the room is closed. Press Q for Custom Game, or Esc for the Main Menu.';
+    else if (me?.ready) playAgain = "You're ready for a rematch. Waiting for your friend... (R to undo, Q for Custom Game, Esc for the Main Menu)";
+    else if (friend?.ready) playAgain = 'Your friend wants a rematch! Press R to play again, Q for Custom Game, or Esc for the Main Menu.';
+    else playAgain = 'Press R for a rematch, Q for Custom Game, or Esc for the Main Menu.';
+  }
+
   return (
     <Race
+      key={matchNumber}
       words={match.words}
       durationMs={match.durationSeconds * 1000}
       racing={status === 'racing'}
@@ -56,7 +74,7 @@ export default function Versus() {
       opponent={opponent}
       result={result}
       sessionId={sessionId}
-      playAgain={mode === 'custom' ? 'Press Q for Custom Game' : 'Press Q to play again'}
+      playAgain={playAgain}
     />
   );
 }
@@ -82,11 +100,12 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
   const theirs = result ? Object.entries(result.results).find(([id]) => id !== sessionId)?.[1] : undefined;
   // Same panel as Time Attack. WPM and accuracy are the server's official numbers;
   // the per-key table comes from this player's own keystrokes.
+  const resultMs = result?.durationSeconds ? result.durationSeconds * 1000 : durationMs;
   const myResult: TestResult | null = mine
     ? {
-        durationMs,
+        durationMs: resultMs,
         wpm: mine.wpm,
-        rawWpm: computeWpm(mine.typed, durationMs),
+        rawWpm: computeWpm(mine.typed, resultMs),
         accuracy: mine.accuracy / 100,
         perKey: computePerKey(race.keystrokes),
         keystrokes: race.keystrokes,
@@ -113,7 +132,8 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
 
           <p className="tt-hint">
             {countdown !== null && `Starting in ${countdown}...`}
-            {racing && `Opponent: ${opponent.correct} correct / ${opponent.typed} typed`}
+            {racing && !race.finishedTyping && `Opponent: ${opponent.correct} correct / ${opponent.typed} typed`}
+            {racing && race.finishedTyping && 'Finished! Waiting for the results...'}
             {!racing && !finished && countdown === null && 'Waiting for the match to start...'}
           </p>
 
@@ -132,7 +152,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
               ) : (
                 <p>You: no result</p>
               )}
-              <p className="versus-playagain">{playAgain}, or Esc for the Main Menu.</p>
+              <p className="versus-playagain">{playAgain}</p>
             </div>
           )}
         </div>
