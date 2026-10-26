@@ -13,12 +13,23 @@ const DEFAULT_STATS_SINK: StatsSink = consoleStatsSink
 export function TypingTest({
   durationMs = 60_000,
   statsSink = DEFAULT_STATS_SINK,
+  onMenu,
+  onFinishedChange,
 }: {
   durationMs?: number
   statsSink?: StatsSink
+  /** Shown on the results screen as "Menu" (Shift+E) when provided. */
+  onMenu?: () => void
+  /** Tells the parent when the results screen opens or closes. */
+  onFinishedChange?: (finished: boolean) => void
 }) {
   const test = useTypingTest(durationMs)
   const { result } = test
+
+  const showResults = Boolean(result && test.board)
+  useEffect(() => {
+    onFinishedChange?.(showResults)
+  }, [showResults, onFinishedChange])
 
   // Save each finished result once; the status is tied to that result so a
   // restart can't show a stale "Saved".
@@ -34,6 +45,20 @@ export function TypingTest({
     )
   }, [result, statsSink])
   const saveStatus: SaveStatus = saved?.result === result ? saved.status : 'saving'
+
+  if (result && test.board) {
+    return (
+      <div className="tt is-finished">
+        <ResultsPanel
+          result={result}
+          board={test.board}
+          saveStatus={saveStatus}
+          onRestart={test.restart}
+          onMenu={onMenu}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="tt">
@@ -69,7 +94,6 @@ export function TypingTest({
         </span>
       </div>
 
-      {result && <ResultsPanel result={result} saveStatus={saveStatus} />}
     </div>
   )
 }

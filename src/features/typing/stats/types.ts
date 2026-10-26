@@ -9,6 +9,18 @@ export interface Keystroke {
   correct: boolean
   /** Milliseconds since the test started. */
   t: number
+  /** Where the expected character sits on the board (word, letter in word). */
+  wordIndex: number
+  letterIndex: number
+}
+
+/** Two letters typed back to back inside a word, e.g. "th". */
+export interface BigramStats {
+  attempts: number
+  /** Times both letters were typed correctly. */
+  correct: number
+  /** correct / attempts, from 0 to 1. */
+  accuracy: number
 }
 
 export interface KeyStats {
@@ -33,6 +45,13 @@ export interface TestResult {
   accuracy: number
   /** Keyed by the EXPECTED character; only a-z and ' ' (space) are tracked. */
   perKey: Record<string, KeyStats>
+  /** Keyed by the two expected letters, e.g. "th"; letters a-z only. */
+  bigrams: Record<string, BigramStats>
+  /**
+   * Average ms between the two letters of a clean bigram (both right).
+   * null if no clean bigram was typed.
+   */
+  bigramLatencyMs: number | null
   keystrokes: Keystroke[]
   wordBankSource: WordBankSourceName
   /** ISO timestamp of when the test ended. */
