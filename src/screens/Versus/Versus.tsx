@@ -29,7 +29,7 @@ import '../../features/versus/versus.css';
  */
 export default function Versus() {
   const navigate = useNavigate();
-  const { status, match, countdown, raceStartedAt, opponent, result, sessionId } = useQuickMatch();
+  const { status, mode, match, countdown, raceStartedAt, opponent, result, sessionId } = useQuickMatch();
 
   // Opened directly (a refresh, or typing the address): there is no match, so go back.
   // Only checked once on arrival: a match that ends badly also goes idle, and
@@ -41,7 +41,9 @@ export default function Versus() {
 
   useHotkeys({
     q: () => {
-      if (status === 'finished') navigate('/multiplayer/matchmaking', { replace: true });
+      if (status !== 'finished') return;
+      // Quick Match: queue again. Custom Game: the room is closed, so go back to make or join another.
+      navigate(mode === 'custom' ? '/multiplayer/custom' : '/multiplayer/matchmaking', { replace: true });
     },
   });
 
@@ -59,6 +61,7 @@ export default function Versus() {
       opponent={opponent}
       result={result}
       sessionId={sessionId}
+      playAgain={mode === 'custom' ? 'Press Q for Custom Game' : 'Press Q to play again'}
     />
   );
 }
@@ -73,10 +76,11 @@ type RaceProps = {
   opponent: Progress;
   result: ReturnType<typeof useQuickMatch>['result'];
   sessionId: string | null;
+  playAgain: string;
 };
 
 // Split out so the race state (the words and counts) starts fresh with each match.
-function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId }: RaceProps) {
+function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, playAgain }: RaceProps) {
   const race = useVersusRace(words, racing, startedAt, durationMs);
 
   const mine = result && sessionId ? result.results[sessionId] : undefined;
@@ -135,7 +139,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
               ) : (
                 <p>You: no result</p>
               )}
-              <p className="versus-playagain">Press Q to play again, or Esc for the Main Menu.</p>
+              <p className="versus-playagain">{playAgain}, or Esc for the Main Menu.</p>
             </div>
           )}
         </div>

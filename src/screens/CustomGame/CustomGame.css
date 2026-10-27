@@ -1,0 +1,101 @@
+/* Custom Game: room lobby (P26, P28) and Join Room (P27). Placeholder styling,
+   built from the existing colour tokens. */
+
+.lobby,
+.join {
+  flex: 1;
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+  padding-inline: var(--margin);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.lobby__label,
+.join__label {
+  margin: 0;
+}
+
+.lobby__code {
+  margin: 0;
+  padding: 12px 32px;
+  font-size: 96px;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: var(--color-light);
+  background: var(--color-frame);
+  border: 3px solid var(--color-depth);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--shadow-strong);
+  user-select: all;
+}
+
+.lobby__hint,
+.join__hint,
+.lobby__status {
+  margin: 0;
+}
+
+.lobby__players {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.lobby__player {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  color: var(--color-light);
+  background: var(--color-frame);
+  border: 3px solid var(--color-depth);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--shadow-soft);
+}
+.lobby__player.is-empty { opacity: 0.55; border-style: dashed; }
+.lobby__player.is-ready { border-color: var(--color-positive); }
+.lobby__player-name { font-size: 28px; }
+.lobby__player-state { font-size: 20px; }
+.lobby__player.is-ready .lobby__player-state { color: var(--color-positive); }
+
+.join__input {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  padding: 12px 16px;
+  font: inherit;
+  font-size: 64px;
+  letter-spacing: 0.3em;
+  text-align: center;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  background: var(--color-light);
+  border: 3px solid var(--color-frame);
+  border-radius: 12px;
+}
+.join__input:focus { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+.join__input[aria-invalid='true'] { border-color: var(--color-negative); }
+
+.join__error {
+  min-height: 1.4em;
+  margin: 0;
+  color: var(--color-negative);
+}
+
+@media (max-width: 700px) {
+  .lobby__code { font-size: 56px; }
+  .join__input { font-size: 40px; }
+  .lobby__players { grid-template-columns: 1fr; }
+}

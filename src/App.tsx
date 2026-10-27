@@ -10,6 +10,9 @@ import TimeAttack from './screens/TimeAttack/TimeAttack';
 import Matchmaking from './screens/Matchmaking/Matchmaking';
 import Results from './screens/Results/Results';
 import Versus from './screens/Versus/Versus';
+import CustomGame from './screens/CustomGame/CustomGame';
+import JoinRoom from './screens/CustomGame/JoinRoom';
+import RoomLobby from './screens/CustomGame/RoomLobby';
 import History from './screens/History/History';
 import MatchHistory from './screens/MatchHistory/MatchHistory';
 import Leaderboards from './screens/Leaderboards/Leaderboards';
@@ -24,6 +27,10 @@ export default function App() {
         <Route path="/solo/time-attack/results" element={<Results />} />
         <Route path="/multiplayer" element={<Multiplayer />} />
         <Route path="/multiplayer/matchmaking" element={<Matchmaking />} />
+        <Route path="/multiplayer/custom" element={<CustomGame />} />
+        <Route path="/multiplayer/custom/create" element={<RoomLobby create />} />
+        <Route path="/multiplayer/custom/join" element={<JoinRoom />} />
+        <Route path="/multiplayer/custom/lobby" element={<RoomLobby />} />
         <Route path="/multiplayer/versus" element={<Versus />} />
         <Route path="/history" element={<History />} />
         <Route path="/matchhistory" element={<MatchHistory />} />
