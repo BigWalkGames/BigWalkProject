@@ -20,9 +20,17 @@ export function StatsBar({
   )
 }
 
-export function Stat({ label, value }: { label: string; value: string }) {
+export function Stat({
+  label,
+  value,
+  className,
+}: {
+  label: string
+  value: string
+  className?: string
+}) {
   return (
-    <div className="tt-stat">
+    <div className={className ? `tt-stat ${className}` : 'tt-stat'}>
       <span className="tt-stat-value">{value}</span>
       <span className="tt-stat-label">{label}</span>
     </div>
