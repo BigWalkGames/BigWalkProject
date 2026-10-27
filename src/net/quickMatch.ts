@@ -314,8 +314,12 @@ function attach(joined: ClientRoom) {
 }
 
 /** Send the player's running totals since "go". Call at most about 10 times a second. */
-export function sendProgress(typed: number, correct: number, wordResults: string) {
-  room?.send('progress', { typed, correct, wordResults });
+/**
+ * `errors` = letters still wrong right now (uncorrected), for the doc's Net WPM.
+ * Servers that don't read it yet just ignore it.
+ */
+export function sendProgress(typed: number, correct: number, wordResults: string, errors: number) {
+  room?.send('progress', { typed, correct, wordResults, errors });
 }
 
 // A screen that is part of Quick Match "claims" the session while it is on screen.

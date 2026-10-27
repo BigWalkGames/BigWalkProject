@@ -1,7 +1,10 @@
-/* Colors and fonts come from the design tokens in src/index.css. */
+/* Colors and fonts come from the design tokens in src/index.css, except
+   --tt-positive: a brighter green than --color-positive, used for correct
+   letters here and for the accurate end of the heatmap. */
 
 .tt {
-  --tt-correct: var(--color-positive);
+  --tt-positive: #3f8f2f;
+  --tt-correct: var(--tt-positive);
   --tt-incorrect: var(--color-negative);
   --tt-incorrect-bg: color-mix(in srgb, var(--color-negative) 30%, transparent);
   --tt-pending: var(--color-ink);
@@ -51,8 +54,8 @@
   letter-spacing: 0.06em;
 }
 
-/* Words: three lines visible, the current line kept second.
-   Sits in a gray container like the Figma design. */
+/* Words: three lines visible, the current line kept second. The light
+   container (instead of the Figma's gray) keeps green and red readable. */
 
 .tt-words {
   --tt-line: 1.4em;
@@ -67,7 +70,7 @@
   /* three text lines + vertical padding + top/bottom border */
   height: calc(var(--tt-line) * 3 + var(--tt-pad-y) * 2 + var(--tt-border) * 2);
   padding: var(--tt-pad-y) var(--tt-pad-x);
-  background: var(--color-container);
+  background: var(--color-light);
   border: var(--tt-border) solid var(--color-frame);
   border-radius: 12px;
   box-shadow: 0 4px 0 var(--shadow-soft);
@@ -113,7 +116,7 @@
 
 .tt-letter.is-initial {
   color: var(--tt-pending);
-  opacity: 0.7;            /* was 0.45, too faint on the gray box */
+  opacity: 0.7;
 }
 
 .tt-letter.is-success {
@@ -129,25 +132,45 @@
   background: var(--tt-incorrect-bg);
 }
 
-.tt-letter.is-cursor::before {
-  content: '';
+/* Cursor: one element for the whole box, moved by WordsDisplay to the
+   current letter (.tt-letter.is-cursor). It slides between letters, stays
+   solid while typing (.is-typing), and fades in and out when idle. */
+.tt-caret {
   position: absolute;
-  left: -1px;
-  top: 15%;
-  bottom: 15%;
+  top: 0;
+  left: 0;
   width: 3px;
+  height: calc(var(--tt-line) * 0.7);
+  margin: calc(var(--tt-line) * 0.15) 0 0 -1.5px;
   background: var(--tt-cursor);
-  animation: tt-blink 1s step-end infinite;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 80ms ease-out;
+  animation: tt-caret-blink 1s ease-in-out infinite;
 }
 
-@keyframes tt-blink {
+.tt-caret[hidden] {
+  display: none;
+}
+
+.tt-caret.is-typing {
+  animation: none;
+}
+
+@keyframes tt-caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
   50% {
     opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tt-letter.is-cursor::before {
+  .tt-caret {
+    transition: none;
     animation: none;
   }
 }
@@ -172,18 +195,172 @@
   text-align: center;
 }
 
-/* Results */
+/* Results screen: two columns of boxes. Boxes scroll on their own so the
+   screen itself stays still. */
+
+.tt.is-finished {
+  max-width: 1500px;
+}
 
 .tt-results {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.tt-results__col {
   display: flex;
   flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .tt-results {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.tt-box {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 12px 20px 16px;
+  background: var(--color-light);
+  border: 3px solid var(--color-frame);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--shadow-soft);
+}
+
+.tt-box__title {
+  margin: 0 0 8px;
+  font-size: var(--fs-chat);
+  font-weight: normal;
+  text-align: center;
+}
+
+.tt-box__scroll {
+  overflow: auto;
+  overscroll-behavior: contain;
+  font-size: var(--fs-chat);
+}
+
+.tt-box--bigrams .tt-box__scroll { max-height: 220px; }
+.tt-box--keys .tt-box__scroll    { max-height: 260px; }
+.tt-box--words .tt-box__scroll   { max-height: 200px; }
+
+.tt-muted {
+  margin: 0;
+  opacity: 0.7;
+}
+
+/* Bigrams */
+
+.tt-bigrams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.tt-bigrams__heading {
+  margin: 0 0 4px;
+  font-size: var(--fs-chat);
+  font-weight: normal;
+  border-bottom: 3px solid var(--color-outline-light);
+}
+
+.tt-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tt-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Key accuracies */
+
+.tt-keys {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.tt-keys th,
+.tt-keys td {
+  padding: 2px 16px 2px 0;
+  text-align: left;
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.tt-keys thead th {
+  position: sticky;
+  top: 0;
+  background: var(--color-light);
+  font-size: var(--fs-hud-label);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 3px solid var(--color-outline-light);
+}
+
+.tt-key {
+  text-transform: uppercase;
+}
+
+/* Word bank: the match's words, wrapped, with untyped words in plain ink. */
+
+.tt-review {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--fs-chat);
+  line-height: 1.4;
+}
+
+.tt-review .tt-word {
+  height: auto;
+}
+
+.tt-review .tt-letter.is-initial {
+  opacity: 1;
+}
+
+/* WPM / Accuracy tiles above the keyboard */
+
+.tt-results__summary {
+  display: flex;
+  align-items: flex-end;
   gap: 16px;
-  padding-top: 16px;
-  border-top: 3px solid var(--color-outline-light);
+  flex-wrap: wrap;
+}
+
+.tt-results__summary .tt-stat {
+  flex-direction: column-reverse; /* label above the number */
+  padding: 6px 14px;
+  background: var(--color-light);
+  border-radius: 6px;
+}
+
+.tt-results__summary .tt-stat-value {
+  font-size: var(--fs-filter);
+}
+
+/* WPM is the headline number on the results screen. */
+.tt-results__summary .tt-stat--hero .tt-stat-value {
+  font-size: var(--fs-state-title);
+  line-height: 0.85;
+}
+
+.tt-results__summary .tt-stat--hero .tt-stat-label {
+  font-size: var(--fs-chat);
 }
 
 .tt-save {
-  margin: 0;
+  margin: 0 0 0 auto;
   font-size: var(--fs-hud-label);
 }
 
@@ -191,26 +368,10 @@
   color: var(--tt-incorrect);
 }
 
-.tt-keys {
-  /* Scroll inside its own box on narrow screens instead of widening the page. */
-  display: block;
-  max-width: 100%;
-  overflow-x: auto;
-  border-collapse: collapse;
-  font-size: var(--fs-chat);
-  font-variant-numeric: tabular-nums;
-}
+/* Menu / Restart bar */
 
-.tt-keys th,
-.tt-keys td {
-  padding: 2px 32px 2px 0;
-  text-align: left;
-  font-weight: normal;
-}
-
-.tt-keys thead th {
-  font-size: var(--fs-hud-label);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-bottom: 3px solid var(--color-outline-light);
+.tt-results__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
 }
