@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabaseStatsSink } from '../stats/supabaseStatsSink'
 import { NavButton } from '../../../components/NavButton/NavButton'
+import type { Board } from '../models/Board'
 import type { StatsSink, TestResult } from '../stats/types'
 import { useTypingTest } from '../useTypingTest'
 import { ResultsPanel, type SaveStatus } from './ResultsPanel'
@@ -17,10 +18,15 @@ export function TypingTest({
 }: {
   durationMs?: number
   statsSink?: StatsSink
-  onFinish?: (result: TestResult) => void
+  /**
+   * Called once when the test ends, with the result and the final board (for
+   * the results screen's Word Bank box). When provided, the parent shows the
+   * results and saves them; otherwise TypingTest does both itself.
+   */
+  onFinish?: (result: TestResult, board: Board) => void
 }) {
   const test = useTypingTest(durationMs)
-  const { result, restart } = test
+  const { result, restart, board } = test
 
   // Save each finished result once; the status is tied to that result so a
   // restart can't show a stale "Saved".
@@ -44,8 +50,8 @@ export function TypingTest({
     saved?.result === result ? saved.status : 'saving'
 
   useEffect(() => {
-    if (result) onFinish?.(result)
-  }, [result, onFinish])
+    if (result && board) onFinish?.(result, board)
+  }, [result, board, onFinish])
 
   // Shift + R (or Ctrl + Shift + R) restarts. Runs in the capture phase and stops
   // the event so the typing handler never sees it as a typed "r".
@@ -62,6 +68,12 @@ export function TypingTest({
     window.addEventListener('keydown', onKeyDown, true)
     return () => window.removeEventListener('keydown', onKeyDown, true)
   }, [restart])
+
+  if (result && board && !onFinish) {
+    return (
+      <ResultsPanel result={result} board={board} saveStatus={saveStatus} onRestart={restart} />
+    )
+  }
 
   return (
     <div className="tt">
@@ -101,7 +113,6 @@ export function TypingTest({
         </span>
       </div>
 
-      {result && <ResultsPanel result={result} saveStatus={saveStatus} />}
     </div>
   )
 }
