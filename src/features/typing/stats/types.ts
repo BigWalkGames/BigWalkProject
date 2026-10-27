@@ -34,9 +34,12 @@ export interface KeyStats {
 
 export interface TestResult {
   durationMs: number
-  /** Net WPM: correctly typed characters on screen / 5 per minute. */
+  /**
+   * Net WPM (project doc): Gross WPM - uncorrected errors per minute, where
+   * uncorrected errors are letters still wrong when the test ends. Min 0.
+   */
   wpm: number
-  /** Raw WPM: every forward keystroke / 5 per minute. */
+  /** Gross WPM (project doc): every character entered / 5 per minute. */
   rawWpm: number
   /**
    * Correct keystrokes / all keystrokes, from 0 to 1. Mistakes still count
