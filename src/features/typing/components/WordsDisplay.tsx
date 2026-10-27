@@ -38,7 +38,8 @@ function placeCaret(
 /**
  * Renders the board. Each real word is grouped with the space after it so
  * lines never start with a space. The current line is kept as the second
- * visible line.
+ * visible line by scrolling the inner `.tt-words__scroll` layer (the outer
+ * box only draws the frame and padding).
  */
 export function WordsDisplay({ board, showCursor }: { board: Board; showCursor: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -48,6 +49,7 @@ export function WordsDisplay({ board, showCursor }: { board: Board; showCursor: 
   const idleTimerRef = useRef<number | undefined>(undefined)
   const currentGroup = Math.floor(board.wordIndex / 2)
 
+  // Scroll so the current line is the second visible line.
   useEffect(() => {
     const container = containerRef.current
     const current = currentRef.current
@@ -95,18 +97,20 @@ export function WordsDisplay({ board, showCursor }: { board: Board; showCursor: 
     showCursor && wordIndex === board.wordIndex ? board.letterIndex : -1
 
   return (
-    <div className="tt-words" ref={containerRef}>
-      <span className="tt-caret" ref={caretRef} aria-hidden="true" />
-      {groups.map(([word, space], g) => (
-        <WordGroup
-          key={word.id}
-          word={word}
-          space={space}
-          wordCursor={cursorFor(g * 2)}
-          spaceCursor={cursorFor(g * 2 + 1)}
-          groupRef={g === currentGroup ? currentRef : undefined}
-        />
-      ))}
+    <div className="tt-words">
+      <div className="tt-words__scroll" ref={containerRef}>
+        <span className="tt-caret" ref={caretRef} aria-hidden="true" />
+        {groups.map(([word, space], g) => (
+          <WordGroup
+            key={word.id}
+            word={word}
+            space={space}
+            wordCursor={cursorFor(g * 2)}
+            spaceCursor={cursorFor(g * 2 + 1)}
+            groupRef={g === currentGroup ? currentRef : undefined}
+          />
+        ))}
+      </div>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { sendProgress } from '../../net/quickMatch'
-import { backspace, countLetters, getCurrentLetter, typeChar, type Board } from '../typing/models/Board'
+import { backspace, countLetters, getCurrentLetter, isFinished, typeChar, type Board } from '../typing/models/Board'
 import { computeNetWpm } from '../typing/stats/computeStats'
 import type { Keystroke } from '../typing/stats/types'
 import { boardFromWords } from './boardFromWords'
@@ -121,6 +121,14 @@ export function useVersusRace(words: string[], racing: boolean, startedAt: numbe
       wordResults: wordResults(state.board),
     }
   }, [state.typed, state.correct, state.board])
+  // Typed the very last letter: tell the server right away so the race ends now.
+  const finishedTyping = isFinished(state.board)
+  useEffect(() => {
+    if (!racing || !finishedTyping) return
+    const { typed, correct, errors, wordResults } = latest.current
+    lastSent.current = { typed, correct, errors, wordResults }
+    sendProgress(typed, correct, wordResults, errors)
+  }, [racing, finishedTyping])
   useEffect(() => {
     if (!racing) return
     const id = setInterval(() => {
@@ -145,6 +153,7 @@ export function useVersusRace(words: string[], racing: boolean, startedAt: numbe
     typed: state.typed,
     correct: state.correct,
     keystrokes: state.keystrokes,
+    finishedTyping,
     timeLeftMs,
     // Live numbers for the stats bar. The server's numbers in `match_result` are the official ones.
     // Net WPM (project doc). The server's official result still uses its own
