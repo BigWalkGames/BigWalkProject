@@ -32,7 +32,12 @@ export type Progress = { typed: number; correct: number; wordResults?: string };
 export type PlayerResult = { wpm: number; accuracy: number; correct: number; typed: number };
 
 /** winner is a player's sessionId, or null for a draw. results is keyed by sessionId. */
-export type MatchResult = { winner: string | null; results: Record<string, PlayerResult> };
+export type MatchResult = {
+  winner: string | null;
+  results: Record<string, PlayerResult>;
+  /** How long the race really lasted. Shorter than the full time when someone finished the text. */
+  durationSeconds?: number;
+};
 
 export type QuickMatchStatus = 'idle' | 'searching' | 'lobby' | 'countdown' | 'racing' | 'finished';
 
@@ -66,6 +71,10 @@ export type QuickMatchState = {
   opponent: Progress;
   result: MatchResult | null;
   endReason: EndReason | null;
+  /** Goes up with every match, so the Versus screen starts a fresh race for a rematch. */
+  matchNumber: number;
+  /** Custom Game: the room closed while the results were showing (the friend left). */
+  roomEnded: boolean;
 };
 
 const initialState: QuickMatchState = {
@@ -79,6 +88,8 @@ const initialState: QuickMatchState = {
   opponent: { typed: 0, correct: 0 },
   result: null,
   endReason: null,
+  matchNumber: 0,
+  roomEnded: false,
 };
 
 type ClientRoom = Awaited<ReturnType<Client['joinOrCreate']>>;
@@ -113,9 +124,17 @@ function closeRoom() {
   void Promise.resolve(closing.leave()).catch(() => {});
 }
 
-/** The match is over for a bad reason. The screens send the player to the Main Menu. */
+/**
+ * The match is over for a bad reason. The screens send the player to the Main Menu.
+ * Exception: a Custom Game friend leaving while the results are showing. The player keeps
+ * reading the results, and the screen says the room is closed.
+ */
 function endMatch(reason: EndReason) {
   closeRoom();
+  if (state.mode === 'custom' && state.status === 'finished' && reason !== 'connect_failed') {
+    setState({ roomEnded: true });
+    return;
+  }
   setState({ endReason: reason });
 }
 
@@ -258,7 +277,17 @@ function attach(joined: ClientRoom) {
   // Every handler is registered right here, straight after joining, so no message
   // from the server can arrive before it has a listener.
   joined.onMessage('lobby', (lobby: Lobby) => setState({ lobby }));
-  joined.onMessage('match_found', (match: MatchFound) => setState({ match }));
+  // A rematch sends a new match_found: start from a clean slate for the new race.
+  joined.onMessage('match_found', (match: MatchFound) =>
+    setState({
+      match,
+      result: null,
+      opponent: { typed: 0, correct: 0 },
+      countdown: null,
+      raceStartedAt: null,
+      matchNumber: state.matchNumber + 1,
+    }),
+  );
   joined.onMessage('countdown', ({ seconds }: { seconds: number }) =>
     setState({ status: 'countdown', countdown: seconds }),
   );
@@ -278,7 +307,9 @@ function attach(joined: ClientRoom) {
   joined.onLeave(() => {
     if (room !== joined) return;
     room = null;
-    if (!leaving && !state.result && !state.endReason) endMatch('connection_lost');
+    if (leaving) return;
+    if (state.mode === 'custom' && state.status === 'finished') setState({ roomEnded: true });
+    else if (!state.result && !state.endReason) endMatch('connection_lost');
   });
 }
 
