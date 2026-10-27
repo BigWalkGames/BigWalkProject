@@ -3,7 +3,12 @@ import { useNavigate } from 'react-router';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { ResultsPanel } from '../../features/typing/components/ResultsPanel';
 import { Stat, StatsBar } from '../../features/typing/components/StatsBar';
-import { computePerKey, computeWpm } from '../../features/typing/stats/computeStats';
+import {
+  computeBigramLatency,
+  computeBigrams,
+  computePerKey,
+  computeWpm,
+} from '../../features/typing/stats/computeStats';
 import type { TestResult } from '../../features/typing/stats/types';
 import { WordsDisplay } from '../../features/typing/components/WordsDisplay';
 import { PlayerProgress } from '../../features/versus/PlayerProgress';
@@ -89,6 +94,8 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
         rawWpm: computeWpm(mine.typed, durationMs),
         accuracy: mine.accuracy / 100,
         perKey: computePerKey(race.keystrokes),
+        bigrams: computeBigrams(race.keystrokes),
+        bigramLatencyMs: computeBigramLatency(race.keystrokes),
         keystrokes: race.keystrokes,
         wordBankSource: 'server',
         completedAt: new Date().toISOString(),
@@ -128,7 +135,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
                 </div>
               )}
               {myResult ? (
-                <ResultsPanel result={myResult} saveStatus="saved" />
+                <ResultsPanel result={myResult} board={race.board} saveStatus="saved" />
               ) : (
                 <p>You: no result</p>
               )}
