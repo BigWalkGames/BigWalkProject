@@ -18,6 +18,8 @@
   --color-place-2-outline: #7d776a;
   --color-place-3: #b97a46;          /* third place background */
   --color-place-3-outline: #7a4e28;
+  --color-place-other: #b9a984;      /* places 4+ background */
+  --color-place-other-outline: #7f735a;
 
   /* UI structure */
   --color-ink: #1c1410;            /* title backgrounds (History, Account, Settings), text on light backgrounds */

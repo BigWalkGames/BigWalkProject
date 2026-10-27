@@ -1,3 +1,4 @@
+import type { Word } from '../../../features/word-engine'
 export type WordBankSourceName = 'supabase' | 'server' | 'fallback'
 
 /**
@@ -6,13 +7,7 @@ export type WordBankSourceName = 'supabase' | 'server' | 'fallback'
  */
 export interface WordBankSource {
   name: WordBankSourceName
-  /**
-   * Resolve with the raw words, or throw / reject on failure.
-   * `signal` aborts when the loader gives up waiting.
-   * Words don't need to be cleaned: the loader lowercases them and strips
-   * anything that isn't a-z.
-   */
-  fetchWords(signal: AbortSignal): Promise<string[]>
+  fetchWords(signal: AbortSignal): Promise<Word[]>
 }
 
 export interface LoadedWordBank {
