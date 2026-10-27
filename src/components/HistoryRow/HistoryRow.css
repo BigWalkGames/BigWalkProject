@@ -1,0 +1,22 @@
+.history-row {
+  display: grid;
+  grid-template-columns: var(--hist-cols);
+  align-items: center;
+  height: var(--hist-row-height);
+  padding-left: var(--hist-indent);
+  border-top: 2px solid var(--color-ink);
+  color: var(--color-ink);
+  line-height: 1;
+}
+
+.history-row:nth-child(odd)  { background: var(--color-light); }
+.history-row:nth-child(even) { background: var(--color-outline-light); }
+
+.history-row__date {
+  font-size: var(--fs-hud-stat);
+}
+
+.history-row__wpm,
+.history-row__acc {
+  font-size: var(--fs-filter);
+}

@@ -30,7 +30,14 @@ export default defineConfig(({ mode }) => {
     )
   }
 
+  // `vite build` only bundles index.html by default; also ship the word-engine
+  // test page.
+  const input: Record<string, string> = { main: 'index.html', banktest: 'banktest.html' }
+
   return {
+    build: {
+      rolldownOptions: { input },
+    },
     plugins: [
       react(),
       babel({ presets: [reactCompilerPreset()] }),

@@ -10,7 +10,8 @@ export default function Multiplayer() {
   const navigate = useNavigate();
 
   useHotkeys({
-    q: () => navigate('/multiplayer/versus'),
+    q: () => navigate('/multiplayer/matchmaking'),
+    c: () => navigate('/multiplayer/custom'),
     r: () => navigate('/matchhistory'),
     a: () => navigate('/leaderboards'),
   });
@@ -22,10 +23,13 @@ export default function Multiplayer() {
           <div className="menu-btn-group">
             <MenuButton
               hotkey="Q"
-              to="/multiplayer/versus"
+              to="/multiplayer/matchmaking"
               icon={{ normal: hourglass, pressed: hourglassPressed }}
             >
               Quick Match
+            </MenuButton>
+            <MenuButton hotkey="C" to="/multiplayer/custom">
+              Custom Game
             </MenuButton>
             <MenuButton hotkey="R" to="/matchhistory">
               Match History
