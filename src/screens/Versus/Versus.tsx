@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { NavButton } from '../../components/NavButton/NavButton';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { ResultsPanel } from '../../features/typing/components/ResultsPanel';
 import { Stat, StatsBar } from '../../features/typing/components/StatsBar';
@@ -39,28 +40,44 @@ export default function Versus() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useHotkeys({
-    r: () => {
-      // Custom Game rematch: ready up again (press again to undo). The room stays open.
-      if (status === 'finished' && mode === 'custom' && !roomEnded) setReady(!me?.ready);
-    },
-    q: () => {
-      if (status !== 'finished') return;
-      // Quick Match: queue again. Custom Game: the room is closed, so go back to make or join another.
-      navigate(mode === 'custom' ? '/multiplayer/custom' : '/multiplayer/matchmaking', { replace: true });
-    },
-  });
+  const canRematch = status === 'finished' && mode === 'custom' && !roomEnded;
+  // Custom Game rematch: ready up again (press again to undo). The room stays open.
+  const rematch = () => {
+    if (canRematch) setReady(!me?.ready);
+  };
+  const playAgainNow = () => {
+    if (status !== 'finished') return;
+    // Quick Match: queue again. Custom Game: leave this room to make or join another.
+    navigate(mode === 'custom' ? '/multiplayer/custom' : '/multiplayer/matchmaking', { replace: true });
+  };
+  useHotkeys({ r: rematch, q: playAgainNow });
 
   if (!match) {
     return <ScreenLayout title="Versus" backTo="/multiplayer"><p>Waiting for the match...</p></ScreenLayout>;
   }
-  let playAgain = 'Press Q to play again, or Esc for the Main Menu.';
+  let playAgain = '';
   if (mode === 'custom') {
-    if (roomEnded) playAgain = 'Your friend left, so the room is closed. Press Q for Custom Game, or Esc for the Main Menu.';
-    else if (me?.ready) playAgain = "You're ready for a rematch. Waiting for your friend... (R to undo, Q for Custom Game, Esc for the Main Menu)";
-    else if (friend?.ready) playAgain = 'Your friend wants a rematch! Press R to play again, Q for Custom Game, or Esc for the Main Menu.';
-    else playAgain = 'Press R for a rematch, Q for Custom Game, or Esc for the Main Menu.';
+    if (roomEnded) playAgain = 'Your friend left, so the room is closed.';
+    else if (me?.ready) playAgain = "You're ready for a rematch. Waiting for your friend...";
+    else if (friend?.ready) playAgain = 'Your friend wants a rematch!';
   }
+
+  // Buttons under the results. The keys work too.
+  const footer =
+    status === 'finished' ? (
+      <>
+        {mode === 'custom' ? (
+          <>
+            <NavButton hotkey="R" onClick={rematch} disabled={!canRematch}>
+              {me?.ready ? 'Cancel Rematch' : 'Rematch'}
+            </NavButton>
+            <NavButton hotkey="Q" onClick={playAgainNow}>Custom Game</NavButton>
+          </>
+        ) : (
+          <NavButton hotkey="Q" onClick={playAgainNow}>Play Again</NavButton>
+        )}
+      </>
+    ) : undefined;
 
   return (
     <Race
@@ -75,6 +92,7 @@ export default function Versus() {
       result={result}
       sessionId={sessionId}
       playAgain={playAgain}
+      footer={footer}
     />
   );
 }
@@ -90,10 +108,11 @@ type RaceProps = {
   result: ReturnType<typeof useQuickMatch>['result'];
   sessionId: string | null;
   playAgain: string;
+  footer?: React.ReactNode;
 };
 
 // Split out so the race state (the words and counts) starts fresh with each match.
-function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, playAgain }: RaceProps) {
+function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, playAgain, footer }: RaceProps) {
   const race = useVersusRace(words, racing, startedAt, durationMs);
 
   const mine = result && sessionId ? result.results[sessionId] : undefined;
@@ -116,7 +135,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
   const headline = !result ? '' : result.winner === null ? "It's a draw" : result.winner === sessionId ? 'You win!' : 'Opponent wins';
 
   return (
-    <ScreenLayout title="Versus" backTo="/multiplayer">
+    <ScreenLayout title="Versus" backTo="/multiplayer" footer={footer}>
       <div className="time-attack">
         <div className="tt">
           <StatsBar
@@ -152,7 +171,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
               ) : (
                 <p>You: no result</p>
               )}
-              <p className="versus-playagain">{playAgain}</p>
+              {playAgain && <p className="versus-playagain" role="status">{playAgain}</p>}
             </div>
           )}
         </div>
