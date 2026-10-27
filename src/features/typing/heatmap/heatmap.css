@@ -1,0 +1,65 @@
+/* Keyboard heatmap. Keys are drawn with border-image so any width keeps
+   crisp pixel borders. keycap.png, keycapblank.png and spacebar.png share the
+   same frame in source pixels: top 6, right 7, bottom 8, left 7. */
+
+.kb {
+  --kb-cols: 11;
+  --kb-gap: 4px;
+  --kb-px: 2px; /* one keycap.png pixel on screen */
+
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(var(--kb-cols), minmax(0, 1fr));
+  gap: var(--kb-gap);
+  width: 100%;
+  user-select: none;
+}
+
+.kb-key {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-style: solid;
+  border-image-source: url('../../../assets/keycap.png');
+  border-image-slice: 6 7 8 7 fill;
+  border-image-width: calc(var(--kb-px) * 6) calc(var(--kb-px) * 7)
+    calc(var(--kb-px) * 8) calc(var(--kb-px) * 7);
+  border-image-repeat: stretch;
+  image-rendering: pixelated;
+  color: var(--color-frame);
+  font-size: 4.2cqi;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* The space bar spans several columns; it takes its height from the row. */
+.kb-key--space {
+  aspect-ratio: auto;
+  border-image-source: url('../../../assets/spacebar.png');
+}
+
+/* Keys the test never uses (modifier positions) are grayed out. */
+.kb-key--blank {
+  border-image-source: url('../../../assets/keycapblank.png');
+}
+
+/* Heat tint: a translucent circle behind the label, like the Figma. */
+.kb-key--heat::before {
+  content: '';
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: var(--heat);
+  opacity: 0.8;
+}
+
+.kb-key--space.kb-key--heat::before {
+  inset: 14% 4%;
+  border-radius: 999px;
+}
+
+.kb-key__label {
+  position: relative; /* above the heat circle */
+  transform: translateY(-2px);
+}
