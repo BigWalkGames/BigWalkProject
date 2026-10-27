@@ -107,6 +107,8 @@ function reducer(state: State, action: Action): State {
         typed,
         correct: expected === typed,
         t: action.at - startedAt,
+        wordIndex: board.wordIndex,
+        letterIndex: board.letterIndex,
       }
       const entry: EngineKeystroke = { expected, typed, latencyMs, ...enginePosition(board) }
       const done = isFinished(next)
