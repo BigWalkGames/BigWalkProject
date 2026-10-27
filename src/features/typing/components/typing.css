@@ -65,7 +65,6 @@
 
   position: relative;
   display: flex;
-  flex-wrap: wrap;
   box-sizing: border-box;
   /* three text lines + vertical padding + top/bottom border */
   height: calc(var(--tt-line) * 3 + var(--tt-pad-y) * 2 + var(--tt-border) * 2);
@@ -75,11 +74,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 0 var(--shadow-soft);
 
-  /* Clip at the text area, not the padding, so a 4th line can't peek out
-     under the last visible line. The first rule is a fallback. */
   overflow: hidden;
-  overflow: clip;
-  overflow-clip-margin: content-box;
 
   font-size: var(--fs-body);
   line-height: 1.4;
@@ -90,18 +85,18 @@
   align-items: center;
 }
 
-/* The words move inside the clipped box: see WordsDisplay. */
-.tt-words__lines {
-  position: relative;
+/* The words live in this inner layer, exactly three lines tall. It clips at
+   the text area (so a 4th line can't peek into the padding below) and, unlike
+   overflow: clip, still lets WordsDisplay scroll it to follow the cursor. */
+.tt-words__scroll {
+  position: relative; /* letter offsets and the cursor are measured from here */
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
-  flex: 1 1 100%;
   align-content: flex-start;
-  transition: transform 150ms ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tt-words__lines { transition: none; }
+  height: calc(var(--tt-line) * 3);
+  overflow: hidden;
 }
 
 .tt-word {
