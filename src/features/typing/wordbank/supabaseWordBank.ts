@@ -1,44 +1,71 @@
-// ============================================================================
-// BOILERPLATE — word bank team: finish this file.
-//
-// Contract: `fetchWords` resolves with a list of words, or throws. That's it.
-// If it throws, returns an empty list, or takes longer than the loader's
-// timeout, the game falls back to FALLBACK_WORDS automatically, so this file
-// can stay unfinished without breaking anything.
-//
-// Checklist:
-//   [ ] Set WORDS_TABLE / WORD_COLUMN to the real table and column names.
-//   [ ] Make sure the table has an RLS SELECT policy for the `anon` role
-//       (and/or `authenticated`). With RLS on and no policy, Supabase returns
-//       an EMPTY list rather than an error, and the game silently uses the
-//       fallback.
-//   [ ] Optional: add filters (difficulty, language, ...) where marked below.
-// ============================================================================
-
 import { getSupabase } from '../../../lib/supabase'
+import type { Word } from '../../../features/word-engine'
 import type { WordBankSource } from './types'
 
-// TODO(word bank team): replace with the real table and column names.
 const WORDS_TABLE = 'words'
-const WORD_COLUMN = 'word'
+// const WORD_COLUMN = 'word'
+const PAGE_SIZE = 1000
 
 export const supabaseWordBank: WordBankSource = {
   name: 'supabase',
 
   async fetchWords(signal) {
-    // getSupabase() throws on bad env vars; loadWordBank catches it and
-    // falls back to the offline word bank.
-    const { data, error } = await getSupabase()
-      .from(WORDS_TABLE)
-      .select(WORD_COLUMN)
-      // TODO(word bank team): add filters here if needed, e.g.
-      // .eq('difficulty', 'easy')
-      .abortSignal(signal)
+    const rows: Record<string, any>[] = []
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const { data, error } = await getSupabase()
+        .from(WORDS_TABLE)
+        .select('*')
+        .order('rank')
+        .range(from, from + PAGE_SIZE - 1)
+        .abortSignal(signal)
 
-    if (error) throw error
+      if (error) throw error
 
-    return (data as Record<string, unknown>[])
-      .map((row) => row[WORD_COLUMN])
-      .filter((word): word is string => typeof word === 'string')
+      rows.push(...data)
+      if (data.length < PAGE_SIZE) break
+    }
+
+    return rows.map((r): Word => ({
+      rank: r.rank,
+      word: r.word,
+      length: r.length,
+      letters: r.letters,
+      letterMask: r.letter_mask,
+      hand: r.hand,
+      bigrams: r.bigrams,
+      alternationCount: r.alternation_count,
+      rollCount: r.roll_count,
+      rowJumpCount: r.row_jump_count,
+      sameFingerCount: r.same_finger_count,
+      repeatCount: r.repeat_count,
+    }))
   },
+}
+
+export async function loadWords(): Promise<Word[]> {
+  const rows = []
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await getSupabase()
+      .from('words')
+      .select('*')
+      .order('rank')
+      .range(from, from + PAGE_SIZE - 1)
+    if (error) throw error
+    rows.push(...data)
+    if (data.length < PAGE_SIZE) break
+  }
+  return rows.map((r) => ({
+    rank: r.rank,
+    word: r.word,
+    length: r.length,
+    letters: r.letters,
+    letterMask: r.letter_mask,
+    hand: r.hand,
+    bigrams: r.bigrams,
+    alternationCount: r.alternation_count,
+    rollCount: r.roll_count,
+    rowJumpCount: r.row_jump_count,
+    sameFingerCount: r.same_finger_count,
+    repeatCount: r.repeat_count,
+  }))
 }
