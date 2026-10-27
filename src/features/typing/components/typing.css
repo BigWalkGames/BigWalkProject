@@ -90,6 +90,20 @@
   align-items: center;
 }
 
+/* The words move inside the clipped box: see WordsDisplay. */
+.tt-words__lines {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 1 100%;
+  align-content: flex-start;
+  transition: transform 150ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-words__lines { transition: none; }
+}
+
 .tt-word {
   display: inline-flex;
   height: var(--tt-line);

@@ -71,14 +71,15 @@
 
 .join__input {
   box-sizing: border-box;
-  width: 100%;
-  max-width: 420px;
-  padding: 12px 16px;
-  font: inherit;
-  font-size: 64px;
-  letter-spacing: 0.3em;
+  /* Sized from the font so five of the widest letters (W, M) always fit inside the box. */
+  font-size: clamp(24px, 8.5vw, 56px);
+  width: min(calc(100vw - 48px), 7.2em);
+  padding: 12px 0.2em;
+  font-family: inherit;
+  line-height: 1.1;
+  letter-spacing: 0.12em;
   text-align: center;
-  text-indent: 0.3em;
+  text-indent: 0.12em; /* the last letter's spacing would otherwise push the text off-centre */
   text-transform: uppercase;
   color: var(--color-ink);
   background: var(--color-light);
@@ -96,6 +97,5 @@
 
 @media (max-width: 700px) {
   .lobby__code { font-size: 56px; }
-  .join__input { font-size: 40px; }
   .lobby__players { grid-template-columns: 1fr; }
 }
