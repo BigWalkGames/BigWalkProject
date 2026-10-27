@@ -49,6 +49,17 @@
   cursor: not-allowed;
 }
 
+.nav-btn__keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-btn__plus {
+  font-size: 30px;
+  line-height: 1;
+}
+
 .nav-btn__icon {
   display: inline-grid;
 }

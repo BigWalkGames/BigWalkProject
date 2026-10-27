@@ -1,0 +1,17 @@
+/* Lock this screen to the window height so the page never scrolls. */
+.screen:has(.history) {
+  height: 100%;
+}
+
+.screen:has(.history) .screen__body {
+  min-height: 0;
+}
+
+.history {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 24px;
+}

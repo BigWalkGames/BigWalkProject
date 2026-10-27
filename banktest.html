@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Word Bank Test</title>
+  </head>
+  <body>
+    <!-- Test page: http://localhost:5173/banktest.html; built into every deploy (see vite.config.ts) -->
+    <div id="root"></div>
+    <script type="module">
+      import { StrictMode, createElement } from 'react'
+      import { createRoot } from 'react-dom/client'
+      import '/src/index.css'
+      import BankTest from '/src/features/word-engine/banktest.tsx'
+
+      createRoot(document.getElementById('root')).render(
+        createElement(StrictMode, null, createElement(BankTest)),
+      )
+    </script>
+  </body>
+</html>
