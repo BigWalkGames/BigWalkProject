@@ -8,7 +8,7 @@ import {
   typeChar,
   type Board,
 } from './models/Board'
-import { computeAccuracy, computeResult, computeWpm } from './stats/computeStats'
+import { computeAccuracy, computeNetWpm, computeResult } from './stats/computeStats'
 import type { Keystroke, TestResult } from './stats/types'
 import { loadWordBank } from './wordbank/loadWordBank'
 import type { WordBankSourceName } from './wordbank/types'
@@ -231,7 +231,10 @@ export function useTypingTest(durationMs: number) {
     board: state.board,
     wordBankSource: state.source,
     timeLeftMs: state.durationMs - elapsedMs,
-    wpm: state.board ? computeWpm(countLetters(state.board, 'success'), elapsedMs) : 0,
+    // Same Net WPM formula as the final result, so the live number matches it.
+    wpm: state.board
+      ? computeNetWpm(state.keystrokes.length, countLetters(state.board, 'fail'), elapsedMs)
+      : 0,
     accuracy: computeAccuracy(state.keystrokes),
     keystrokeCount: state.keystrokes.length,
     result,

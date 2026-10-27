@@ -11,10 +11,27 @@ export function computeAccuracy(keystrokes: Keystroke[]): number {
   return keystrokes.filter((k) => k.correct).length / keystrokes.length
 }
 
-/** Standard WPM: characters / 5 per minute. */
+/** Standard WPM: characters / 5 per minute. With all characters entered, this is Gross WPM. */
 export function computeWpm(chars: number, elapsedMs: number): number {
   if (elapsedMs < 1000) return 0
   return chars / 5 / (elapsedMs / 60_000)
+}
+
+/**
+ * Net WPM as defined in the project doc (Keith & Ericsson):
+ *   Gross WPM - uncorrected errors / minutes
+ * `grossChars` is every character entered (right or wrong, not backspaces);
+ * `uncorrectedErrors` is characters still wrong at the time of measuring.
+ * Never below 0, which the raw formula can go early in a test.
+ */
+export function computeNetWpm(
+  grossChars: number,
+  uncorrectedErrors: number,
+  elapsedMs: number,
+): number {
+  if (elapsedMs < 1000) return 0
+  const minutes = elapsedMs / 60_000
+  return Math.max(0, computeWpm(grossChars, elapsedMs) - uncorrectedErrors / minutes)
 }
 
 export function computePerKey(keystrokes: Keystroke[]): Record<string, KeyStats> {
@@ -55,7 +72,7 @@ export function computeResult(params: {
 
   return {
     durationMs,
-    wpm: computeWpm(countLetters(board, 'success'), durationMs),
+    wpm: computeNetWpm(keystrokes.length, countLetters(board, 'fail'), durationMs),
     rawWpm: computeWpm(keystrokes.length, durationMs),
     accuracy: computeAccuracy(keystrokes),
     perKey: computePerKey(keystrokes),
