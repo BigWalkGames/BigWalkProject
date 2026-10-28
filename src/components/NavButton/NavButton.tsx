@@ -10,9 +10,11 @@ type NavButtonProps = {
   to?: string;
   onClick?: () => void;
   disabled?: boolean;
+  /** Draw attention to this button (for example, when a friend is waiting for you to press it). */
+  highlight?: boolean;
 };
 
-export function NavButton({ hotkey, children, icon, to, onClick, disabled }: NavButtonProps) {
+export function NavButton({ hotkey, children, icon, to, onClick, disabled, highlight }: NavButtonProps) {
   const keys = Array.isArray(hotkey) ? hotkey : [hotkey];
 
   const content = (
@@ -41,7 +43,7 @@ export function NavButton({ hotkey, children, icon, to, onClick, disabled }: Nav
     return (
       <Link
         to={to}
-        className="nav-btn"
+        className={`nav-btn${highlight ? ' nav-btn--highlight' : ''}`}
         aria-keyshortcuts={keys.join('+')}
         onClick={onClick}
       >
@@ -53,7 +55,7 @@ export function NavButton({ hotkey, children, icon, to, onClick, disabled }: Nav
   return (
     <button
       type="button"
-      className="nav-btn"
+      className={`nav-btn${highlight ? ' nav-btn--highlight' : ''}`}
       aria-keyshortcuts={keys.join('+')}
       onClick={onClick}
       disabled={disabled}
