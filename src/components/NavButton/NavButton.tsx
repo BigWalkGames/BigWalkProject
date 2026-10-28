@@ -4,14 +4,17 @@ import { KeyCap } from '../KeyCap/KeyCap'
 import './NavButton.css'
 
 type NavButtonProps = {
+
   hotkey: string | string[]
   children: React.ReactNode
   icon?: { normal: string; pressed: string }
   to?: string
   onClick?: () => void
   disabled?: boolean
+  /** Draw attention to this button (for example, when a friend is waiting for you to press it). */
+  highlight?: boolean;
   type?: 'button' | 'submit' // lets Enter submit the form its in
-}
+};
 
 export function NavButton({
   hotkey,
@@ -20,9 +23,11 @@ export function NavButton({
   to,
   onClick,
   disabled,
-  type = 'button',
+  highlight,
+  type = 'button'
 }: NavButtonProps) {
   const keys = Array.isArray(hotkey) ? hotkey : [hotkey]
+
 
   const content = (
     <>
@@ -58,7 +63,7 @@ export function NavButton({
     return (
       <Link
         to={to}
-        className="nav-btn"
+        className={`nav-btn${highlight ? ' nav-btn--highlight' : ''}`}
         aria-keyshortcuts={keys.join('+')}
         onClick={onClick}>
         {content}
@@ -69,7 +74,7 @@ export function NavButton({
   return (
     <button
       type={type}
-      className="nav-btn"
+      className={`nav-btn${highlight ? ' nav-btn--highlight' : ''}`}
       aria-keyshortcuts={keys.join('+')}
       onClick={onClick}
       disabled={disabled}>
