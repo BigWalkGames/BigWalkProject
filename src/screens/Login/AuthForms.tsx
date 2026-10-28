@@ -1,11 +1,12 @@
-import { useState } from 'react'
-import { NavButton } from '../../components/NavButton/NavButton'
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
+import { NavButton } from '../../components/NavButton/NavButton';
 import {
   AuthForm,
   Field,
   FormMessage,
   LinkButton,
-} from '../../components/AuthForm/AuthForm'
+} from '../../components/AuthForm/AuthForm';
 import {
   MIN_PASSWORD_LENGTH,
   USERNAME_HINT,
@@ -13,9 +14,9 @@ import {
   requestPasswordReset,
   signIn,
   signUp,
-} from '../../hooks/auth/authActions'
+} from '../../hooks/auth/authActions';
 
-const EMAIL_RULE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EMAIL_RULE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // ---------------------------------------------------------------------------
 // Log in with username or email
@@ -26,27 +27,34 @@ export function LoginForm({
   onForgot,
   onSignUp,
 }: {
-  onBack: () => void
-  onForgot: () => void
-  onSignUp: () => void
+  onBack: () => void;
+  onForgot: () => void;
+  onSignUp: () => void;
 }) {
-  const [identifier, setIdentifier] = useState('')
-  const [password, setPassword] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
+  const navigate = useNavigate();
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
   async function submit() {
-    if (busy) return
+    if (busy) return;
     if (!identifier.trim() || !password) {
-      setError('Enter your username or email, and your password.')
-      return
+      setError('Enter your username or email, and your password.');
+      return;
     }
-    setBusy(true)
-    setError('')
-    const result = await signIn(identifier, password)
-    setBusy(false)
+    setBusy(true);
+    setError('');
+
+    const result = await signIn(identifier, password);
+    setBusy(false);
     // On success AuthGate swaps this screen for the game automatically.
-    if (result.error) setError(result.error)
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    // Start at Home screen after logging in
+    navigate('/', { replace: true });
   }
 
   return (
@@ -86,7 +94,7 @@ export function LoginForm({
         <LinkButton onClick={onSignUp}>Create an account</LinkButton>
       </div>
     </AuthForm>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -97,40 +105,40 @@ export function SignUpForm({
   onBack,
   onLogin,
 }: {
-  onBack: () => void
-  onLogin: () => void
+  onBack: () => void;
+  onLogin: () => void;
 }) {
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const [sentTo, setSentTo] = useState('')
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [sentTo, setSentTo] = useState('');
 
   function validate(): string {
     if (!USERNAME_RULE.test(username))
-      return `Usernames are ${USERNAME_HINT.toLowerCase()}`
-    if (!EMAIL_RULE.test(email.trim())) return 'Enter a valid email address.'
+      return `Usernames are ${USERNAME_HINT.toLowerCase()}`;
+    if (!EMAIL_RULE.test(email.trim())) return 'Enter a valid email address.';
     if (password.length < MIN_PASSWORD_LENGTH)
-      return `Passwords need at least ${MIN_PASSWORD_LENGTH} characters.`
-    if (password !== confirm) return 'The passwords don’t match.'
-    return ''
+      return `Passwords need at least ${MIN_PASSWORD_LENGTH} characters.`;
+    if (password !== confirm) return 'The passwords don’t match.';
+    return '';
   }
 
   async function submit() {
-    if (busy) return
-    const problem = validate()
+    if (busy) return;
+    const problem = validate();
     if (problem) {
-      setError(problem)
-      return
+      setError(problem);
+      return;
     }
-    setBusy(true)
-    setError('')
-    const result = await signUp(username, email, password)
-    setBusy(false)
-    if (result.error) setError(result.error)
-    else setSentTo(email.trim())
+    setBusy(true);
+    setError('');
+    const result = await signUp(username, email, password);
+    setBusy(false);
+    if (result.error) setError(result.error);
+    else setSentTo(email.trim());
   }
 
   if (sentTo) {
@@ -139,8 +147,7 @@ export function SignUpForm({
         <h3 className="auth-form__title">Check your email</h3>
         <p className="auth-form__text">
           We sent a confirmation link to <strong>{sentTo}</strong>. Click it to
-          finish creating your account, then log in with your username and
-          password.
+          finish creating your account, then log in with your username and password.
         </p>
         <p className="auth-form__text">Not there? Check your spam folder.</p>
         <div className="auth-form__actions">
@@ -149,7 +156,7 @@ export function SignUpForm({
           </NavButton>
         </div>
       </AuthForm>
-    )
+    );
   }
 
   return (
@@ -205,12 +212,10 @@ export function SignUpForm({
       </div>
 
       <div className="auth-form__links">
-        <LinkButton onClick={onLogin}>
-          Already have an account? Log in
-        </LinkButton>
+        <LinkButton onClick={onLogin}>Already have an account? Log in</LinkButton>
       </div>
     </AuthForm>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -218,28 +223,28 @@ export function SignUpForm({
 // ---------------------------------------------------------------------------
 
 export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
-  const [email, setEmail] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   async function submit() {
-    if (busy) return
+    if (busy) return;
     if (!EMAIL_RULE.test(email.trim())) {
-      setError('Enter the email address on your account.')
-      return
+      setError('Enter the email address on your account.');
+      return;
     }
-    setBusy(true)
-    setError('')
-    setNotice('')
-    const result = await requestPasswordReset(email)
-    setBusy(false)
-    if (result.error) setError(result.error)
+    setBusy(true);
+    setError('');
+    setNotice('');
+    const result = await requestPasswordReset(email);
+    setBusy(false);
+    if (result.error) setError(result.error);
     // Same message whether or not the email has an account, so this can't be used to check emails.
     else
       setNotice(
         `If ${email.trim()} has an account, a reset link is on its way. Check your spam folder too.`,
-      )
+      );
   }
 
   return (
@@ -270,5 +275,5 @@ export function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
         </NavButton>
       </div>
     </AuthForm>
-  )
+  );
 }
