@@ -1,0 +1,36 @@
+/* Lock this screen to the window height so the page never scrolls (same as History). */
+.screen:has(.match-history) {
+  height: 100%;
+}
+
+.screen:has(.match-history) .screen__body {
+  min-height: 0;
+}
+
+.match-history {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 24px;
+}
+
+/* six columns instead of Time Attack's three: Date | Mode | Opponent | Result | You | Them */
+.match-history__table {
+  --hist-cols: 12% 17% 19% 12% 20% 1fr;
+  --hist-indent: 3%;
+}
+
+.match-history__table .history-table__head,
+.match-history__table .history-row {
+  font-size: var(--fs-hud-stat);
+}
+
+/* long usernames shorten instead of pushing the other columns */
+.match-history__opponent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 16px;
+}
