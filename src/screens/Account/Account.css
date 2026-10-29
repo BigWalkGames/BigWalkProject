@@ -16,3 +16,43 @@
 .account__history .history-panel {
   max-height: 60vh;
 }
+
+/* Permanent account: username + email */
+.account__member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.account__username {
+  margin: 0;
+  font-size: var(--fs-body);
+  line-height: 1;
+}
+
+.account__email {
+  margin: 0;
+  font-size: var(--fs-chat);
+  opacity: 0.85;
+}
+
+/* Guest sign-out warning */
+.account__signout-warning {
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  font-size: var(--fs-chat);
+}
+
+.account__signout-warning p {
+  margin: 0;
+}
+
+.account__signout-actions {
+  display: flex;
+  gap: 16px;
+}
