@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { ResultsPanel, type SaveStatus } from '../../features/typing/components/ResultsPanel';
+import { DEFAULT_GAME_MODE, GAME_MODES } from '../../features/typing/gameModes';
 import type { Board } from '../../features/typing/models/Board';
 import { supabaseStatsSink } from '../../features/typing/stats/supabaseStatsSink';
 import type { TestResult } from '../../features/typing/stats/types';
@@ -35,8 +36,14 @@ export default function Results() {
   const saveStatus: SaveStatus =
     save && save?.result === result ? save.status : 'saving';
 
-  // Opened directly (no test was just played): send them to take one.
-  if (!result) return <Navigate to="/solo/time-attack" replace />;
+  // Restart goes back to the mode that was played. Opened directly (no test
+  // was just played): send them to take one in the mode this URL belongs to.
+  const mode =
+    result?.mode ??
+    (location.pathname === GAME_MODES.classic.resultsRoute ? 'classic' : DEFAULT_GAME_MODE);
+  const playRoute = GAME_MODES[mode].route;
+
+  if (!result) return <Navigate to={playRoute} replace />;
 
   return (
     <ScreenLayout title="Results" showBack={false}>
@@ -44,7 +51,7 @@ export default function Results() {
         result={result}
         board={state?.board}
         saveStatus={saveStatus}
-        onRestart={() => navigate('/solo/time-attack', { replace: true })}
+        onRestart={() => navigate(playRoute, { replace: true })}
         onMenu={() => navigate('/solo')}
       />
     </ScreenLayout>

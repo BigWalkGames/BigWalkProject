@@ -1,9 +1,10 @@
 import './HistoryTable.css';
 import { HistoryRow } from '../HistoryRow/HistoryRow';
-import { useMatchHistory } from '../../hooks/useMatchHistory';
+import { useMatchHistory, type HistoryFilter } from '../../hooks/useMatchHistory';
 
-export function HistoryTable() {
-  const { entries, status } = useMatchHistory();
+/** `filter` picks one game mode's matches; by default all are shown. */
+export function HistoryTable({ filter = 'all' }: { filter?: HistoryFilter }) {
+  const { entries, status } = useMatchHistory(filter);
 
   return (
     <div className="history-panel">

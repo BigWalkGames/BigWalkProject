@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabaseStatsSink } from '../stats/supabaseStatsSink'
 import { NavButton } from '../../../components/NavButton/NavButton'
+import type { GameMode } from '../gameModes'
 import type { Board } from '../models/Board'
 import type { StatsSink, TestResult } from '../stats/types'
 import { useTypingTest } from '../useTypingTest'
@@ -14,10 +15,13 @@ const DEFAULT_STATS_SINK: StatsSink = supabaseStatsSink
 export function TypingTest({
   durationMs = 60_000,
   statsSink = DEFAULT_STATS_SINK,
+  mode,
   onFinish,
 }: {
   durationMs?: number
   statsSink?: StatsSink
+  /** Solo mode; picks the WPM formula. Defaults to Time Attack. */
+  mode?: GameMode
   /**
    * Called once when the test ends, with the result and the final board (for
    * the results screen's Word Bank box). When provided, the parent shows the
@@ -25,7 +29,7 @@ export function TypingTest({
    */
   onFinish?: (result: TestResult, board: Board) => void
 }) {
-  const test = useTypingTest(durationMs)
+  const test = useTypingTest(durationMs, mode)
   const { result, restart, board } = test
 
   // Save each finished result once; the status is tied to that result so a

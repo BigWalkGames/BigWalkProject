@@ -1,3 +1,4 @@
+import type { GameMode } from '../gameModes'
 import type { WordBankSourceName } from '../wordbank/types'
 
 /** One forward keystroke. Backspaces are not logged. */
@@ -33,10 +34,14 @@ export interface KeyStats {
 }
 
 export interface TestResult {
+  /** Solo mode this was played in. Missing (e.g. Versus) means Time Attack rules. */
+  mode?: GameMode
   durationMs: number
   /**
-   * Net WPM (project doc): Gross WPM - uncorrected errors per minute, where
+   * WPM using the mode's formula (see GAME_MODES). Time Attack: Net WPM
+   * (project doc), Gross WPM - uncorrected errors per minute, where
    * uncorrected errors are letters still wrong when the test ends. Min 0.
+   * Classic: correct letters / 5 per minute.
    */
   wpm: number
   /** Gross WPM (project doc): every character entered / 5 per minute. */

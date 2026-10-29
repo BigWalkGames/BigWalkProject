@@ -1,4 +1,5 @@
 import { countLetters, type Board } from '../models/Board'
+import { DEFAULT_GAME_MODE, GAME_MODES, type GameMode } from '../gameModes'
 import type { WordBankSourceName } from '../wordbank/types'
 import type { BigramStats, KeyStats, Keystroke, TestResult } from './types'
 
@@ -32,6 +33,26 @@ export function computeNetWpm(
   if (elapsedMs < 1000) return 0
   const minutes = elapsedMs / 60_000
   return Math.max(0, computeWpm(grossChars, elapsedMs) - uncorrectedErrors / minutes)
+}
+
+/**
+ * The original (Classic) WPM: correct letters / 5 per minute. Mistakes aren't
+ * subtracted, they just don't add to the count.
+ */
+export function computeClassicWpm(board: Board, elapsedMs: number): number {
+  return computeWpm(countLetters(board, 'success'), elapsedMs)
+}
+
+/** WPM using the formula of the given game mode (see GAME_MODES). */
+export function computeModeWpm(
+  mode: GameMode,
+  board: Board,
+  keystrokeCount: number,
+  elapsedMs: number,
+): number {
+  return GAME_MODES[mode].wpmFormula === 'classic'
+    ? computeClassicWpm(board, elapsedMs)
+    : computeNetWpm(keystrokeCount, countLetters(board, 'fail'), elapsedMs)
 }
 
 export function computePerKey(keystrokes: Keystroke[]): Record<string, KeyStats> {
@@ -120,13 +141,15 @@ export function computeResult(params: {
   startedAt: number
   endedAt: number
   source: WordBankSourceName
+  mode?: GameMode
 }): TestResult {
-  const { board, keystrokes, startedAt, endedAt, source } = params
+  const { board, keystrokes, startedAt, endedAt, source, mode = DEFAULT_GAME_MODE } = params
   const durationMs = endedAt - startedAt
 
   return {
+    mode,
     durationMs,
-    wpm: computeNetWpm(keystrokes.length, countLetters(board, 'fail'), durationMs),
+    wpm: computeModeWpm(mode, board, keystrokes.length, durationMs),
     rawWpm: computeWpm(keystrokes.length, durationMs),
     accuracy: computeAccuracy(keystrokes),
     perKey: computePerKey(keystrokes),

@@ -1,0 +1,56 @@
+-- TODO(supabase): DRAFT ONLY, NOT APPLIED ANYWHERE. Everything is commented out.
+--
+-- Goal: tell solo game modes apart in saved matches, so the History screen can
+-- filter by mode ('time-attack' or 'classic', see src/features/typing/gameModes.ts).
+-- Today save_match_stats has no mode parameter, so Classic and Time Attack
+-- results are saved the same way and can't be told apart.
+--
+-- The real bodies of save_match_stats and get_all_matches aren't in this repo,
+-- so this shows the intended shape; merge it into the real definitions.
+--
+-- Once applied, the frontend changes are:
+--   1. src/features/typing/stats/supabaseStatsSink.ts: uncomment `match_mode`.
+--   2. src/features/typing/gameModes.ts: set HISTORY_MODE_FILTER_ENABLED = true.
+--   (useMatchHistory already reads `mode` from get_all_matches rows.)
+
+-- 1. Mode column. Existing rows were all Time Attack, so that's the default.
+--    A constant default doesn't rewrite the table (Postgres 11+).
+-- alter table users.matches
+--   add column mode text not null default 'time-attack'
+--   check (mode in ('time-attack', 'classic'));
+
+-- 2. History reads one player's matches newest first, optionally by mode.
+-- create index matches_account_mode_time_idx
+--   on users.matches (account_id, mode, match_time desc);
+
+-- 3. Saving: new optional parameter with a default, so calls that don't send
+--    it (old clients, multiplayer) keep working and count as Time Attack.
+--    Note: adding a parameter creates a new overload; drop the old signature
+--    so calls aren't ambiguous.
+-- drop function if exists public.save_match_stats(uuid, timestamptz, real, real);
+-- create or replace function public.save_match_stats(
+--   id uuid,
+--   match_end timestamptz,
+--   match_accuracy real,
+--   match_wpm real,
+--   match_mode text default 'time-attack'
+-- ) returns void
+-- language plpgsql
+-- security definer
+-- set search_path = ''
+-- as $$
+-- begin
+--   -- ...existing insert, plus the mode:
+--   -- insert into users.matches (account_id, match_time, accuracy, wpm, mode)
+--   -- values (id, match_end, match_accuracy, match_wpm, match_mode);
+-- end;
+-- $$;
+
+-- 4. Reading: return the mode with each row (the frontend already handles it;
+--    rows without it are treated as Time Attack).
+-- create or replace function public.get_all_matches(id uuid)
+-- returns table (account_id uuid, match_time timestamptz, accuracy real, wpm real, mode text)
+-- ...existing body, selecting m.mode as well.
+
+-- 5. Leaderboards: decide as a team whether Classic and Time Attack rank
+--    separately; if so, filter by mode there too.

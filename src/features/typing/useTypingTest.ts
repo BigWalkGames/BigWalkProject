@@ -8,7 +8,8 @@ import {
   typeChar,
   type Board,
 } from './models/Board'
-import { computeAccuracy, computeNetWpm, computeResult } from './stats/computeStats'
+import { computeAccuracy, computeModeWpm, computeNetWpm, computeResult } from './stats/computeStats'
+import { DEFAULT_GAME_MODE, type GameMode } from './gameModes'
 import type { Keystroke, TestResult } from './stats/types'
 import { loadWordBank } from './wordbank/loadWordBank'
 import type { WordBankSourceName } from './wordbank/types'
@@ -145,7 +146,7 @@ function initState(durationMs: number): State {
  * keystrokes from the whole document, starts the clock on the first key, and
  * produces a TestResult when time runs out or every word is typed.
 */
-export function useTypingTest(durationMs: number) {
+export function useTypingTest(durationMs: number, mode: GameMode = DEFAULT_GAME_MODE) {
   const [state, dispatch] = useReducer(reducer, durationMs, initState)
   const [now, setNow] = useState(0)
   const loadRequest = useRef(0)
@@ -221,21 +222,26 @@ export function useTypingTest(durationMs: number) {
       startedAt: state.startedAt,
       endedAt: state.endedAt,
       source: state.source,
+      mode,
     })
-  }, [state])
-  
+  }, [state, mode])
+
+  // The word engine's player profile always gets Net WPM, whatever the mode
+  // shows, so its numbers stay comparable across modes.
   useEffect(() => {
-    if (result) void recordMatch(state.engineLog, result.wpm, result.accuracy)
-  }, [result, state.engineLog])
+    if (!result || !state.board) return
+    const netWpm = computeNetWpm(result.keystrokes.length, countLetters(state.board, 'fail'), result.durationMs)
+    void recordMatch(state.engineLog, netWpm, result.accuracy)
+  }, [result, state.board, state.engineLog])
   
   return {
     status: state.status,
     board: state.board,
     wordBankSource: state.source,
     timeLeftMs: state.durationMs - elapsedMs,
-    // Same Net WPM formula as the final result, so the live number matches it.
+    // Same formula as the final result, so the live number matches it.
     wpm: state.board
-      ? computeNetWpm(state.keystrokes.length, countLetters(state.board, 'fail'), elapsedMs)
+      ? computeModeWpm(mode, state.board, state.keystrokes.length, elapsedMs)
       : 0,
     accuracy: computeAccuracy(state.keystrokes),
     keystrokeCount: state.keystrokes.length,

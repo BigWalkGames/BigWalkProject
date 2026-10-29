@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { MenuButton } from '../../components/MenuButton/MenuButton';
 import { useHotkeys } from '../../hooks/useHotkeys';
+import { GAME_MODES } from '../../features/typing/gameModes';
 import hourglass from '../../assets/hourglass.png';
 import hourglassPressed from '../../assets/hourglasspressed.png';
 
@@ -11,6 +12,7 @@ export default function Solo() {
 
   useHotkeys({
     q: () => navigate('/solo/time-attack'),
+    s: () => navigate(GAME_MODES.classic.route),
     h: () => navigate('/history'),
   });
 
@@ -25,6 +27,16 @@ export default function Solo() {
               icon={{ normal: hourglass, pressed: hourglassPressed }}
             >
               Time Attack
+            </MenuButton>
+          </div>
+
+          <div className="menu-btn-group">
+            <MenuButton
+              hotkey="S"
+              to={GAME_MODES.classic.route}
+              icon={{ normal: hourglass, pressed: hourglassPressed }}
+            >
+              {GAME_MODES.classic.label}
             </MenuButton>
           </div>
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getSupabase } from '../lib/supabase';
 import { useAuth } from './auth/useAuth';
+import { DEFAULT_GAME_MODE, type GameMode } from '../features/typing/gameModes';
 
 /** One row of users.matches, as returned by the get_all_matches RPC. */
 type MatchRow = {
@@ -8,7 +9,15 @@ type MatchRow = {
   match_time: string;
   accuracy: number; // 0-1
   wpm: number;
+  /**
+   * TODO(supabase): not returned yet (see db/matches/game-mode.todo.sql).
+   * Missing means Time Attack, which every match saved before modes was.
+   */
+  mode?: GameMode;
 };
+
+/** Which matches to show: one game mode, or 'all'. */
+export type HistoryFilter = GameMode | 'all';
 
 export type HistoryEntry = {
   id: string;
@@ -23,7 +32,7 @@ const dateFormat = new Intl.DateTimeFormat('en-US', {
   year: '2-digit',
 });
 
-export function useMatchHistory() {
+export function useMatchHistory(filter: HistoryFilter = 'all') {
   const { user } = useAuth();
   const [matches, setMatches] = useState<MatchRow[] | null>(null);
   const [failed, setFailed] = useState(false);
@@ -51,7 +60,11 @@ export function useMatchHistory() {
     };
   }, [user]);
 
-  const entries: HistoryEntry[] = (matches ?? []).map((row) => ({
+  const shown = (matches ?? []).filter(
+    (row) => filter === 'all' || (row.mode ?? DEFAULT_GAME_MODE) === filter,
+  );
+
+  const entries: HistoryEntry[] = shown.map((row) => ({
     id: row.match_time,
     date: dateFormat.format(new Date(row.match_time)),
     wpm: Math.round(Number(row.wpm)),
@@ -62,7 +75,7 @@ export function useMatchHistory() {
     ? 'Could not load match history.'
     : matches === null
       ? 'Loading...'
-      : matches.length === 0
+      : shown.length === 0
         ? 'No matches yet.'
         : null;
 
