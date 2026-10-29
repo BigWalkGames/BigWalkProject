@@ -1,36 +1,83 @@
+/* Lock this screen to the window height so the page never scrolls. */
+.screen:has(.multiplayer) {
+  height: 100%;
+}
+
+.screen:has(.multiplayer) .screen__body {
+  min-height: 0;
+}
+
 .multiplayer {
   flex: 1;
+  min-height: 0;
   width: 100%;
   max-width: var(--canvas-width);
   margin-inline: auto;
-  padding-inline: var(--margin);
+  padding-inline: 24px;
 
-  display: grid;
-  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
-  column-gap: var(--gutter);
-  align-items: center;
-}
-
-/* left: Quick Match + Match History */
-.multiplayer__menu {
-  grid-column: span 2;
+  /* Buttons fill a column top to bottom, then start a new column when the
+     window is too short. Sizes never change. */
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  flex-flow: column wrap;
+  align-content: safe center;   /* centered, but never pushed off the left edge */
+  justify-content: center;
+  gap: 20px var(--gutter);
 }
 
-/* right: slot for the Leaderboards panel */
+/* The wrappers disappear so each button is placed individually. */
+.multiplayer__menu,
+.multiplayer__menu .menu-btn-group {
+  display: contents;
+}
+
+/* Taller than any column of buttons, so it always gets its own column.
+   Hidden while empty so it doesn't take up space or push the buttons off-center. */
 .multiplayer__panel {
-  grid-column: span 1;
-  min-width: 0;
+  height: 100%;
+  min-width: 360px;
 }
 
-@media (max-width: 1100px) {
-  .multiplayer {
-    grid-template-columns: 1fr;
-    row-gap: var(--gutter);
-    padding-inline: 24px;
+.multiplayer__panel:empty {
+  display: none;
+}
+
+/* Not wide enough for two columns of buttons: one column, centered. Spacing
+   is tightened so the column fits in typical window heights. */
+@media (max-width: 1719px) {
+  .screen:has(.multiplayer) {
+    height: auto;
+    min-height: 100%;
   }
-  .multiplayer__menu,
-  .multiplayer__panel { grid-column: 1; }
+
+  .screen:has(.multiplayer) .screen__body {
+    padding-block: 0;
+  }
+
+  .screen:has(.multiplayer) .screen__footer {
+    padding-block: 8px;
+  }
+
+  .multiplayer {
+    flex-flow: column nowrap;
+    align-items: center;
+    align-content: normal;
+    justify-content: center;
+  }
+
+  .multiplayer__menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .multiplayer__menu .menu-btn-group {
+    display: grid;
+    gap: 12px;
+    width: fit-content;
+  }
+
+  .multiplayer__panel {
+    height: auto;
+    min-width: 0;
+  }
 }
