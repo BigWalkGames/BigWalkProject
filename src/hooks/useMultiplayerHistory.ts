@@ -21,7 +21,8 @@ export type MultiplayerHistoryEntry = {
   date: string;              // formatted, e.g. "09/08/26"
   mode: string;              // "Quick Match" | "Custom"
   opponent: string;
-  outcome: string;           // "Win" | "Loss" | "Draw"
+  outcome: MultiplayerRow['outcome'];
+  outcomeLabel: string;      // "Win" | "Loss" | "Draw"
   wpm: number;
   accuracy: number;          // 0-100
   opponentWpm: number;
@@ -69,7 +70,8 @@ export function useMultiplayerHistory() {
     date: dateFormat.format(new Date(row.finished_at)),
     mode: modeLabel[row.mode],
     opponent: row.opponent_name,
-    outcome: outcomeLabel[row.outcome],
+    outcome: row.outcome,
+    outcomeLabel: outcomeLabel[row.outcome],
     wpm: Math.round(Number(row.wpm)),
     accuracy: Math.round(Number(row.accuracy) * 100),
     opponentWpm: Math.round(Number(row.opponent_wpm)),

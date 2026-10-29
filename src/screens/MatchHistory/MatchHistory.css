@@ -27,6 +27,10 @@
   font-size: var(--fs-hud-stat);
 }
 
+/* wins and losses use the feedback colors; draws keep the normal row stripes */
+.match-history__table .history-row.match-history__row--win  { background: var(--color-positive); }
+.match-history__table .history-row.match-history__row--loss { background: var(--color-negative); }
+
 /* long usernames shorten instead of pushing the other columns */
 .match-history__opponent {
   overflow: hidden;

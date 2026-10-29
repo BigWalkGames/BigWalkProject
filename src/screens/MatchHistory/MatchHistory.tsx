@@ -29,11 +29,11 @@ export default function MatchHistory() {
                 </div>
               ) : (
                 entries.map((row) => (
-                  <div key={row.id} className="history-row" role="row">
+                  <div key={row.id} className={`history-row match-history__row--${row.outcome}`} role="row">
                     <span role="cell">{row.date}</span>
                     <span role="cell">{row.mode}</span>
                     <span className="match-history__opponent" role="cell">{row.opponent}</span>
-                    <span role="cell">{row.outcome}</span>
+                    <span role="cell">{row.outcomeLabel}</span>
                     <span role="cell">{row.wpm} WPM · {row.accuracy}%</span>
                     <span role="cell">{row.opponentWpm} WPM · {row.opponentAccuracy}%</span>
                   </div>
