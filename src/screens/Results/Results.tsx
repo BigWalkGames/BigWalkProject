@@ -5,6 +5,7 @@ import { ResultsPanel, type SaveStatus } from '../../features/typing/components/
 import type { Board } from '../../features/typing/models/Board';
 import { supabaseStatsSink } from '../../features/typing/stats/supabaseStatsSink';
 import type { TestResult } from '../../features/typing/stats/types';
+import { isHighScore, usePreviousBest } from '../../features/typing/stats/usePreviousBest';
 
 /** `board` is optional: without it the Word Bank box is hidden. */
 export type ResultsLocationState = { result: TestResult; board?: Board };
@@ -35,6 +36,9 @@ export default function Results() {
   const saveStatus: SaveStatus =
     save && save?.result === result ? save.status : 'saving';
 
+  // Best earlier Time Attack WPM, for the "New high score!" celebration.
+  const previousBest = usePreviousBest(result);
+
   // Opened directly (no test was just played): send them to take one.
   if (!result) return <Navigate to="/solo/time-attack" replace />;
 
@@ -46,6 +50,7 @@ export default function Results() {
         saveStatus={saveStatus}
         onRestart={() => navigate('/solo/time-attack', { replace: true })}
         onMenu={() => navigate('/solo')}
+        highScore={result ? isHighScore(result.wpm, previousBest) : false}
       />
     </ScreenLayout>
   );

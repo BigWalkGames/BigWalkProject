@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 import { NavButton } from '../NavButton/NavButton';
 import { useHotkeys } from '../../hooks/useHotkeys';
+import { SwirlBackground } from '../../features/3d-flourish/SwirlBackground';
 import './ScreenLayout.css';
 
 type ScreenLayoutProps = {
@@ -10,6 +11,11 @@ type ScreenLayoutProps = {
   footer?: React.ReactNode;       // extra bottom-row buttons, shown after Back
   backTo?: string;                // where Back and Esc go (default: home)
   showBack?: boolean;             // set false on screens like Time Attack
+  /**
+   * Pixel swirl behind the screen: 'faded' (animated, calm), 'faded-still'
+   * (one still frame, for gameplay screens), or 'none'.
+   */
+  background?: 'faded' | 'faded-still' | 'none';
   children: React.ReactNode;
 };
 
@@ -20,6 +26,7 @@ export function ScreenLayout({
   footer,
   backTo = '/',
   showBack = true,
+  background = 'faded',
   children,
 }: ScreenLayoutProps) {
   const navigate = useNavigate();
@@ -31,6 +38,9 @@ export function ScreenLayout({
 
   return (
     <main className="screen">
+      {background !== 'none' && (
+        <SwirlBackground variant="faded" animated={background === 'faded'} />
+      )}
       {hasHeader && (
         <header className="screen__header">
           <div className="screen__header-left">{headerLeft}</div>

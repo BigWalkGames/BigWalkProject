@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { formatPercent } from './format'
 
 export function StatsBar({
@@ -26,7 +27,7 @@ export function Stat({
   className,
 }: {
   label: string
-  value: string
+  value: ReactNode
   className?: string
 }) {
   return (

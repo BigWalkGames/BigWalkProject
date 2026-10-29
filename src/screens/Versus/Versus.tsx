@@ -58,7 +58,7 @@ export default function Versus() {
   useHotkeys({ r: rematch, q: playAgainNow });
 
   if (!match) {
-    return <ScreenLayout title="Versus" backTo="/multiplayer"><p>Waiting for the match...</p></ScreenLayout>;
+    return <ScreenLayout title="Versus" backTo="/multiplayer" background="faded-still"><p>Waiting for the match...</p></ScreenLayout>;
   }
   // The rematch banner under the headline. `request` is the one that must not be missed.
   const friendWantsRematch = canRematch && Boolean(friend?.ready) && !me?.ready;
@@ -155,7 +155,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
   const headline = !result ? '' : result.winner === null ? "It's a draw" : result.winner === sessionId ? 'You win!' : 'Opponent wins';
 
   return (
-    <ScreenLayout title="Versus" backTo="/multiplayer" footer={footer}>
+    <ScreenLayout title="Versus" backTo="/multiplayer" footer={footer} background="faded-still">
       <div className="time-attack">
         <div className="tt">
           <StatsBar
