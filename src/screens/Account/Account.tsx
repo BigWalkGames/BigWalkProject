@@ -7,6 +7,7 @@ import { TabNav, type Tab } from '../../components/TabNav/TabNav';
 import { useAuth } from '../../hooks/auth/useAuth';
 import { signOut } from '../../hooks/auth/authActions';
 import { GuestUpgrade } from './GuestUpgrade';
+import { AccountPrompt } from './AccountPrompt';
 
 // To add a tab later: add it here, then add its content below.
 const TABS: Tab[] = [
@@ -22,7 +23,9 @@ export default function Account() {
   const [showForm, setShowForm] = useState(false); // for guests that clicked 'create account'
   const [upgrading, setUpgrading] = useState(false); // keeps the upgrade form up until it finishes
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [promptOpen, setPromptOpen] = useState(isGuest); // 'make an account?' pop-up, guests only
 
+  const showPrompt = isGuest && promptOpen;
   const formOpen = showForm || upgrading;
   // The upgrade form lives on the Profile tab, so stay there while it is open.
   const activeTab = formOpen ? 'profile' : tab;
@@ -60,21 +63,13 @@ export default function Account() {
             if (!formOpen) setTab(id);
           }}
           label="Account sections"
+          hotkeysEnabled={!showPrompt && !formOpen}
         />
 
         <div className="account__panel">
           {activeTab === 'profile' && (
             <>
-              {formOpen ? (
-                <GuestUpgrade
-                  onStarted={() => setUpgrading(true)}
-                  onCancel={closeForm}
-                  onFinished={(message) => {
-                    closeForm();
-                    setNotice(message);
-                  }}
-                />
-              ) : isGuest ? (
+              {isGuest ? (
                 <div className="account__create">
                   <button className="auth-button" onClick={openForm}>
                     Create account
@@ -126,6 +121,37 @@ export default function Account() {
 
           {activeTab === 'stats' && <HistoryTable />}
         </div>
+
+        {formOpen && (
+          <div
+            className="account-prompt"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Create account"
+          >
+            <GuestUpgrade
+              onStarted={() => setUpgrading(true)}
+              onCancel={closeForm}
+              onFinished={(message) => {
+                closeForm();
+                setNotice(message);
+              }}
+            />
+          </div>
+        )}
+
+        {showPrompt && (
+          <AccountPrompt
+            onRegister={() => {
+              setPromptOpen(false);
+              openForm();
+            }}
+            onCancel={() => {
+              setPromptOpen(false);
+              setTab('stats');
+            }}
+          />
+        )}
       </div>
     </ScreenLayout>
   );

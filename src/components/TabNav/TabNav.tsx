@@ -10,10 +10,11 @@ type TabNavProps = {
   active: string;
   onChange: (id: string) => void;
   label?: string; // accessible name for the tab bar
+  hotkeysEnabled?: boolean; // turn Q / E off while a pop-up is open
 };
 
 /** Q / E keycaps flip between the tabs; the tabs are also clickable. */
-export function TabNav({ tabs, active, onChange, label = 'Sections' }: TabNavProps) {
+export function TabNav({ tabs, active, onChange, label = 'Sections', hotkeysEnabled = true }: TabNavProps) {
   const index = Math.max(0, tabs.findIndex((t) => t.id === active));
 
   const go = (offset: number) => {
@@ -21,7 +22,7 @@ export function TabNav({ tabs, active, onChange, label = 'Sections' }: TabNavPro
     if (next) onChange(next.id);
   };
 
-  useHotkeys({ q: () => go(-1), e: () => go(1) });
+  useHotkeys({ q: () => go(-1), e: () => go(1) }, { enabled: hotkeysEnabled });
   const keysDown = useKeysDown(['q', 'e']);
 
   return (
