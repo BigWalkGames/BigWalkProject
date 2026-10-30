@@ -8,9 +8,11 @@
 
 /* Only the top stats bar (a direct child of .tt), not the one inside the results panel */
 
-/* Stats row: only the timer stays in the body, centered above the words */
+/* Stats row: the timer, centered above the words */
 .time-attack .tt > .tt-stats {
   justify-content: center;
+  align-items: flex-end;
+  gap: 48px;
 }
 
 /* 1st stat = TIME */
@@ -18,35 +20,51 @@
   font-size: var(--fs-stat-compact);
 }
 .time-attack .tt > .tt-stats > .tt-stat:nth-child(1) .tt-stat-label {
-  display: none;              
+  display: none;
 }
 
-/* 2nd and 3rd stats = WPM and ACCURACY, lifted into the header */
+/* 2nd and 3rd stats = WPM and ACCURACY: label above the number */
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(2),
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(3) {
+  flex-direction: column-reverse;
+}
+
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(2) .tt-stat-label,
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(3) .tt-stat-label {
+  font-size: var(--fs-hud-label);
+  line-height: 1.2;
+}
+
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(2) .tt-stat-value,
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(3) .tt-stat-value {
+  font-size: var(--fs-filter);
+  line-height: 1;
+}
+
+/* WPM and ACCURACY always sit in the header, top left. The left offset shrinks
+   with the window so they stay clear of the centered title. */
 .time-attack .tt > .tt-stats > .tt-stat:nth-child(2),
 .time-attack .tt > .tt-stats > .tt-stat:nth-child(3) {
   position: absolute;                 /* relative to .screen */
   top: 8px;                           /* nudges the text down to the header's center */
   height: var(--header-height);       /* fills the header... */
-  display: flex;
-  flex-direction: column-reverse;     /* label on top, value below */
   justify-content: center;            /* ...and centers its content in it */
   z-index: 1;
   color: var(--color-light);
 }
 
-.time-attack .tt > .tt-stats > .tt-stat:nth-child(2) { left: var(--margin); }
-.time-attack .tt > .tt-stats > .tt-stat:nth-child(3) { left: calc(var(--margin) + 85px); }
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(2) { left: clamp(24px, 50vw - 450px, 205px); }
+.time-attack .tt > .tt-stats > .tt-stat:nth-child(3) { left: calc(clamp(24px, 50vw - 450px, 205px) + 85px); }
 
-/* titles: WPM / ACCURACY */
 .time-attack .tt > .tt-stats > .tt-stat:nth-child(2) .tt-stat-label,
 .time-attack .tt > .tt-stats > .tt-stat:nth-child(3) .tt-stat-label {
-  font-size: var(--fs-hud-label);
   line-height: 0.2;
 }
 
-/* numbers: 0 / 100% */
-.time-attack .tt > .tt-stats > .tt-stat:nth-child(2) .tt-stat-value,
-.time-attack .tt > .tt-stats > .tt-stat:nth-child(3) .tt-stat-value {
-  font-size: var(--fs-filter);
-  line-height: 1;
+/* Too narrow to fit beside the title: the header grows a row, the stats keep
+   the top row and the title sits underneath. */
+@media (max-width: 939px) {
+  .screen:has(.time-attack) .screen__header {
+    padding-top: var(--header-height);
+  }
 }
