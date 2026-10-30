@@ -72,6 +72,10 @@
   font-size: var(--fs-list-value);
 }
 
+.menu-btn .keycap--long {
+  width: 160px;   /* twice the 80px height */
+}
+
 .menu-btn .keycap__label {
   transform: translateY(-4px);
 }
