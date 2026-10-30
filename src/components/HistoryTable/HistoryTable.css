@@ -56,3 +56,12 @@
   font-size: var(--fs-body);
   line-height: 1;
 }
+
+/* Narrow windows: drop the empty indent and give the columns more room */
+@media (max-width: 1100px) {
+  .history-panel { padding: 24px; }
+  .history-table {
+    --hist-cols: 1fr 1.6fr 1fr;
+    --hist-indent: 24px;
+  }
+}
