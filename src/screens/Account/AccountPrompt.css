@@ -1,0 +1,47 @@
+/* Dims the screen behind the pop-up */
+.account-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: safe center;
+  padding: 24px;
+  overflow-y: auto;
+  background: color-mix(in srgb, var(--color-ink) 70%, transparent);
+}
+
+.account-prompt__card {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 32px;
+  background: var(--color-container);
+  border: 3px solid var(--color-shade);
+  border-radius: 24px;
+  box-shadow: 4px 4px 0 var(--shadow-soft);
+  text-align: center;
+  outline: none;
+}
+
+.account-prompt__title {
+  margin: 0;
+  font-size: var(--fs-tab);
+  font-weight: normal;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.account-prompt__text {
+  margin: 0;
+  font-size: var(--fs-chat);
+}
+
+.account-prompt__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+}
