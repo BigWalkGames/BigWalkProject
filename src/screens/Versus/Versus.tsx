@@ -60,11 +60,20 @@ export default function Versus() {
   if (!match) {
     return <ScreenLayout title="Versus" backTo="/multiplayer"><p>Waiting for the match...</p></ScreenLayout>;
   }
+  // The rematch banner under the headline. `request` is the one that must not be missed.
+  const friendWantsRematch = canRematch && Boolean(friend?.ready) && !me?.ready;
   let playAgain = '';
+  let playAgainTone: RematchTone = 'info';
   if (mode === 'custom') {
-    if (roomEnded) playAgain = 'Your friend left, so the room is closed.';
-    else if (me?.ready) playAgain = "You're ready for a rematch. Waiting for your friend...";
-    else if (friend?.ready) playAgain = 'Your friend wants a rematch!';
+    if (roomEnded) {
+      playAgain = 'Your friend left, so the room is closed.';
+      playAgainTone = 'closed';
+    } else if (me?.ready) {
+      playAgain = "You're ready for a rematch. Waiting for your friend...";
+    } else if (friendWantsRematch) {
+      playAgain = 'Your friend wants a rematch! Press R to play again.';
+      playAgainTone = 'request';
+    }
   }
 
   // Buttons under the results. The keys work too.
@@ -73,7 +82,7 @@ export default function Versus() {
       <>
         {mode === 'custom' ? (
           <>
-            <NavButton hotkey="R" onClick={rematch} disabled={!canRematch}>
+            <NavButton hotkey="R" onClick={rematch} disabled={!canRematch} highlight={friendWantsRematch}>
               {me?.ready ? 'Cancel Rematch' : 'Rematch'}
             </NavButton>
             <NavButton hotkey="Q" onClick={playAgainNow}>Custom Game</NavButton>
@@ -97,10 +106,13 @@ export default function Versus() {
       result={result}
       sessionId={sessionId}
       playAgain={playAgain}
+      playAgainTone={playAgainTone}
       footer={footer}
     />
   );
 }
+
+type RematchTone = 'info' | 'request' | 'closed';
 
 type RaceProps = {
   words: string[];
@@ -113,11 +125,12 @@ type RaceProps = {
   result: ReturnType<typeof useQuickMatch>['result'];
   sessionId: string | null;
   playAgain: string;
+  playAgainTone: RematchTone;
   footer?: React.ReactNode;
 };
 
 // Split out so the race state (the words and counts) starts fresh with each match.
-function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, playAgain, footer }: RaceProps) {
+function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, playAgain, playAgainTone, footer }: RaceProps) {
   const race = useVersusRace(words, racing, startedAt, durationMs);
 
   const mine = result && sessionId ? result.results[sessionId] : undefined;
@@ -166,6 +179,11 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
           {finished && result && (
             <div className="versus-results">
               <h2 className="versus-headline">{headline}</h2>
+              {playAgain && (
+                <p className={`versus-rematch is-${playAgainTone}`} role="status">
+                  {playAgain}
+                </p>
+              )}
               {theirs && (
                 <div className="tt-stats versus-opponent" aria-label="Opponent results">
                   <Stat label="Opponent WPM" value={theirs.wpm.toString()} />
@@ -178,7 +196,6 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
               ) : (
                 <p>You: no result</p>
               )}
-              {playAgain && <p className="versus-playagain" role="status">{playAgain}</p>}
             </div>
           )}
         </div>
