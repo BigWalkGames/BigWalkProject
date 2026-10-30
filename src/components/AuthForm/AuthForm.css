@@ -136,3 +136,38 @@
   box-shadow: none;
   transform: translate(4px, 4px);
 }
+
+.auth-button {
+  padding: 7px 17px;
+  background: var(--btn-bg);
+  border: 3px solid var(--btn-border);
+  border-radius: 15px;
+  color: var(--btn-text);
+  font-family: inherit;
+  font-size: var(--fs-chat);
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    inset 0 -4px 0 var(--shadow-soft),
+    4px 4px 0 var(--shadow-strong);
+}
+
+.auth-button:hover:not(:disabled),
+.auth-button:focus-visible {
+  background: var(--btn-bg-hover);
+  border-color: var(--btn-border-hover);
+  outline: none;
+}
+
+.auth-button:active:not(:disabled) {
+  background: var(--btn-bg-active);
+  border-color: var(--btn-border-active);
+  color: var(--btn-text-active);
+  box-shadow: none;
+  transform: translate(4px, 4px);
+}
+
+.auth-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
