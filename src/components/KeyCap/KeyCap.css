@@ -9,6 +9,10 @@
 .keycap--lg { width: 100px; height: 100px; font-size: var(--fs-key); }
 .keycap--sm { width: 35px; height: 35px; font-size: var(--fs-chat); }
 
+/* Long variant: same height, twice the width (the image is 64x32) */
+.keycap--lg.keycap--long { width: 200px; }
+.keycap--sm.keycap--long { width: 70px; }
+
 .keycap__img {
   grid-area: 1 / 1;
   width: 100%;
