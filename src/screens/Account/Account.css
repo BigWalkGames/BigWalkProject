@@ -1,34 +1,75 @@
 .account {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 30px;
+}
+
+/* Username header */
+.account__header {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  height: 188px;
+  padding: 0 60px;
+  background: var(--color-frame);
+  border-radius: 30px;
+  color: var(--color-light);
+  box-shadow: 0 4px 0 var(--shadow-soft);
+}
+
+.account__name {
+  min-width: 0;
+  margin: 0;
+  font-size: var(--fs-menu-primary);
+  font-weight: normal;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tab content. On the Stats tab the table takes the remaining height and
+   scrolls inside itself. */
+.account__panel {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;   /* Profile: buttons and text centered in the space left */
   gap: 24px;
-  padding: 0 24px;
 }
 
-.account__history {
+.account__panel .history-panel {
+  flex: 1;
+  min-height: 360px;         /* Stats: the table never gets squashed below this */
+  max-height: 100%;
+}
+
+/* Guest: Create account button + explanation */
+.account__create {
   display: flex;
-  justify-content: center;
-  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 640px;
+  text-align: center;
 }
 
-/* On this screen the table scrolls once the panel hits this height */
-.account__history .history-panel {
-  max-height: 60vh;
+.account__create-text {
+  margin: 0;
+  font-size: var(--fs-chat);
 }
 
-/* Permanent account: username + email */
+/* Permanent account: email (the username is in the header) */
 .account__member {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-}
-
-.account__username {
-  margin: 0;
-  font-size: var(--fs-body);
-  line-height: 1;
 }
 
 .account__email {
