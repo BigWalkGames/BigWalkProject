@@ -1,9 +1,7 @@
-/* Colors and fonts come from the design tokens in src/index.css, except
-   --tt-positive: a brighter green than --color-positive, used for correct
-   letters here and for the accurate end of the heatmap. */
+/* Colors and fonts come from the design tokens in src/index.css. */
 
 .tt {
-  --tt-positive: #3f8f2f;
+  --tt-positive: var(--color-positive-bright);
   --tt-correct: var(--tt-positive);
   --tt-incorrect: var(--color-negative);
   --tt-incorrect-bg: color-mix(in srgb, var(--color-negative) 30%, transparent);
@@ -211,10 +209,23 @@
   min-width: 0;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1099px) {
   .tt-results {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  /* Stacked: drop the two columns and order the pieces directly,
+     with the Menu / Restart buttons at the bottom. */
+  .tt-results__col {
+    display: contents;
+  }
+
+  .tt-box--bigrams     { order: 1; }
+  .tt-box--keys        { order: 2; }
+  .tt-box--words       { order: 3; }
+  .tt-results__summary { order: 4; }
+  .tt-results .kb      { order: 5; }
+  .tt-results__actions { order: 6; }
 }
 
 .tt-box {
@@ -238,6 +249,7 @@
 .tt-box__scroll {
   overflow: auto;
   overscroll-behavior: contain;
+  scrollbar-color: var(--color-frame) var(--color-light);
   font-size: var(--fs-chat);
 }
 
@@ -281,7 +293,8 @@
 
 .tt-keys {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;   /* collapsed borders don't stick with a sticky header */
+  border-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
 
@@ -296,11 +309,14 @@
 .tt-keys thead th {
   position: sticky;
   top: 0;
+  z-index: 1;
+  padding-bottom: 6px;
   background: var(--color-light);
   font-size: var(--fs-hud-label);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   border-bottom: 3px solid var(--color-outline-light);
+  box-shadow: 0 3px 0 var(--color-light);   /* a little gap under the lip so rows never touch it */
 }
 
 .tt-key {
@@ -369,4 +385,56 @@
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
+}
+
+@media (min-width: 1100px) {
+  /* Results screen: fit the window, no page scroll. The boxes share the free
+     height and scroll on their own only if there is too little of it. */
+  .screen:has(.screen__body > .tt.is-finished) {
+    height: 100%;
+  }
+
+  .screen:has(.screen__body > .tt.is-finished) .screen__body {
+    min-height: 0;
+  }
+
+  .screen__body > .tt.is-finished {
+    flex: 1;
+    min-height: 0;
+    padding-inline: 24px;
+  }
+
+  .screen__body > .tt.is-finished .tt-results {
+    flex: 1;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .screen__body > .tt.is-finished .tt-results__col {
+    min-height: 0;
+  }
+
+  /* Boxes grow into the free height; the scroll area is the box content. */
+  .screen__body > .tt.is-finished .tt-box {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .screen__body > .tt.is-finished .tt-box--keys {
+    flex-grow: 2;
+  }
+
+  .screen__body > .tt.is-finished .tt-box__scroll {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+  }
+
+  /* Fixed-size parts keep their size */
+  .screen__body > .tt.is-finished .tt-results__actions,
+  .screen__body > .tt.is-finished .tt-results__summary,
+  .screen__body > .tt.is-finished .kb {
+    flex: none;
+  }
 }

@@ -38,6 +38,19 @@
 .screen__header-left  { justify-self: start; }
 .screen__header-right { justify-self: end; }
 
+/* Narrow windows: back/right buttons share the first row, the title drops below */
+@media (max-width: 1000px) {
+  .screen__header {
+    grid-template-columns: 1fr auto;
+    row-gap: 0;
+    padding-block: 8px;
+  }
+  .screen__title {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
 .screen__body {
   flex: 1;
   display: flex;

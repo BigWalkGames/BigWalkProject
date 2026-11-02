@@ -35,8 +35,9 @@ export default function JoinRoom() {
   const [note, setNote] = useState('');
 
   /**
-   * Fill the box from the clipboard (the Paste button, or the V key). With `typeVIfEmpty`,
-   * the V key still types a V when the clipboard holds no code, because codes can start with V.
+   * Fill the box from the clipboard (the Paste button, or the V key) and join straight away
+   * when it holds a room code. With `typeVIfEmpty`, the V key still types a V when the
+   * clipboard holds no code, because codes can start with V.
    */
   async function paste(typeVIfEmpty = false) {
     let text: string;
@@ -52,6 +53,7 @@ export default function JoinRoom() {
       setCode(found);
       setError(null);
       setNote('');
+      void join(found);
     } else if (typeVIfEmpty) {
       setCode('V');
     } else if (clean(text)) {
@@ -66,14 +68,15 @@ export default function JoinRoom() {
   // V works when the box is not focused (the box itself handles V below).
   useHotkeys({ v: () => void paste() });
 
-  async function submit() {
+  /** Join a room by code. A bad code shows its error here and keeps you on this screen. */
+  async function join(value: string) {
     if (busy) return;
-    if (code.length !== 5) {
+    if (value.length !== 5) {
       setError('invalid');
       return;
     }
     setBusy(true);
-    const problem = await joinRoom(code);
+    const problem = await joinRoom(value);
     setBusy(false);
     if (problem) {
       setError(problem);
@@ -81,6 +84,8 @@ export default function JoinRoom() {
     }
     navigate('/multiplayer/custom/lobby', { replace: true });
   }
+
+  const submit = () => join(code);
 
   return (
     <ScreenLayout
@@ -124,9 +129,11 @@ export default function JoinRoom() {
             // Ctrl+V / Cmd+V: pick the code out of whatever was copied, instead of cutting it off at 5 characters.
             const text = e.clipboardData.getData('text');
             e.preventDefault();
-            setCode(findCode(text) ?? clean(text).slice(0, 5));
+            const found = findCode(text);
+            setCode(found ?? clean(text).slice(0, 5));
             setError(null);
             setNote('');
+            if (found) void join(found); // a pasted code joins right away, no Enter needed
           }}
           onKeyDown={(e) => {
             // V on an empty box pastes. If there is no code on the clipboard it types a V instead.
@@ -143,7 +150,7 @@ export default function JoinRoom() {
           {error ? MESSAGES[error] : ''}
         </p>
         <p className="join__hint">
-          {busy ? 'Joining...' : note || 'Copied the code? Press V to paste it. Then press Enter to join, or Esc to go back.'}
+          {busy ? 'Joining...' : note || 'Copied the code? Press V to paste it and join. Or type it and press Enter. Esc goes back.'}
         </p>
       </form>
     </ScreenLayout>

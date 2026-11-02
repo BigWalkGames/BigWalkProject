@@ -1,0 +1,65 @@
+.tab-nav {
+  --tab-nav-bg: color-mix(in srgb, var(--color-frame) 70%, var(--color-ink));
+
+  display: flex;
+  align-items: stretch;
+  height: 95px;
+  background: var(--tab-nav-bg);
+  border-radius: 30px;
+  box-shadow: 0 4px 0 var(--shadow-soft);
+}
+
+/* Q and E touch each other, with a little padding on each side */
+.tab-nav__keys {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0 20px;
+}
+
+.tab-nav__keys .keycap {
+  width: 70px;
+  height: 70px;
+  font-size: var(--fs-list-value);
+}
+
+.tab-nav__keys .keycap__label {
+  transform: translateY(-4px);
+}
+
+/* The tabs; the rounded end after the last one comes from the clip */
+.tab-nav__tabs {
+  display: flex;
+  min-width: 0;
+  border-radius: 0 30px 30px 0;
+  overflow: hidden;
+}
+
+.tab-nav__tab {
+  flex: 0 0 auto;
+  min-width: 290px;
+  padding: 0 24px;
+  background: var(--color-frame);
+  border: 0;
+  color: var(--color-light);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tab-nav__tab:hover {
+  color: var(--color-accent);
+}
+
+.tab-nav__tab.is-active {
+  background: var(--color-shade);
+  color: var(--color-light);
+}
+
+.tab-nav__tab:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: -3px;
+}
