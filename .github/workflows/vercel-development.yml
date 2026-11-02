@@ -1,0 +1,60 @@
+# Builds Development and deploys it as a Vercel preview on every push to
+# Development, then points the stable Development URL at it so the team can
+# see the merged state of the project.
+# Run it manually (Actions → Vercel Development → Run workflow) to redeploy.
+#
+# Secrets: VERCEL_TOKEN
+name: Vercel Development
+
+on:
+  push:
+    branches: [Development]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  VERCEL_ORG_ID: team_3M9H9astUFK9JNHkMXfdwqAr
+  VERCEL_PROJECT_ID: prj_W9usyjSTozcHkahMzkQSJM2n0Rgr
+  DEVELOPMENT_ALIAS: bigwalk-git-development-jdelacruz1223s-projects.vercel.app
+
+jobs:
+  deploy-development:
+    # Only the newest push matters; an older build would just be replaced.
+    concurrency:
+      group: vercel-development
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm add --global vercel@latest
+
+      - name: Pull Vercel preview settings and env vars
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Point the Development URL at this deploy
+        run: |
+          vercel alias set "${{ steps.deploy.outputs.url }}" "$DEVELOPMENT_ALIAS" --token=${{ secrets.VERCEL_TOKEN }}
+          echo "Deployed: https://$DEVELOPMENT_ALIAS (${{ steps.deploy.outputs.url }})" >> "$GITHUB_STEP_SUMMARY"
