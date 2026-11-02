@@ -16,6 +16,7 @@ import RoomLobby from './screens/CustomGame/RoomLobby';
 import History from './screens/History/History';
 import MatchHistory from './screens/MatchHistory/MatchHistory';
 import Leaderboards from './screens/Leaderboards/Leaderboards';
+import ResetPassword from './screens/ResetPassword/ResetPassword';
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/leaderboards" element={<Leaderboards />} />
         <Route path="/account" element={<Account />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </AuthGate>
   );

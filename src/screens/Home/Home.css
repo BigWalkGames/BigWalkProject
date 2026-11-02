@@ -7,10 +7,21 @@
   padding: 16px;
 }
 
-/* Everything on Home sits above the swirl background. */
-.home > :not(.swirl-bg) {
+/* Everything on Home sits above the swirl background. The player name is
+   left out so it keeps its absolute position; it sets its own z-index. */
+.home > :not(.swirl-bg, .home__player) {
   position: relative;
   z-index: 1;
+}
+
+.home__player {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  z-index: 1;
+  margin: 0;
+  font-size: var(--fs-chat);
+  color: var(--color-ink);
 }
 
 .home__hero {
@@ -40,7 +51,7 @@
 }
 
 .home__plus {
-  font-size: var(--fs-menu-primary);  
+  font-size: var(--fs-menu-primary);
   color: var(--color-frame);
 }
 

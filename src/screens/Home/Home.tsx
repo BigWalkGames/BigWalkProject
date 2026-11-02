@@ -13,6 +13,7 @@ import accountIcon from '../../assets/accounticon.png';
 import accountIconPressed from '../../assets/accounticonpressed.png';
 import gearIcon from '../../assets/gearicon.png';
 import gearIconPressed from '../../assets/geariconpressed.png';
+import { useAuth } from '../../hooks/auth/useAuth';
 import { Hero3DBoundary } from '../../features/3d-flourish/Hero3DBoundary';
 import { SwirlBackground } from '../../features/3d-flourish/SwirlBackground';
 import './Home.css';
@@ -30,6 +31,12 @@ export default function Home() {
   const navigate = useNavigate();
   // A message from a screen that sent the player back here (for example, no opponent found).
   const notice = (useLocation().state as { notice?: string } | null)?.notice;
+
+  const { user, isGuest } = useAuth();
+
+  const playerName = isGuest
+    ? 'Guest'
+    : (user?.user_metadata?.username as string | undefined);
 
   useHotkeys({
     s: () => navigate('/solo'),
@@ -65,8 +72,21 @@ export default function Home() {
   return (
     <main className="home">
       <SwirlBackground />
+      {playerName && (
+        <p className="home__player" aria-label={`Signed in as ${playerName}`}>
+          {playerName}
+        </p>
+      )}
       {notice && (
-        <p role="status" style={{ position: 'absolute', top: 16, left: 0, right: 0, textAlign: 'center' }}>
+        <p
+          role="status"
+          style={{
+            position: 'absolute',
+            top: 16,
+            left: 0,
+            right: 0,
+            textAlign: 'center',
+          }}>
           {notice}
         </p>
       )}
@@ -82,20 +102,28 @@ export default function Home() {
       </section>
 
       <nav className="home__nav" aria-label="Main">
-        <NavButton to="/solo" hotkey="S" icon={{ normal: soloIcon, pressed: soloIconPressed }}>
+        <NavButton
+          to="/solo"
+          hotkey="S"
+          icon={{ normal: soloIcon, pressed: soloIconPressed }}>
           Solo
         </NavButton>
         <NavButton
           to="/multiplayer"
           hotkey="W"
-          icon={{ normal: multiplayerIcon, pressed: multiplayerIconPressed }}
-        >
+          icon={{ normal: multiplayerIcon, pressed: multiplayerIconPressed }}>
           Multiplayer
         </NavButton>
-        <NavButton to="/account" hotkey="E" icon={{ normal: accountIcon, pressed: accountIconPressed }}>
+        <NavButton
+          to="/account"
+          hotkey="E"
+          icon={{ normal: accountIcon, pressed: accountIconPressed }}>
           Account
         </NavButton>
-        <NavButton to="/settings" hotkey="R" icon={{ normal: gearIcon, pressed: gearIconPressed }}>
+        <NavButton
+          to="/settings"
+          hotkey="R"
+          icon={{ normal: gearIcon, pressed: gearIconPressed }}>
           Settings
         </NavButton>
       </nav>

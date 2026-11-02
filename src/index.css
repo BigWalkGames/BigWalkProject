@@ -32,6 +32,7 @@
 
   /* Feedback */
   --color-positive: #90946f;       /* correct keystroke, positive heatmap */
+  --color-positive-bright: #3f8f2f; /* correct letters and accurate heatmap keys on the results screen */
   --color-negative: #9a5f54;       /* incorrect keystroke, negative heatmap */
 
   /* Shadow Effect */
@@ -67,25 +68,29 @@
   --fs-chat: 30px;            /* keybinds, chat */
   --fs-hud-label: 25px;       /* header HUD label */
 
+
   /* Grid & spacing (designed on a 1920px canvas) */
   --canvas-width: 1920px;
   --header-height: 105px;      /* general screen header */
 
-  --margin-min: 193px;         /* content margin range: 193-219px */
-  --margin-max: 219px;
-  --margin: clamp(var(--margin-min), 10.7vw, var(--margin-max));
+  --margin: clamp(24px, 10.7vw, 205px);   /* side margin: 205px on the canvas, shrinks on small windows */
 
   --cols: 3;                   /* 3 column template grid (override per grid) */
   --col-width: 300px;
   --gutter: 36px;
 
   --row-height: 120px;         /* leaderboard / history rows */
-  --row-gap: clamp(11px, 0.68vw, 15px);   /* 11-15px between rows */
+  --row-gap: 13px;   /* 11-15px between rows on the canvas */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body, #root { height: 100%; margin: 0; }
+
+/* Page scroll bar, same look as the History table and Results boxes */
+html {
+  scrollbar-color: var(--color-frame) var(--color-screen);
+}
 
 body {
   background: var(--color-screen);

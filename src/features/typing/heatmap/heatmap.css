@@ -7,11 +7,14 @@
   --kb-gap: 4px;
   --kb-px: 2px; /* one keycap.png pixel on screen */
 
-  container-type: inline-size;
+  --kb-key: 48px; /* key size */
+
   display: grid;
-  grid-template-columns: repeat(var(--kb-cols), minmax(0, 1fr));
+  grid-template-columns: repeat(var(--kb-cols), var(--kb-key));
   gap: var(--kb-gap);
-  width: 100%;
+  justify-content: center;
+  max-width: 100%;
+  overflow-x: auto;
   user-select: none;
 }
 
@@ -28,7 +31,7 @@
   border-image-repeat: stretch;
   image-rendering: pixelated;
   color: var(--color-frame);
-  font-size: 4.2cqi;
+  font-size: 20px;
   line-height: 1;
   text-transform: uppercase;
 }
