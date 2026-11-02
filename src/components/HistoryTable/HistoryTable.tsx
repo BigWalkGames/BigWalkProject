@@ -1,9 +1,13 @@
 import './HistoryTable.css';
 import { HistoryRow } from '../HistoryRow/HistoryRow';
-import { useMatchHistory } from '../../hooks/useMatchHistory';
+import { useMatchHistory, type HistoryPeriod } from '../../hooks/useMatchHistory';
 
-export function HistoryTable() {
-  const { entries, status } = useMatchHistory();
+type HistoryTableProps = {
+  period?: HistoryPeriod; // default: full history
+};
+
+export function HistoryTable({ period = 'all' }: HistoryTableProps) {
+  const { entries, status } = useMatchHistory(period);
 
   return (
     <div className="history-panel">
