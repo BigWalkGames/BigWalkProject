@@ -15,3 +15,24 @@
   align-items: center;
   padding: 0 24px;
 }
+
+/* period tabs above the table, same width as the table panel */
+.history__content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 1530px;
+  max-height: 100%;
+  min-height: 0;
+}
+
+/* five tabs share the bar instead of each taking the default 290px */
+.history__content .tab-nav__tabs {
+  flex: 1;
+}
+
+.history__content .tab-nav__tab {
+  flex: 1 1 0;
+  min-width: 0;
+}
