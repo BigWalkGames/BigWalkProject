@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getSupabase } from '../lib/supabase';
 import { useAuth } from './auth/useAuth';
+import { emptyMessage, periodParams, type HistoryPeriod } from './historyPeriod';
 
 /** One row of the get_multiplayer_history RPC (the signed-in player's side of a match). */
 type MultiplayerRow = {
@@ -38,10 +39,12 @@ const dateFormat = new Intl.DateTimeFormat('en-US', {
 const modeLabel = { quick_match: 'Quick Match', custom: 'Custom' } as const;
 const outcomeLabel = { win: 'Win', loss: 'Loss', draw: 'Draw' } as const;
 
-export function useMultiplayerHistory() {
+/** The rows loaded for one period; rows is null when the request failed. */
+type Result = { period: HistoryPeriod; rows: MultiplayerRow[] | null };
+
+export function useMultiplayerHistory(period: HistoryPeriod = 'all') {
   const { user } = useAuth();
-  const [matches, setMatches] = useState<MultiplayerRow[] | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [result, setResult] = useState<Result | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -49,21 +52,25 @@ export function useMultiplayerHistory() {
 
     // The RPC reads the player from the session, and returns newest first.
     getSupabase()
-      .rpc('get_multiplayer_history')
+      .rpc('get_multiplayer_history', periodParams(period))
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) {
           console.error('get_multiplayer_history failed', error);
-          setFailed(true);
+          setResult({ period, rows: null });
           return;
         }
-        setMatches((data ?? []) as MultiplayerRow[]);
+        setResult({ period, rows: (data ?? []) as MultiplayerRow[] });
       });
 
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, period]);
+
+  // Rows from the previous filter are not shown while the new ones load.
+  const current = result?.period === period ? result : null;
+  const matches = current?.rows;
 
   const entries: MultiplayerHistoryEntry[] = (matches ?? []).map((row) => ({
     id: row.match_id,
@@ -78,12 +85,12 @@ export function useMultiplayerHistory() {
     opponentAccuracy: Math.round(Number(row.opponent_accuracy) * 100),
   }));
 
-  const status = failed
-    ? 'Could not load match history.'
-    : matches === null
-      ? 'Loading...'
+  const status = !current
+    ? 'Loading...'
+    : !matches
+      ? 'Could not load match history.'
       : matches.length === 0
-        ? 'No matches yet.'
+        ? emptyMessage(period)
         : null;
 
   return { entries, status };
