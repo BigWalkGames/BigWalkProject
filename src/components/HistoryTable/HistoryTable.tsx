@@ -1,6 +1,7 @@
 import './HistoryTable.css';
 import { HistoryRow } from '../HistoryRow/HistoryRow';
-import { useMatchHistory, type HistoryPeriod } from '../../hooks/useMatchHistory';
+import { useMatchHistory } from '../../hooks/useMatchHistory';
+import type { HistoryPeriod } from '../../hooks/historyPeriod';
 
 type HistoryTableProps = {
   period?: HistoryPeriod; // default: full history

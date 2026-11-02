@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getSupabase } from '../lib/supabase';
 import { useAuth } from './auth/useAuth';
+import { emptyMessage, periodParams, type HistoryPeriod } from './historyPeriod';
 
 /** One row of users.matches, as returned by the get_all_matches RPC. */
 type MatchRow = {
@@ -16,28 +17,6 @@ export type HistoryEntry = {
   wpm: number;
   accuracy: number;   // 0-100
 };
-
-export type HistoryPeriod = 'all' | 'day' | 'week' | 'month' | 'year';
-
-/** [start, end) of the calendar period containing `now`, in the browser's local time. Weeks start on Sunday. */
-export function periodRange(period: Exclude<HistoryPeriod, 'all'>, now = new Date()): [Date, Date] {
-  const y = now.getFullYear();
-  const m = now.getMonth();
-  const d = now.getDate();
-
-  switch (period) {
-    case 'day':
-      return [new Date(y, m, d), new Date(y, m, d + 1)];
-    case 'week': {
-      const sunday = d - now.getDay();
-      return [new Date(y, m, sunday), new Date(y, m, sunday + 7)];
-    }
-    case 'month':
-      return [new Date(y, m, 1), new Date(y, m + 1, 1)];
-    case 'year':
-      return [new Date(y, 0, 1), new Date(y + 1, 0, 1)];
-  }
-}
 
 const dateFormat = new Intl.DateTimeFormat('en-US', {
   month: '2-digit',
@@ -56,14 +35,8 @@ export function useMatchHistory(period: HistoryPeriod = 'all') {
     if (!user) return;
     let cancelled = false;
 
-    // The range is worked out when the filter is picked, so "today" is the browser's today.
-    const range = period === 'all' ? null : periodRange(period);
-    const args = range
-      ? { id: user.id, p_from: range[0].toISOString(), p_to: range[1].toISOString() }
-      : { id: user.id };
-
     getSupabase()
-      .rpc('get_all_matches', args)
+      .rpc('get_all_matches', { id: user.id, ...periodParams(period) })
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) {
@@ -97,9 +70,7 @@ export function useMatchHistory(period: HistoryPeriod = 'all') {
     : !matches
       ? 'Could not load match history.'
       : matches.length === 0
-        ? period === 'all'
-          ? 'No matches yet.'
-          : 'No matches in this period.'
+        ? emptyMessage(period)
         : null;
 
   return { entries, status };
