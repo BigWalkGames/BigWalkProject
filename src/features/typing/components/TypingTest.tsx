@@ -5,7 +5,7 @@ import type { Board } from '../models/Board'
 import type { StatsSink, TestResult } from '../stats/types'
 import { useTypingTest } from '../useTypingTest'
 import { ResultsPanel, type SaveStatus } from './ResultsPanel'
-import { StatsBar } from './StatsBar'
+import { LiveStats } from './StatsBar'
 import { WordsDisplay } from './WordsDisplay'
 import './typing.css'
 
@@ -77,11 +77,13 @@ export function TypingTest({
 
   return (
     <div className="tt">
-      <StatsBar
-        timeLeftMs={test.timeLeftMs}
-        wpm={test.wpm}
-        accuracy={test.accuracy}
-        hasTyped={test.keystrokeCount > 0}
+      <LiveStats
+        startedAt={test.startedAt}
+        endedAt={test.endedAt}
+        durationMs={test.durationMs}
+        keystrokeCount={test.keystrokeCount}
+        correctCount={test.correctCount}
+        failCount={test.failCount}
       />
 
       {test.board ? (

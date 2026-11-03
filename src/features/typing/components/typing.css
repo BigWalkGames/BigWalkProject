@@ -83,18 +83,23 @@
   align-items: center;
 }
 
-/* The words live in this inner layer, exactly three lines tall. It clips at
-   the text area (so a 4th line can't peek into the padding below) and, unlike
-   overflow: clip, still lets WordsDisplay scroll it to follow the cursor. */
+/* The visible text area, exactly three lines tall. It clips there, so a 4th
+   line can't peek into the padding below. */
 .tt-words__scroll {
-  position: relative; /* letter offsets and the cursor are measured from here */
   flex: 1 1 auto;
   min-width: 0;
+  height: calc(var(--tt-line) * 3);
+  overflow: hidden;
+}
+
+/* The words themselves. WordsDisplay moves this layer up (transform) to keep
+   the current line second, which the GPU can do without laying out again. */
+.tt-words__lines {
+  position: relative; /* letter offsets and the cursor are measured from here */
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  height: calc(var(--tt-line) * 3);
-  overflow: hidden;
+  will-change: transform;
 }
 
 .tt-word {
@@ -127,7 +132,9 @@
 
 /* Cursor: one element for the whole box, moved by WordsDisplay to the
    current letter (.tt-letter.is-cursor). It slides between letters, stays
-   solid while typing (.is-typing), and fades in and out when idle. */
+   solid while typing (.is-typing), and fades in and out when idle. The slide
+   length (--tt-caret-ms) comes from the caret speed setting; at speed each
+   new key restarts the slide from where the cursor is, so it glides. */
 .tt-caret {
   position: absolute;
   top: 0;
@@ -139,7 +146,8 @@
   border-radius: 2px;
   pointer-events: none;
   z-index: 1;
-  transition: transform 80ms ease-out;
+  transition: transform var(--tt-caret-ms, 100ms) ease;
+  will-change: transform;
   animation: tt-caret-blink 1s ease-in-out infinite;
 }
 
