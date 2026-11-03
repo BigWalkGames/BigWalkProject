@@ -16,6 +16,7 @@ type ScreenLayoutProps = {
    * (one still frame, for gameplay screens), or 'none'.
    */
   background?: 'faded' | 'faded-still' | 'none';
+  backDisabled?: boolean;         // keep Back visible but turn off the button and Esc
   children: React.ReactNode;
 };
 
@@ -27,11 +28,14 @@ export function ScreenLayout({
   backTo = '/',
   showBack = true,
   background = 'faded',
+  backDisabled = false,
   children,
 }: ScreenLayoutProps) {
   const navigate = useNavigate();
 
-  useHotkeys(showBack ? { escape: () => navigate(backTo) } : {});
+  useHotkeys(showBack ? { escape: () => navigate(backTo) } : {}, {
+    enabled: !backDisabled,
+  });
 
   const hasHeader = Boolean(title || headerLeft || headerRight);
   const hasFooter = showBack || Boolean(footer);
@@ -53,11 +57,16 @@ export function ScreenLayout({
 
       {hasFooter && (
         <footer className="screen__footer">
-          {showBack && (
-            <NavButton to={backTo} hotkey="esc">
-              Back
-            </NavButton>
-          )}
+          {showBack &&
+            (backDisabled ? (
+              <NavButton hotkey="esc" disabled>
+                Back
+              </NavButton>
+            ) : (
+              <NavButton to={backTo} hotkey="esc">
+                Back
+              </NavButton>
+            ))}
           {footer}
         </footer>
       )}
