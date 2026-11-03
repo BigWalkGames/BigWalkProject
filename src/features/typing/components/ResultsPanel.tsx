@@ -1,28 +1,29 @@
-import { useEffect, type ReactNode } from 'react'
-import { KeyboardHeatmap } from '../heatmap/KeyboardHeatmap'
-import type { Board } from '../models/Board'
-import type { Word } from '../models/Word'
-import type { BigramStats, TestResult } from '../stats/types'
-import { displayKey, formatPercent } from './format'
-import { Stat } from './StatsBar'
-import { WordLetters } from './WordsDisplay'
-import { NavButton } from '../../../components/NavButton/NavButton'
-import './typing.css'
+import { useEffect, type ReactNode } from 'react';
+import { KeyboardHeatmap } from '../heatmap/KeyboardHeatmap';
+import type { Board } from '../models/Board';
+import type { Word } from '../models/Word';
+import type { BigramStats, TestResult } from '../stats/types';
+import { displayKey, formatPercent } from './format';
+import { Stat } from './StatsBar';
+import { WordLetters } from './WordsDisplay';
+import { NavButton } from '../../../components/NavButton/NavButton';
+import type { Improvement } from '../stats/improvements';
+import './typing.css';
 
-export type SaveStatus = 'saving' | 'saved' | 'error'
+export type SaveStatus = 'saving' | 'saved' | 'error';
 
 const SAVE_LABEL: Record<SaveStatus, string> = {
   saving: 'Saving…',
   saved: 'Saved',
   error: "Couldn't save result",
-}
+};
 
 /** Untyped words shown after the last typed one in the Word Bank box. */
-const UPCOMING_WORDS = 10
+const UPCOMING_WORDS = 10;
 
 /** Shortcuts are ignored this long after the panel opens, so a key pressed
  * as the timer runs out can't trigger Menu or Restart. */
-const HOTKEY_DELAY_MS = 700
+const HOTKEY_DELAY_MS = 700;
 
 /**
  * The results layout: bigrams, key accuracies, word bank, stats and the
@@ -35,41 +36,49 @@ export function ResultsPanel({
   result,
   board,
   saveStatus,
+  improvements = [],
   onRestart,
   onMenu,
 }: {
-  result: TestResult
-  board?: Board
-  saveStatus: SaveStatus
-  onRestart?: () => void
-  onMenu?: () => void
+  result: TestResult;
+  board?: Board;
+  saveStatus: SaveStatus;
+  improvements?: Improvement[];
+  onRestart?: () => void;
+  onMenu?: () => void;
 }) {
   useEffect(() => {
-    if (!onRestart && !onMenu) return
-    const readyAt = Date.now() + HOTKEY_DELAY_MS
+    if (!onRestart && !onMenu) return;
+    const readyAt = Date.now() + HOTKEY_DELAY_MS;
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.repeat || !event.shiftKey || Date.now() < readyAt) return
-      if (event.ctrlKey || event.metaKey || event.altKey) return
-      const action = { r: onRestart, e: onMenu }[event.key.toLowerCase()]
-      if (!action) return
-      event.preventDefault()
-      action()
+      if (event.repeat || !event.shiftKey || Date.now() < readyAt) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      const action = { r: onRestart, e: onMenu }[event.key.toLowerCase()];
+      if (!action) return;
+      event.preventDefault();
+      action();
     }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [onRestart, onMenu])
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [onRestart, onMenu]);
 
   return (
     <div className="tt is-finished">
       <section className="tt-results" aria-label="Results">
         <div className="tt-results__col">
           <Box title="Bigrams" className="tt-box--bigrams">
-            <BigramLists bigrams={result.bigrams} />
+            <BigramLists
+              bigrams={result.bigrams}
+              improved={improvements.filter((i) => i.kind === 'bigram')}
+            />
           </Box>
 
           <Box title="Key Accuracies" className="tt-box--keys">
-            <KeyAccuracies perKey={result.perKey} />
+            <KeyAccuracies
+              perKey={result.perKey}
+              improved={improvements.filter((i) => i.kind === 'key')}
+            />
           </Box>
 
           {(onMenu || onRestart) && (
@@ -83,10 +92,9 @@ export function ResultsPanel({
                 <NavButton
                   hotkey={['Sh', 'R']}
                   onClick={() => {
-                    ;(document.activeElement as HTMLElement | null)?.blur()
-                    onRestart()
-                  }}
-                >
+                    (document.activeElement as HTMLElement | null)?.blur();
+                    onRestart();
+                  }}>
                   Restart
                 </NavButton>
               )}
@@ -106,7 +114,9 @@ export function ResultsPanel({
             <Stat label="Accuracy" value={formatPercent(result.accuracy)} />
             <Stat
               label="Bigram Latency"
-              value={result.bigramLatencyMs === null ? '—' : `${Math.round(result.bigramLatencyMs)}ms`}
+              value={
+                result.bigramLatencyMs === null ? '—' : `${Math.round(result.bigramLatencyMs)}ms`
+              }
             />
             <p className={`tt-save is-${saveStatus}`}>{SAVE_LABEL[saveStatus]}</p>
           </div>
@@ -115,40 +125,76 @@ export function ResultsPanel({
         </div>
       </section>
     </div>
-  )
+  );
 }
 
 /** A titled box whose content scrolls, so the rest of the screen stays put. */
-function Box({ title, className, children }: { title: string; className: string; children: ReactNode }) {
+function Box({
+  title,
+  className,
+  children,
+}: {
+  title: string;
+  className: string;
+  children: ReactNode;
+}) {
   return (
     <section className={`tt-box ${className}`}>
       <h2 className="tt-box__title">{title}</h2>
       <div className="tt-box__scroll">{children}</div>
     </section>
-  )
+  );
 }
 
 /** How many bigrams each of the Best / Worst lists shows. */
-const BIGRAM_LIST_SIZE = 5
+const BIGRAM_LIST_SIZE = 5;
 
 /** Lowest accuracy first; ties go to the bigram typed more often. */
 function byAccuracyAscending([a, x]: [string, BigramStats], [b, y]: [string, BigramStats]) {
-  return x.accuracy - y.accuracy || y.attempts - x.attempts || a.localeCompare(b)
+  return x.accuracy - y.accuracy || y.attempts - x.attempts || a.localeCompare(b);
 }
 
-function BigramLists({ bigrams }: { bigrams: Record<string, BigramStats> }) {
-  const sorted = Object.entries(bigrams).sort(byAccuracyAscending)
+function BigramLists({
+  bigrams,
+  improved,
+}: {
+  bigrams: Record<string, BigramStats>;
+  improved: Improvement[];
+}) {
+  const sorted = Object.entries(bigrams).sort(byAccuracyAscending);
   // Worst: the 5 lowest, missed bigrams only. Best: the 5 highest of the
   // rest, so a bigram never shows in both lists. Both read lowest to highest.
-  const worst = sorted.filter(([, s]) => s.accuracy < 1).slice(0, BIGRAM_LIST_SIZE)
-  const best = sorted.filter((entry) => !worst.includes(entry)).slice(-BIGRAM_LIST_SIZE)
+  const worst = sorted.filter(([, s]) => s.accuracy < 1).slice(0, BIGRAM_LIST_SIZE);
+  const best = sorted.filter((entry) => !worst.includes(entry)).slice(-BIGRAM_LIST_SIZE);
 
   return (
     <div className="tt-bigrams">
       <BigramColumn heading="Best" items={best} empty="None yet" />
       <BigramColumn heading="Worst" items={worst} empty="No misses" />
+      {improved.length > 0 && <ImprovedColumn items={improved} />}
     </div>
-  )
+  );
+}
+
+/** Bigrams that beat the player's recent matches, biggest gain first. */
+function ImprovedColumn({ items }: { items: Improvement[] }) {
+  return (
+    <div className="tt-bigrams__col">
+      <h3 className="tt-bigrams__heading">Improved</h3>
+      <ul className="tt-list">
+        {items.map((i) => (
+          <li key={i.item}>
+            <span className="tt-bigrams__pair">
+              {i.item[0]}, {i.item[1]}
+            </span>
+            <span className="tt-improved">
+              {formatPercent(i.previous_accuracy)} → {formatPercent(i.current_accuracy)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 function BigramColumn({
@@ -156,9 +202,9 @@ function BigramColumn({
   items,
   empty,
 }: {
-  heading: string
-  items: [string, BigramStats][]
-  empty: string
+  heading: string;
+  items: [string, BigramStats][];
+  empty: string;
 }) {
   return (
     <div className="tt-bigrams__col">
@@ -178,15 +224,22 @@ function BigramColumn({
         </ul>
       )}
     </div>
-  )
+  );
 }
 
-function KeyAccuracies({ perKey }: { perKey: TestResult['perKey'] }) {
+function KeyAccuracies({
+  perKey,
+  improved,
+}: {
+  perKey: TestResult['perKey'];
+  improved: Improvement[];
+}) {
+  const improvedByKey = new Map(improved.map((i) => [i.item, i]));
   // Lowest accuracy first; ties go to the key typed more often, then A-Z.
   const keys = Object.entries(perKey).sort(
     ([a, x], [b, y]) => x.accuracy - y.accuracy || y.attempts - x.attempts || a.localeCompare(b),
-  )
-  if (keys.length === 0) return <p className="tt-muted">No keys typed</p>
+  );
+  if (keys.length === 0) return <p className="tt-muted">No keys typed</p>;
 
   return (
     <table className="tt-keys">
@@ -199,29 +252,40 @@ function KeyAccuracies({ perKey }: { perKey: TestResult['perKey'] }) {
         </tr>
       </thead>
       <tbody>
-        {keys.map(([key, stats]) => (
-          <tr key={key}>
-            <th scope="row" className="tt-key">
-              {displayKey(key)}
-            </th>
-            <td>{formatPercent(stats.accuracy)}</td>
-            <td>
-              {stats.correct}/{stats.attempts}
-            </td>
-            <td className="tt-key">{topMistake(stats.mistypedAs)}</td>
-          </tr>
-        ))}
+        {keys.map(([key, stats]) => {
+          const up = improvedByKey.get(key);
+          return (
+            <tr key={key}>
+              <th scope="row" className="tt-key">
+                {displayKey(key)}
+              </th>
+              <td>
+                {formatPercent(stats.accuracy)}
+                {up && (
+                  <span className="tt-improved">
+                    {' '}
+                    (up from {formatPercent(up.previous_accuracy)})
+                  </span>
+                )}
+              </td>
+              <td>
+                {stats.correct}/{stats.attempts}
+              </td>
+              <td className="tt-key">{topMistake(stats.mistypedAs)}</td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
-  )
+  );
 }
 
 /** The words from this match, colored as typed, plus a few untyped ones. */
 function WordReview({ board }: { board: Board }) {
-  const end = Math.min(board.words.length, board.wordIndex + 1 + UPCOMING_WORDS * 2)
-  const groups: [Word, Word | undefined][] = []
+  const end = Math.min(board.words.length, board.wordIndex + 1 + UPCOMING_WORDS * 2);
+  const groups: [Word, Word | undefined][] = [];
   for (let i = 0; i < end; i += 2) {
-    groups.push([board.words[i], i + 1 < end ? board.words[i + 1] : undefined])
+    groups.push([board.words[i], i + 1 < end ? board.words[i + 1] : undefined]);
   }
 
   return (
@@ -233,12 +297,12 @@ function WordReview({ board }: { board: Board }) {
         </span>
       ))}
     </div>
-  )
+  );
 }
 
 function topMistake(mistypedAs: Record<string, number>): string {
-  const entries = Object.entries(mistypedAs)
-  if (entries.length === 0) return '—'
-  const [key, count] = entries.reduce((best, entry) => (entry[1] > best[1] ? entry : best))
-  return `${displayKey(key)} (${count}×)`
+  const entries = Object.entries(mistypedAs);
+  if (entries.length === 0) return '—';
+  const [key, count] = entries.reduce((best, entry) => (entry[1] > best[1] ? entry : best));
+  return `${displayKey(key)} (${count}×)`;
 }
