@@ -45,11 +45,11 @@
    with the window so they stay clear of the centered title. */
 .time-attack .tt > .tt-stats > .tt-stat:nth-child(2),
 .time-attack .tt > .tt-stats > .tt-stat:nth-child(3) {
-  position: absolute;                 /* relative to .screen */
+  position: fixed;                    /* stays with the sticky header */
   top: 8px;                           /* nudges the text down to the header's center */
   height: var(--header-height);       /* fills the header... */
   justify-content: center;            /* ...and centers its content in it */
-  z-index: 1;
+  z-index: 60;                        /* above the header (50) */
   color: var(--color-light);
 }
 
