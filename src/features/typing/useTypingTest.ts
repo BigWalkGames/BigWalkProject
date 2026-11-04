@@ -72,9 +72,10 @@ function reducer(state: State, action: Action): State {
       // The timer starts on the first key press.
       const startedAt = state.startedAt ?? action.at
       const deadline = startedAt + state.durationMs
-      if (action.at >= deadline) {
-        return { ...state, status: 'finished', endedAt: deadline }
-      }
+      // A key after the deadline is dropped; the timer ends the test within
+      // 100ms. Finishing here would put the results render inside the
+      // keystroke and block the next paint (INP).
+      if (action.at >= deadline) return state
 
       const latencyMs = state.lastKeyTs === null ? 0 : action.ts - state.lastKeyTs
 
@@ -165,7 +166,7 @@ export function useTypingTest(durationMs: number) {
   
   // TEMP: only for verifying keysroke log
   useEffect(() => {
-    if (state.status === 'finished') debugEngineLog(state.engineLog)
+    if (import.meta.env.DEV && state.status === 'finished') debugEngineLog(state.engineLog)
     }, [state.status, state.engineLog])
   
   const restart = useCallback(() => {
@@ -225,7 +226,12 @@ export function useTypingTest(durationMs: number) {
   }, [state])
   
   useEffect(() => {
-    if (result) void recordMatch(state.engineLog, result.wpm, result.accuracy)
+    if (!result) return
+    // Deferred so the stats update and localStorage write run after the
+    // results screen paints. Not cancelled on cleanup: the save must still
+    // happen if this component unmounts for the results screen.
+    const log = state.engineLog
+    setTimeout(() => void recordMatch(log, result.wpm, result.accuracy), 0)
   }, [result, state.engineLog])
   
   return {
