@@ -1,0 +1,42 @@
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  background: var(--color-light);
+  border: 3px solid var(--color-frame);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--shadow-soft);
+  font-family: var(--font);
+  font-size: var(--fs-chat);
+  color: var(--color-ink);
+}
+
+.settings-section__title {
+  margin: 0;
+  font-size: var(--fs-chat);
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-row select,
+.settings-row input[type='checkbox'] {
+  font: inherit;
+  accent-color: var(--color-accent);
+}
+
+.settings-row input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+}

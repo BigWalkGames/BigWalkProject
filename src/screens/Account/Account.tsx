@@ -2,6 +2,8 @@ import './Account.css';
 import { useState } from 'react';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { HistoryTable } from '../../components/HistoryTable/HistoryTable';
+import { OverallStats } from '../../components/OverallStats/OverallStats';
+import { ProgressGraph } from '../../components/ProgressGraph/ProgressGraph';
 import { FormMessage } from '../../components/AuthForm/AuthForm';
 import { TabNav, type Tab } from '../../components/TabNav/TabNav';
 import { useAuth } from '../../hooks/auth/useAuth';
@@ -50,7 +52,7 @@ export default function Account() {
   const displayName = isGuest ? 'Guest' : (username ?? 'Player');
 
   return (
-    <ScreenLayout title="Account">
+    <ScreenLayout title="Account" backDisabled={formOpen || showPrompt}>
       <div className="account">
         <header className="account__header">
           <h2 className="account__name">{displayName}</h2>
@@ -119,7 +121,13 @@ export default function Account() {
             </>
           )}
 
-          {activeTab === 'stats' && <HistoryTable />}
+          {activeTab === 'stats' && (
+            <>
+              <OverallStats />
+              <ProgressGraph />
+              <HistoryTable />
+            </>
+          )}
         </div>
 
         {formOpen && (
