@@ -1,0 +1,51 @@
+# Builds main and deploys it to Vercel production on every push to main.
+# Run it manually (Actions → Vercel Production → Run workflow) to redeploy.
+#
+# Secrets: VERCEL_TOKEN
+name: Vercel Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  VERCEL_ORG_ID: team_3M9H9astUFK9JNHkMXfdwqAr
+  VERCEL_PROJECT_ID: prj_W9usyjSTozcHkahMzkQSJM2n0Rgr
+
+jobs:
+  deploy-production:
+    # Queue rather than cancel, so a deploy is never killed mid-promotion.
+    concurrency:
+      group: vercel-production
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm add --global vercel@latest
+
+      - name: Pull Vercel production settings and env vars
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "Deployed: $url" >> "$GITHUB_STEP_SUMMARY"
