@@ -1,8 +1,18 @@
 .home {
+  position: relative;
   min-height: 100%;
   display: grid;
   grid-template-rows: 1fr auto;
   padding: 16px;
+}
+
+.home__player {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  margin: 0;
+  font-size: var(--fs-chat);
+  color: var(--color-ink);
 }
 
 .home__hero {
@@ -32,7 +42,7 @@
 }
 
 .home__plus {
-  font-size: var(--fs-menu-primary);  
+  font-size: var(--fs-menu-primary);
   color: var(--color-frame);
 }
 

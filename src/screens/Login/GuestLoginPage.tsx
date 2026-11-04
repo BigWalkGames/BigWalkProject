@@ -1,87 +1,84 @@
-import './GuestLoginPage.css';
-import { useNavigate } from 'react-router';
-import { useCallback, useEffect, useState } from 'react';
-import { NavButton } from '../../components/NavButton/NavButton';
-import { useAuth } from '../../hooks/auth/useAuth';
-import { signInAsGuest, signOut } from '../../hooks/auth/authActions';
+import './GuestLoginPage.css'
+import { useNavigate } from 'react-router'
+import { useState } from 'react'
+import { NavButton } from '../../components/NavButton/NavButton'
+import { useAuth } from '../../hooks/auth/useAuth'
+import { useHotkeys } from '../../hooks/useHotkeys'
+import { signInAsGuest } from '../../hooks/auth/authActions'
+import { ForgotPasswordForm, LoginForm, SignUpForm } from './AuthForms'
+
+type View = 'menu' | 'login' | 'signup' | 'forgot'
 
 /**
- * Guest-only login screen: one button, no email or password fields.
- * Uses the same auth layer as AuthTestPage (useAuth + authActions).
+ * Shown by AuthGate whenever nobody is signed in.
+ * Menu: Login (L), Create account (S), Guest (G). Each opens its form in place.
  */
 export default function GuestLoginPage() {
-  const navigate = useNavigate();
-  const { user, loading, isGuest } = useAuth();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const navigate = useNavigate()
+  const { user, loading } = useAuth()
+  const [view, setView] = useState<View>('menu')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleGuest = useCallback(async () => {
-    setBusy(true);
-    setError('');
+  const show = (next: View) => {
+    setView(next)
+    setError('')
+  }
 
-    const { error } = await signInAsGuest();
+  async function handleGuest() {
+    if (busy) return
+    setBusy(true)
+    setError('')
+
+    const { error } = await signInAsGuest()
 
     if (error) {
-      setError(error.message);
+      setError(error.message)
     } else {
-      navigate('/');
+      navigate('/')
     }
 
-    setBusy(false);
-  }, [navigate]);
+    setBusy(false)
+  }
 
-  // Keyboard shortcut: pressing G to continue as guest
-  useEffect(() => {
-    // Don't create a guest while checking for a saved session, mid-request, or if already signed in
-    if (loading || busy || user) return;
+  // Menu shortcuts. Off while a form is open, still checking for a saved session,
+  // mid-request, or already signed in. (useHotkeys already ignores typing in text boxes.)
+  useHotkeys(
+    {
+      l: () => show('login'),
+      s: () => show('signup'),
+      g: () => void handleGuest(),
+    },
+    { enabled: view === 'menu' && !loading && !busy && !user },
+  )
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() !== 'g' || e.repeat) return;
-      if (e.ctrlKey || e.metaKey || e.altKey) return; // leave browser shortcuts alone
-
-      // Ignore typing in form fields
-      const target = e.target;
-      if (
-        target instanceof HTMLElement &&
-        (target.isContentEditable ||
-          ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
-      ) {
-        return;
-      }
-
-      handleGuest();
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [loading, busy, user, handleGuest]);
-
-  if (loading) return null;
+  if (loading) return null
 
   return (
     <main className="at">
       <section className="at-card">
-        {user ? (
-          <>
-            <h2>{isGuest ? "You're in as a guest" : "You're signed in"}</h2>
-            <button className="danger" onClick={() => signOut()}>
-              Sign out
-            </button>
-          </>
-        ) : (
-          <>
-            <h2>WELCOME</h2>
+        <h2>WELCOME</h2>
 
+        {view === 'menu' && (
+          <>
             <div className="at-login">
-              {/* TODO: add login functionality */}
-              <NavButton hotkey="L">Login</NavButton>
-
-              <NavButton hotkey="G" onClick={handleGuest} disabled={busy}>
+              <NavButton hotkey="L" onClick={() => show('login')}>
+                Login
+              </NavButton>
+              <NavButton hotkey="S" onClick={() => show('signup')}>
+                Sign up
+              </NavButton>
+              <NavButton
+                hotkey="G"
+                onClick={() => void handleGuest()}
+                disabled={busy}>
                 {busy ? 'Starting…' : 'Guest'}
               </NavButton>
             </div>
 
-            <p className="hint">Log in to save your scores, or continue as a guest.</p>
+            <p className="hint">
+              Log in to save your scores, or continue as a guest.
+            </p>
             {error && (
               <div className="at-msg err" role="alert">
                 {error}
@@ -89,7 +86,26 @@ export default function GuestLoginPage() {
             )}
           </>
         )}
+
+        {view === 'login' && (
+          <LoginForm
+            onBack={() => show('menu')}
+            onForgot={() => show('forgot')}
+            onSignUp={() => show('signup')}
+          />
+        )}
+
+        {view === 'signup' && (
+          <SignUpForm
+            onBack={() => show('menu')}
+            onLogin={() => show('login')}
+          />
+        )}
+
+        {view === 'forgot' && (
+          <ForgotPasswordForm onBack={() => show('login')} />
+        )}
       </section>
     </main>
-  );
+  )
 }

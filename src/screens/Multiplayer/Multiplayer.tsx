@@ -11,6 +11,7 @@ export default function Multiplayer() {
 
   useHotkeys({
     q: () => navigate('/multiplayer/matchmaking'),
+    c: () => navigate('/multiplayer/custom'),
     r: () => navigate('/matchhistory'),
     a: () => navigate('/leaderboards'),
   });
@@ -26,6 +27,9 @@ export default function Multiplayer() {
               icon={{ normal: hourglass, pressed: hourglassPressed }}
             >
               Quick Match
+            </MenuButton>
+            <MenuButton hotkey="C" to="/multiplayer/custom">
+              Custom Game
             </MenuButton>
             <MenuButton hotkey="R" to="/matchhistory">
               Match History

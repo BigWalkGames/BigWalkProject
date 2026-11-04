@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { TypingTest } from '../../features/typing/components/TypingTest';
+import type { Board } from '../../features/typing/models/Board';
 import type { TestResult } from '../../features/typing/stats/types';
 import type { ResultsLocationState } from '../Results/Results';
 
@@ -10,8 +11,8 @@ export default function TimeAttack() {
   const navigate = useNavigate();
 
   const showResults = useCallback(
-    (result: TestResult) => {
-      const state: ResultsLocationState = { result };
+    (result: TestResult, board: Board) => {
+      const state: ResultsLocationState = { result, board };
       navigate('/solo/time-attack/results', { state, replace: true });
     },
     [navigate],

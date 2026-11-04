@@ -1,0 +1,31 @@
+.overall-stats {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+  max-width: 1530px;
+}
+
+.overall-stats__tile {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding: 16px 32px;
+  background: var(--color-frame);
+  color: var(--color-light);
+  border-radius: 20px;
+  box-shadow: 0 4px 0 var(--shadow-soft);
+}
+
+.overall-stats__label {
+  font-size: var(--fs-chat);
+  line-height: 1;
+}
+
+.overall-stats__value {
+  font-size: var(--fs-filter);
+  line-height: 1;
+  white-space: nowrap;
+}

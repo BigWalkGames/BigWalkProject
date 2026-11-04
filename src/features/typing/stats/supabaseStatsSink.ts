@@ -16,5 +16,12 @@ export const supabaseStatsSink: StatsSink = {
 
     // 23505 = this exact match was already saved
     if (error && error.code !== '23505') throw error;
+
+    const { error: detailError } = await supabase.rpc('save_match_details', {
+      match_end: result.completedAt,
+      keys: result.perKey,
+      bigrams: result.bigrams,
+    });
+    if (detailError) throw detailError;
   },
 };

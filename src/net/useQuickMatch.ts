@@ -5,9 +5,13 @@ import { claimScreen, getState, releaseScreen, reset, subscribe, type EndReason 
 const NOTICES: Record<EndReason, string> = {
   no_opponent: 'No opponent was found. Try again in a moment.',
   opponent_left: 'Your opponent left the match.',
+  room_closed: 'The room closed because nobody started a match.',
   connection_lost: 'The connection to the server was lost.',
   connect_failed: 'Could not connect to the server.',
 };
+
+// Custom Game: the room closes when the other player leaves, so say so.
+const CUSTOM_OPPONENT_LEFT = 'Your friend left, so the room was closed.';
 
 /**
  * Use this on every screen that is part of a Quick Match. It gives you the current
@@ -26,10 +30,13 @@ export function useQuickMatch() {
 
   useEffect(() => {
     if (!state.endReason) return;
-    const notice = NOTICES[state.endReason];
+    const notice =
+      state.endReason === 'opponent_left' && state.mode === 'custom'
+        ? CUSTOM_OPPONENT_LEFT
+        : NOTICES[state.endReason];
     reset();
     navigate('/', { replace: true, state: { notice } });
-  }, [state.endReason, navigate]);
+  }, [state.endReason, state.mode, navigate]);
 
   return state;
 }

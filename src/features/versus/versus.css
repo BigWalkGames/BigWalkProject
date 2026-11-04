@@ -48,9 +48,33 @@
   font-weight: normal;
 }
 .versus-opponent { justify-content: center; }
-.versus-playagain {
-  order: 6;
+/* Rematch status, right under the headline so it cannot be missed. */
+.versus-rematch {
   margin: 0;
+  padding: 12px 20px;
   text-align: center;
-  font-size: var(--fs-hud-label);
+  font-size: var(--fs-body);
+  color: var(--color-ink);
+  background: var(--color-light);
+  border: 3px solid var(--color-frame);
+  border-radius: 12px;
+}
+.versus-rematch.is-request {
+  background: var(--color-accent);
+  border-color: var(--color-ink);
+  font-size: var(--fs-filter);
+  animation: versus-rematch-pulse 1.1s ease-in-out infinite;
+}
+.versus-rematch.is-closed {
+  background: var(--color-negative);
+  color: var(--color-light);
+}
+
+@keyframes versus-rematch-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-accent); }
+  50% { box-shadow: 0 0 0 8px transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .versus-rematch.is-request { animation: none; }
 }

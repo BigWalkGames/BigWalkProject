@@ -1,16 +1,22 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { NavButton } from '../../components/NavButton/NavButton';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { ResultsPanel } from '../../features/typing/components/ResultsPanel';
-import { Stat, StatsBar } from '../../features/typing/components/StatsBar';
-import { computePerKey, computeWpm } from '../../features/typing/stats/computeStats';
+import { LiveStats, Stat, StatsBar } from '../../features/typing/components/StatsBar';
+import {
+  computeBigramLatency,
+  computeBigrams,
+  computePerKey,
+  computeWpm,
+} from '../../features/typing/stats/computeStats';
 import type { TestResult } from '../../features/typing/stats/types';
 import { WordsDisplay } from '../../features/typing/components/WordsDisplay';
 import { PlayerProgress } from '../../features/versus/PlayerProgress';
 import { useVersusRace } from '../../features/versus/useVersusRace';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import { useQuickMatch } from '../../net/useQuickMatch';
-import { getState, type Progress } from '../../net/quickMatch';
+import { getState, setReady, type Progress } from '../../net/quickMatch';
 import '../../features/typing/components/typing.css';
 import '../TimeAttack/TimeAttack.css';
 import '../../features/versus/versus.css';
@@ -24,7 +30,12 @@ import '../../features/versus/versus.css';
  */
 export default function Versus() {
   const navigate = useNavigate();
-  const { status, match, countdown, raceStartedAt, opponent, result, sessionId } = useQuickMatch();
+  const { status, mode, match, countdown, raceStartedAt, opponent, result, sessionId, lobby, matchNumber, roomEnded } =
+    useQuickMatch();
+
+  // Custom Game rematch: who has pressed Ready again.
+  const me = lobby?.players.find((player) => player.id === sessionId);
+  const friend = lobby?.players.find((player) => player.id !== sessionId);
 
   // Opened directly (a refresh, or typing the address): there is no match, so go back.
   // Only checked once on arrival: a match that ends badly also goes idle, and
@@ -34,17 +45,57 @@ export default function Versus() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useHotkeys({
-    q: () => {
-      if (status === 'finished') navigate('/multiplayer/matchmaking', { replace: true });
-    },
-  });
+  const canRematch = status === 'finished' && mode === 'custom' && !roomEnded;
+  // Custom Game rematch: ready up again (press again to undo). The room stays open.
+  const rematch = () => {
+    if (canRematch) setReady(!me?.ready);
+  };
+  const playAgainNow = () => {
+    if (status !== 'finished') return;
+    // Quick Match: queue again. Custom Game: leave this room to make or join another.
+    navigate(mode === 'custom' ? '/multiplayer/custom' : '/multiplayer/matchmaking', { replace: true });
+  };
+  useHotkeys({ r: rematch, q: playAgainNow });
 
   if (!match) {
     return <ScreenLayout title="Versus" backTo="/multiplayer"><p>Waiting for the match...</p></ScreenLayout>;
   }
+  // The rematch banner under the headline. `request` is the one that must not be missed.
+  const friendWantsRematch = canRematch && Boolean(friend?.ready) && !me?.ready;
+  let playAgain = '';
+  let playAgainTone: RematchTone = 'info';
+  if (mode === 'custom') {
+    if (roomEnded) {
+      playAgain = 'Your friend left, so the room is closed.';
+      playAgainTone = 'closed';
+    } else if (me?.ready) {
+      playAgain = "You're ready for a rematch. Waiting for your friend...";
+    } else if (friendWantsRematch) {
+      playAgain = 'Your friend wants a rematch! Press R to play again.';
+      playAgainTone = 'request';
+    }
+  }
+
+  // Buttons under the results. The keys work too.
+  const footer =
+    status === 'finished' ? (
+      <>
+        {mode === 'custom' ? (
+          <>
+            <NavButton hotkey="R" onClick={rematch} disabled={!canRematch} highlight={friendWantsRematch}>
+              {me?.ready ? 'Cancel Rematch' : 'Rematch'}
+            </NavButton>
+            <NavButton hotkey="Q" onClick={playAgainNow}>Custom Game</NavButton>
+          </>
+        ) : (
+          <NavButton hotkey="Q" onClick={playAgainNow}>Play Again</NavButton>
+        )}
+      </>
+    ) : undefined;
+
   return (
     <Race
+      key={matchNumber}
       words={match.words}
       durationMs={match.durationSeconds * 1000}
       racing={status === 'racing'}
@@ -54,9 +105,14 @@ export default function Versus() {
       opponent={opponent}
       result={result}
       sessionId={sessionId}
+      playAgain={playAgain}
+      playAgainTone={playAgainTone}
+      footer={footer}
     />
   );
 }
+
+type RematchTone = 'info' | 'request' | 'closed';
 
 type RaceProps = {
   words: string[];
@@ -68,23 +124,29 @@ type RaceProps = {
   opponent: Progress;
   result: ReturnType<typeof useQuickMatch>['result'];
   sessionId: string | null;
+  playAgain: string;
+  playAgainTone: RematchTone;
+  footer?: React.ReactNode;
 };
 
 // Split out so the race state (the words and counts) starts fresh with each match.
-function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId }: RaceProps) {
+function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, playAgain, playAgainTone, footer }: RaceProps) {
   const race = useVersusRace(words, racing, startedAt, durationMs);
 
   const mine = result && sessionId ? result.results[sessionId] : undefined;
   const theirs = result ? Object.entries(result.results).find(([id]) => id !== sessionId)?.[1] : undefined;
   // Same panel as Time Attack. WPM and accuracy are the server's official numbers;
   // the per-key table comes from this player's own keystrokes.
+  const resultMs = result?.durationSeconds ? result.durationSeconds * 1000 : durationMs;
   const myResult: TestResult | null = mine
     ? {
-        durationMs,
+        durationMs: resultMs,
         wpm: mine.wpm,
-        rawWpm: computeWpm(mine.typed, durationMs),
+        rawWpm: computeWpm(mine.typed, resultMs),
         accuracy: mine.accuracy / 100,
         perKey: computePerKey(race.keystrokes),
+        bigrams: computeBigrams(race.keystrokes),
+        bigramLatencyMs: computeBigramLatency(race.keystrokes),
         keystrokes: race.keystrokes,
         wordBankSource: 'server',
         completedAt: new Date().toISOString(),
@@ -93,15 +155,27 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
   const headline = !result ? '' : result.winner === null ? "It's a draw" : result.winner === sessionId ? 'You win!' : 'Opponent wins';
 
   return (
-    <ScreenLayout title="Versus" backTo="/multiplayer">
+    <ScreenLayout title="Versus" backTo="/multiplayer" footer={footer}>
       <div className="time-attack">
         <div className="tt">
-          <StatsBar
-            timeLeftMs={finished ? 0 : race.timeLeftMs}
-            wpm={mine ? mine.wpm : race.wpm}
-            accuracy={mine ? mine.accuracy / 100 : race.accuracy}
-            hasTyped={race.typed > 0}
-          />
+          {/* The live row ticks on its own while racing, so the clock doesn't re-render the race. */}
+          {racing ? (
+            <LiveStats
+              startedAt={startedAt}
+              endedAt={null}
+              durationMs={durationMs}
+              keystrokeCount={race.typed}
+              correctCount={race.correct}
+              failCount={race.errors}
+            />
+          ) : (
+            <StatsBar
+              timeLeftMs={finished ? 0 : durationMs}
+              wpm={mine ? mine.wpm : 0}
+              accuracy={mine ? mine.accuracy / 100 : race.accuracy}
+              hasTyped={race.typed > 0}
+            />
+          )}
 
           <WordsDisplay board={race.board} showCursor={racing} />
 
@@ -109,13 +183,19 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
 
           <p className="tt-hint">
             {countdown !== null && `Starting in ${countdown}...`}
-            {racing && `Opponent: ${opponent.correct} correct / ${opponent.typed} typed`}
+            {racing && !race.finishedTyping && `Opponent: ${opponent.correct} correct / ${opponent.typed} typed`}
+            {racing && race.finishedTyping && 'Finished! Waiting for the results...'}
             {!racing && !finished && countdown === null && 'Waiting for the match to start...'}
           </p>
 
           {finished && result && (
             <div className="versus-results">
               <h2 className="versus-headline">{headline}</h2>
+              {playAgain && (
+                <p className={`versus-rematch is-${playAgainTone}`} role="status">
+                  {playAgain}
+                </p>
+              )}
               {theirs && (
                 <div className="tt-stats versus-opponent" aria-label="Opponent results">
                   <Stat label="Opponent WPM" value={theirs.wpm.toString()} />
@@ -124,11 +204,10 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
                 </div>
               )}
               {myResult ? (
-                <ResultsPanel result={myResult} saveStatus="saved" />
+                <ResultsPanel result={myResult} board={race.board} saveStatus="saved" />
               ) : (
                 <p>You: no result</p>
               )}
-              <p className="versus-playagain">Press Q to play again, or Esc for the Main Menu.</p>
             </div>
           )}
         </div>
