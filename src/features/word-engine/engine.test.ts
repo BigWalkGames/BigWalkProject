@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
     BACKSPACE,
+    buildWordBank,
     cleanKeystrokes,
     classifyBigram,
     getWordBank,
@@ -89,6 +90,46 @@ describe('getWordBank without usable saved data', () => {
             bigramStats: savedBigramStats({ [WEAK_BIGRAM]: { ewmaLatency: 300 } }),
         })
         expectCommonWordsOnly(getWordBank(words, 30, saved))
+    })
+})
+
+describe('buildWordBank', () => {
+    it('separates targeted words from common words and names the focused bigram', () => {
+        const saved = player({ bigramStats: savedBigramStats({ [WEAK_BIGRAM]: { ewmaLatency: 300 } }) })
+
+        const { words: bank, targeted, natural, mode, focusedBigrams } = buildWordBank(words, 30, saved)
+
+        expect(mode).toBe('speed')
+        expect(targeted).toHaveLength(TARGETED_COUNT)
+        expect(natural).toHaveLength(30 - TARGETED_COUNT)
+        expect(new Set(bank)).toEqual(new Set([...targeted, ...natural]))
+        expect(targeted.every((w) => hasWeakBigram(w.word))).toBe(true)
+        expect(focusedBigrams).toHaveLength(1)
+        expect(focusedBigrams[0]).toMatchObject({ bigram: WEAK_BIGRAM, cls: 'alternation', latencyMs: 300, classLatencyMs: 100 })
+        expect(focusedBigrams[0].words.sort()).toEqual(targeted.map((w) => w.word).sort())
+    })
+
+    it('lists focused bigrams weakest first', () => {
+        const saved = player({
+            bigramStats: savedBigramStats({
+                [WEAK_BIGRAM]: { ewmaLatency: 150 },
+                th: { ewmaLatency: 400 },
+            }),
+        })
+        expect(buildWordBank(words, 30, saved).focusedBigrams[0].bigram).toBe('th')
+    })
+
+    it('focuses on nothing without saved data', () => {
+        expect(buildWordBank(words, 30, player())).toMatchObject({ mode: 'cold_start', targeted: [], focusedBigrams: [] })
+    })
+
+    it('gives getWordBank the same bank', () => {
+        const saved = player({ bigramStats: savedBigramStats({ [WEAK_BIGRAM]: { ewmaLatency: 300 } }) })
+        const restore = seedRandom(7)
+        const built = buildWordBank(words, 30, saved).words
+        restore()
+        seedRandom(7)
+        expect(getWordBank(words, 30, saved)).toEqual(built)
     })
 })
 

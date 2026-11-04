@@ -12,6 +12,7 @@ const TEST_FILES = [
   'src/features/word-engine/engine.test.ts',
   'src/features/typing/player/playerStore.test.ts',
   'src/features/typing/wordbank/loadWordBank.test.ts',
+  'src/features/typing/wordbank/wordBankDebug.test.ts',
 ]
 
 if (!existsSync(VITEST)) {

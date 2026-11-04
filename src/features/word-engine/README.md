@@ -139,6 +139,7 @@ Stats live in `word_engine.player_data`, one row per player. Clients have no dir
 | `getWordBank` | `words: Word[]` (sorted by rank), `count: number`, `player: PlayerData \| null = null`, `recentWords: ReadonlySet<string> = new Set()`, `config = DEFAULT_CONFIG` | `Word[]` | Builds the next match's word bank. With no player or too little data, returns common words only. Output is shuffled and has no duplicates. |
 | `cleanKeystrokes` | `log: Keystroke[]`, `config = DEFAULT_CONFIG` | `CleanedSamples` | Filters one match's raw keystrokes into usable samples. Drops backspaces, retypes, word starts, spaces, errors that follow another error, and long pauses. |
 | `updateStats` | `player: PlayerData`, `samples: CleanedSamples`, `config = DEFAULT_CONFIG` | `PlayerData` | Folds a match's samples into the player's per-bigram and per-key stats. Returns a new object. `netWpm` and `netAccuracy` are left unchanged. |
+| `buildWordBank` | Same as `getWordBank` | `BuiltWordBank` | The same bank plus how it was built: `targeted` and `natural` words, `mode`, `netWpm`, and `focusedBigrams`. |
 | `getFeedback` | `player: PlayerData`, `config = DEFAULT_CONFIG` | `PlayerFeedback` | Weakest 5 bigrams, average latency per bigram class, and accuracy per hand. Empty lists until enough data exists. |
 
 ### Mode
@@ -300,6 +301,10 @@ These are starting values. Tune them on the test page.
 `pnpm dev`, then open `http://localhost:5173/banktest.html`.
 
 A simulated typist with configurable slow and error-prone bigrams plays matches through the real engine. The page shows the bank adapting, with weak bigrams highlighted. It isn't included in production builds. The simulator (`simulate.ts`) is test-only and isn't exported.
+
+## Console command
+
+In the running app, open Time Attack and run `focusedBigrams()` in the browser console. It shows which bigrams and words the engine targeted in the most recently loaded bank, and why nothing was targeted if so. During cold start, it lists the bigrams closest to `minSamples`. It's in every build, including previews and production, and only shows the player's own stats.
 
 ## Known limitations
 

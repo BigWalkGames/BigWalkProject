@@ -67,6 +67,37 @@ describe('word bank for a member', () => {
     expect(weakCount(signedIn.words)).toBeGreaterThanOrEqual(TARGETED_COUNT)
   })
 
+  it('makes the bank it returned available to focusedBigrams', async () => {
+    supabase.current = new FakeSupabase(MEMBER, weakBigramRow())
+    const { loadWordBank } = await freshStore()
+    const table = vi.spyOn(console, 'table').mockImplementation(() => {})
+    vi.spyOn(console, 'group').mockImplementation(() => {})
+    vi.spyOn(console, 'groupEnd').mockImplementation(() => {})
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    const { words: bank } = await loadWordBank()
+    globalThis.focusedBigrams()
+
+    const rows = table.mock.calls[0][0] as { bigram: string; targetedWords: string }[]
+    expect(rows[0].bigram).toBe(WEAK_BIGRAM)
+    expect(rows[0].targetedWords.split(', ').every((word) => bank.includes(word))).toBe(true)
+  })
+
+  it('tells focusedBigrams when stats failed to load', async () => {
+    const fake = new FakeSupabase(MEMBER, weakBigramRow())
+    fake.readError = { code: '500' }
+    supabase.current = fake
+    const { loadWordBank } = await freshStore()
+    vi.spyOn(console, 'group').mockImplementation(() => {})
+    vi.spyOn(console, 'groupEnd').mockImplementation(() => {})
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    await loadWordBank()
+    globalThis.focusedBigrams()
+
+    expect(String(log.mock.calls[0][0])).toContain('failed to load')
+  })
+
   it('uses common words with no saved data', async () => {
     supabase.current = new FakeSupabase(MEMBER, playerRow(MEMBER))
     const { loadWordBank } = await freshStore()
