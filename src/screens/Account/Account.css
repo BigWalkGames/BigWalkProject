@@ -44,9 +44,10 @@
 }
 
 .account__panel .history-panel {
-  flex: 1;
-  min-height: 360px;         /* Stats: the table never gets squashed below this */
-  max-height: 100%;
+  flex: none;
+  /* fixed window of rows; the table scrolls inside it */
+  height: clamp(420px, calc(100dvh - 990px), 560px);
+  min-height: 0;
 }
 
 /* Guest: Create account button + explanation */
