@@ -284,15 +284,69 @@ export function pickMode(player: PlayerData | null, baselines: Baselines | null,
 // Output: word bank
 // ==================================================
 
+export interface FocusedBigram {
+    bigram: string
+    cls: BigramClass
+    weakness: number
+    latencyMs: number
+    classLatencyMs: number
+    errorRate: number
+    classErrorRate: number
+    latencySamples: number
+    errorSamples: number
+    words: string[]     // targeted words containing this bigram
+}
+
+export interface BuiltWordBank {
+    words: Word[]       // the bank, shuffled
+    targeted: Word[]    // picked by weakness
+    natural: Word[]     // picked at random from the most frequent words
+    mode: Mode
+    netWpm: number | null
+    focusedBigrams: FocusedBigram[] // weak bigrams in the targeted words, weakest first
+}
+
+function findFocusedBigrams(
+    targeted: Word[],
+    player: PlayerData,
+    baselines: Baselines,
+    config: WordEngineConfig,
+): FocusedBigram[] {
+    const wordsByBigram = new Map<string, Set<string>>()
+    for (const word of targeted) {
+        for (const bigram of word.bigrams) {
+            if (bigramWeakness(bigram, player, baselines, config) <= 0) continue
+            if (!wordsByBigram.has(bigram)) wordsByBigram.set(bigram, new Set())
+            wordsByBigram.get(bigram)!.add(word.word)
+        }
+    }
+    return [...wordsByBigram].map(([bigram, words]) => {
+        const s = player.bigramStats[bigram]
+        const cls = classifyBigram(bigram)!
+        return {
+            bigram,
+            cls,
+            weakness: bigramWeakness(bigram, player, baselines, config),
+            latencyMs: s.ewmaLatency,
+            classLatencyMs: baselines[cls].latency,
+            errorRate: s.ewmaErrorRate,
+            classErrorRate: baselines[cls].errorRate,
+            latencySamples: s.latencySamples,
+            errorSamples: s.errorSamples,
+            words: [...words],
+        }
+    }).sort((a, b) => b.weakness - a.weakness)
+}
+
 // `words` must be sorted by rank. `recentWords` = words shown in the last few matches.
 // Beginner mode is not defined yet, so it falls back to frequency sampling like cold start.
-export function getWordBank(
+export function buildWordBank(
     words: Word[],
     count: number,
     player: PlayerData | null = null,
     recentWords: ReadonlySet<string> = new Set(),
     config = DEFAULT_CONFIG,
-): Word[] {
+): BuiltWordBank {
     const baselines = player ? computeBaselines(player, config) : null
     const mode = pickMode(player, baselines, config)
 
@@ -312,7 +366,24 @@ export function getWordBank(
     const pool = words.slice(0, config.frequencyPool).filter((w) => !chosen.has(w.word))
     const natural = shuffle(pool).slice(0, count - targeted.length)
 
-    return shuffle([...targeted, ...natural])
+    return {
+        words: shuffle([...targeted, ...natural]),
+        targeted,
+        natural,
+        mode,
+        netWpm: player?.netWpm ?? null,
+        focusedBigrams: player && baselines ? findFocusedBigrams(targeted, player, baselines, config) : [],
+    }
+}
+
+export function getWordBank(
+    words: Word[],
+    count: number,
+    player: PlayerData | null = null,
+    recentWords: ReadonlySet<string> = new Set(),
+    config = DEFAULT_CONFIG,
+): Word[] {
+    return buildWordBank(words, count, player, recentWords, config).words
 }
 
 // ==================================================
