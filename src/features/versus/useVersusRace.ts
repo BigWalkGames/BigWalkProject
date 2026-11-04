@@ -1,8 +1,8 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { sendProgress } from '../../net/quickMatch'
-import { backspace, countLetters, getCurrentLetter, isFinished, typeChar, type Board } from '../typing/models/Board'
-import { computeNetWpm } from '../typing/stats/computeStats'
+import { backspace, getCurrentLetter, isFinished, typeChar, type Board } from '../typing/models/Board'
 import type { Keystroke } from '../typing/stats/types'
+import { useFrameKeys } from '../typing/useFrameKeys'
 import { boardFromWords } from './boardFromWords'
 
 /** Roughly 10 updates a second. The server disconnects clients that send more than 30. */
@@ -14,11 +14,17 @@ interface State {
   typed: number
   /** Key presses that matched the expected letter. */
   correct: number
+  /**
+   * Letters on the board still marked wrong, kept up to date per key so the
+   * live WPM doesn't rescan the board. Backspacing over one lowers it.
+   */
+  errors: number
   /** The same forward key presses, in order. Used for the per-key table on the results screen. */
   keystrokes: Keystroke[]
 }
 
-type Action = { type: 'key'; key: string; t: number }
+/** Key presses since the last frame, `t` ms after the start. */
+type Action = { type: 'keys'; keys: { key: string; t: number }[] }
 
 /** One letter per completed real word: 'g' if it has no wrong letters, 'r' if it has. */
 function wordResults(board: Board): string {
@@ -29,10 +35,30 @@ function wordResults(board: Board): string {
   return out
 }
 
+/** The newest totals, read by the progress sender between renders. */
+interface Latest {
+  typed: number
+  correct: number
+  errors: number
+  board: Board
+}
+
+/** The totals as sent to the server. */
+function progressOf({ typed, correct, errors, board }: Latest) {
+  return { typed, correct, errors, wordResults: wordResults(board) }
+}
+
 function reducer(state: State, action: Action): State {
+  return action.keys.reduce(applyKey, state)
+}
+
+/** One key press, in the order they were typed. */
+function applyKey(state: State, action: { key: string; t: number }): State {
   if (action.key === 'Backspace') {
     const board = backspace(state.board)
-    return board === state.board ? state : { ...state, board }
+    if (board === state.board) return state
+    const erased = state.board.words[board.wordIndex].letters[board.letterIndex]
+    return { ...state, board, errors: state.errors - (erased.status === 'fail' ? 1 : 0) }
   }
 
   // Word banks are lowercase, so typing is case-insensitive (same as Time Attack).
@@ -45,6 +71,7 @@ function reducer(state: State, action: Action): State {
     board,
     typed: state.typed + 1,
     correct: state.correct + (expected === typed ? 1 : 0),
+    errors: state.errors + (expected === typed ? 0 : 1),
     keystrokes: [
       ...state.keystrokes,
       {
@@ -76,63 +103,55 @@ export function useVersusRace(words: string[], racing: boolean, startedAt: numbe
     board: boardFromWords(list),
     typed: 0,
     correct: 0,
+    errors: 0,
     keystrokes: [],
   }))
 
-  // Local clock, only for the on-screen timer. The server's clock decides the race.
-  const [now, setNow] = useState(0)
+  // Stops input when the local time runs out. One timer for the deadline, not
+  // a ticking clock: the on-screen countdown ticks inside LiveStats. The
+  // server's clock decides the race.
+  const [timeIsUp, setTimeIsUp] = useState(false)
   useEffect(() => {
-    if (!racing) return
-    const id = setInterval(() => setNow(Date.now()), PROGRESS_INTERVAL_MS)
-    return () => clearInterval(id)
-  }, [racing])
-
-  const elapsedMs = racing && startedAt !== null && now > 0 ? Math.max(0, now - startedAt) : 0
-  const timeLeftMs = Math.max(0, durationMs - elapsedMs)
-  const timeIsUp = timeLeftMs <= 0
+    if (!racing || startedAt === null) return
+    const id = setTimeout(() => setTimeIsUp(true), Math.max(0, startedAt + durationMs - Date.now()))
+    return () => clearTimeout(id)
+  }, [racing, startedAt, durationMs])
 
   // Accept keys only while the race is on.
   const acceptingInput = racing && !timeIsUp
-  useEffect(() => {
-    if (!acceptingInput) return
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.repeat) return
-      if (event.ctrlKey || event.metaKey || event.altKey) return
-      if (event.key !== 'Backspace' && event.key.length !== 1) return
-      event.preventDefault()
-      dispatch({ type: 'key', key: event.key, t: Math.max(0, Date.now() - (startedAt ?? Date.now())) })
-    }
-
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [acceptingInput, startedAt])
+  useFrameKeys(acceptingInput, (keys) =>
+    dispatch({
+      type: 'keys',
+      keys: keys.map(({ key, at }) => ({ key, t: Math.max(0, at - (startedAt ?? at)) })),
+    }),
+  )
 
   // Send the running totals while racing, only when they changed.
   // `errors` (letters still wrong) is for the server's Net WPM; it can go down
-  // when the player backspaces over a mistake.
-  const latest = useRef({ typed: 0, correct: 0, errors: 0, wordResults: '' })
+  // when the player backspaces over a mistake. The word results string is
+  // built only when sending (at most 10 times a second), not on every key.
+  const latest = useRef<Latest>({ typed: 0, correct: 0, errors: 0, board: state.board })
   const lastSent = useRef({ typed: -1, correct: -1, errors: -1, wordResults: '' })
   useEffect(() => {
     latest.current = {
       typed: state.typed,
       correct: state.correct,
-      errors: countLetters(state.board, 'fail'),
-      wordResults: wordResults(state.board),
+      errors: state.errors,
+      board: state.board,
     }
-  }, [state.typed, state.correct, state.board])
+  }, [state.typed, state.correct, state.errors, state.board])
   // Typed the very last letter: tell the server right away so the race ends now.
   const finishedTyping = isFinished(state.board)
   useEffect(() => {
     if (!racing || !finishedTyping) return
-    const { typed, correct, errors, wordResults } = latest.current
+    const { typed, correct, errors, wordResults } = progressOf(latest.current)
     lastSent.current = { typed, correct, errors, wordResults }
     sendProgress(typed, correct, wordResults, errors)
   }, [racing, finishedTyping])
   useEffect(() => {
     if (!racing) return
     const id = setInterval(() => {
-      const { typed, correct, errors, wordResults } = latest.current
+      const { typed, correct, errors, wordResults } = progressOf(latest.current)
       const sent = lastSent.current
       if (
         typed === sent.typed &&
@@ -153,12 +172,11 @@ export function useVersusRace(words: string[], racing: boolean, startedAt: numbe
     typed: state.typed,
     correct: state.correct,
     keystrokes: state.keystrokes,
+    // For LiveStats while racing. The server's numbers in `match_result` are
+    // the official ones; its result still uses its own WPM formula until the
+    // server side is updated.
+    errors: state.errors,
     finishedTyping,
-    timeLeftMs,
-    // Live numbers for the stats bar. The server's numbers in `match_result` are the official ones.
-    // Net WPM (project doc). The server's official result still uses its own
-    // formula until the server side is updated.
-    wpm: computeNetWpm(state.typed, countLetters(state.board, 'fail'), elapsedMs),
     accuracy: state.typed === 0 ? 0 : state.correct / state.typed,
   }
 }
