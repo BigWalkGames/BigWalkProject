@@ -182,7 +182,7 @@ export function useTypingTest(durationMs: number) {
   
   // TEMP: only for verifying keysroke log
   useEffect(() => {
-    if (state.status === 'finished') debugEngineLog(state.engineLog)
+    if (import.meta.env.DEV && state.status === 'finished') debugEngineLog(state.engineLog)
     }, [state.status, state.engineLog])
   
   const restart = useCallback(() => {
@@ -224,7 +224,12 @@ export function useTypingTest(durationMs: number) {
   }, [state])
   
   useEffect(() => {
-    if (result) void recordMatch(state.engineLog, result.wpm, result.accuracy)
+    if (!result) return
+    // Deferred so the stats update and save run after the
+    // results screen paints. Not cancelled on cleanup: the save must still
+    // happen if this component unmounts for the results screen.
+    const log = state.engineLog
+    setTimeout(() => void recordMatch(log, result.wpm, result.accuracy), 0)
   }, [result, state.engineLog])
   
   return {
