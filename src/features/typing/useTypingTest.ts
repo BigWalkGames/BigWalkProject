@@ -227,7 +227,7 @@ export function useTypingTest(durationMs: number) {
   
   useEffect(() => {
     if (!result) return
-    // Deferred so the stats update and localStorage write run after the
+    // Deferred so the stats update and save run after the
     // results screen paints. Not cancelled on cleanup: the save must still
     // happen if this component unmounts for the results screen.
     const log = state.engineLog
