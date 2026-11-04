@@ -1,0 +1,56 @@
+.progress-graph {
+  --graph-wpm: var(--color-accent);
+  --graph-acc: var(--color-positive-bright);
+
+  width: 100%;
+  max-width: 1530px;
+  padding: 16px 24px;
+  background: var(--color-light);
+  color: var(--color-ink);
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 var(--shadow-soft);
+}
+
+.progress-graph__legend {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  font-size: var(--fs-chat);
+  line-height: 1;
+}
+
+.progress-graph__key::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 10px;
+  vertical-align: -1px;
+  border-radius: 50%;
+}
+.progress-graph__key--wpm::before { background: var(--graph-wpm); }
+.progress-graph__key--acc::before { background: var(--graph-acc); }
+
+.progress-graph__plot {
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+}
+
+.progress-graph__svg { display: block; }
+
+.progress-graph__grid { stroke: var(--color-outline-light); stroke-width: 1; }
+
+.progress-graph__tick { fill: var(--color-ink); font-size: 16px; }
+.progress-graph__tick--wpm { fill: var(--graph-wpm); }
+.progress-graph__tick--acc { fill: var(--graph-acc); }
+
+.progress-graph__line { fill: none; stroke-width: 3; stroke-linejoin: round; }
+.progress-graph__line--wpm { stroke: var(--graph-wpm); }
+.progress-graph__line--acc { stroke: var(--graph-acc); }
+
+.progress-graph__dot { stroke: var(--color-ink); stroke-width: 2; }
+.progress-graph__dot--wpm { fill: var(--graph-wpm); }
+.progress-graph__dot--acc { fill: var(--graph-acc); }
+
+.progress-graph__status { margin: 0; font-size: var(--fs-chat); }
