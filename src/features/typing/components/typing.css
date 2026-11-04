@@ -21,11 +21,21 @@
 
 /* Visual order (the DOM order is stats, words, actions, results):
    1 timer  ->  2 hint  ->  3 words box  ->  4 restart  ->  5 results */
-.tt-stats       { order: 1; }
-.tt-hint        { order: 2; }
-.tt-words       { order: 3; }
-.tt-restart     { order: 4; }
-.tt-results     { order: 5; }
+.tt-stats {
+  order: 1;
+}
+.tt-hint {
+  order: 2;
+}
+.tt-words {
+  order: 3;
+}
+.tt-restart {
+  order: 4;
+}
+.tt-results {
+  order: 5;
+}
 
 /* Stats */
 
@@ -83,18 +93,23 @@
   align-items: center;
 }
 
-/* The words live in this inner layer, exactly three lines tall. It clips at
-   the text area (so a 4th line can't peek into the padding below) and, unlike
-   overflow: clip, still lets WordsDisplay scroll it to follow the cursor. */
+/* The visible text area, exactly three lines tall. It clips there, so a 4th
+   line can't peek into the padding below. */
 .tt-words__scroll {
-  position: relative; /* letter offsets and the cursor are measured from here */
   flex: 1 1 auto;
   min-width: 0;
+  height: calc(var(--tt-line) * 3);
+  overflow: hidden;
+}
+
+/* The words themselves. WordsDisplay moves this layer up (transform) to keep
+   the current line second, which the GPU can do without laying out again. */
+.tt-words__lines {
+  position: relative; /* letter offsets and the cursor are measured from here */
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  height: calc(var(--tt-line) * 3);
-  overflow: hidden;
+  will-change: transform;
 }
 
 .tt-word {
@@ -127,7 +142,9 @@
 
 /* Cursor: one element for the whole box, moved by WordsDisplay to the
    current letter (.tt-letter.is-cursor). It slides between letters, stays
-   solid while typing (.is-typing), and fades in and out when idle. */
+   solid while typing (.is-typing), and fades in and out when idle. The slide
+   length (--tt-caret-ms) comes from the caret speed setting; at speed each
+   new key restarts the slide from where the cursor is, so it glides. */
 .tt-caret {
   position: absolute;
   top: 0;
@@ -139,7 +156,8 @@
   border-radius: 2px;
   pointer-events: none;
   z-index: 1;
-  transition: transform 80ms ease-out;
+  transition: transform var(--tt-caret-ms, 100ms) ease;
+  will-change: transform;
   animation: tt-caret-blink 1s ease-in-out infinite;
 }
 
@@ -181,7 +199,7 @@
 
 .tt-hint {
   order: 2;
-  margin-top: -24px;   
+  margin-top: -24px;
   min-height: 1.2em;
   font-size: var(--fs-hud-label);
   line-height: 1.2;
@@ -220,12 +238,24 @@
     display: contents;
   }
 
-  .tt-box--bigrams     { order: 1; }
-  .tt-box--keys        { order: 2; }
-  .tt-box--words       { order: 3; }
-  .tt-results__summary { order: 4; }
-  .tt-results .kb      { order: 5; }
-  .tt-results__actions { order: 6; }
+  .tt-box--bigrams {
+    order: 1;
+  }
+  .tt-box--keys {
+    order: 2;
+  }
+  .tt-box--words {
+    order: 3;
+  }
+  .tt-results__summary {
+    order: 4;
+  }
+  .tt-results .kb {
+    order: 5;
+  }
+  .tt-results__actions {
+    order: 6;
+  }
 }
 
 .tt-box {
@@ -253,9 +283,15 @@
   font-size: var(--fs-chat);
 }
 
-.tt-box--bigrams .tt-box__scroll { max-height: 220px; }
-.tt-box--keys .tt-box__scroll    { max-height: 260px; }
-.tt-box--words .tt-box__scroll   { max-height: 200px; }
+.tt-box--bigrams .tt-box__scroll {
+  max-height: 220px;
+}
+.tt-box--keys .tt-box__scroll {
+  max-height: 260px;
+}
+.tt-box--words .tt-box__scroll {
+  max-height: 200px;
+}
 
 .tt-muted {
   margin: 0;
@@ -266,8 +302,13 @@
 
 .tt-bigrams {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 24px;
+}
+
+.tt-improved {
+  color: var(--tt-correct);
 }
 
 .tt-bigrams__heading {
@@ -293,7 +334,7 @@
 
 .tt-keys {
   width: 100%;
-  border-collapse: separate;   /* collapsed borders don't stick with a sticky header */
+  border-collapse: separate; /* collapsed borders don't stick with a sticky header */
   border-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
@@ -316,7 +357,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   border-bottom: 3px solid var(--color-outline-light);
-  box-shadow: 0 3px 0 var(--color-light);   /* a little gap under the lip so rows never touch it */
+  box-shadow: 0 3px 0 var(--color-light); /* a little gap under the lip so rows never touch it */
 }
 
 .tt-key {
