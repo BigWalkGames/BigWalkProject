@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { NavButton } from '../../components/NavButton/NavButton';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { ResultsPanel } from '../../features/typing/components/ResultsPanel';
-import { Stat, StatsBar } from '../../features/typing/components/StatsBar';
+import { LiveStats, Stat, StatsBar } from '../../features/typing/components/StatsBar';
 import {
   computeBigramLatency,
   computeBigrams,
@@ -158,12 +158,24 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
     <ScreenLayout title="Versus" backTo="/multiplayer" footer={footer}>
       <div className="time-attack">
         <div className="tt">
-          <StatsBar
-            timeLeftMs={finished ? 0 : race.timeLeftMs}
-            wpm={mine ? mine.wpm : race.wpm}
-            accuracy={mine ? mine.accuracy / 100 : race.accuracy}
-            hasTyped={race.typed > 0}
-          />
+          {/* The live row ticks on its own while racing, so the clock doesn't re-render the race. */}
+          {racing ? (
+            <LiveStats
+              startedAt={startedAt}
+              endedAt={null}
+              durationMs={durationMs}
+              keystrokeCount={race.typed}
+              correctCount={race.correct}
+              failCount={race.errors}
+            />
+          ) : (
+            <StatsBar
+              timeLeftMs={finished ? 0 : durationMs}
+              wpm={mine ? mine.wpm : 0}
+              accuracy={mine ? mine.accuracy / 100 : race.accuracy}
+              hasTyped={race.typed > 0}
+            />
+          )}
 
           <WordsDisplay board={race.board} showCursor={racing} />
 

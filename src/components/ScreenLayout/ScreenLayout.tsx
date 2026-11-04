@@ -10,6 +10,7 @@ type ScreenLayoutProps = {
   footer?: React.ReactNode;       // extra bottom-row buttons, shown after Back
   backTo?: string;                // where Back and Esc go (default: home)
   showBack?: boolean;             // set false on screens like Time Attack
+  backDisabled?: boolean;         // keep Back visible but turn off the button and Esc
   children: React.ReactNode;
 };
 
@@ -20,11 +21,14 @@ export function ScreenLayout({
   footer,
   backTo = '/',
   showBack = true,
+  backDisabled = false,
   children,
 }: ScreenLayoutProps) {
   const navigate = useNavigate();
 
-  useHotkeys(showBack ? { escape: () => navigate(backTo) } : {});
+  useHotkeys(showBack ? { escape: () => navigate(backTo) } : {}, {
+    enabled: !backDisabled,
+  });
 
   const hasHeader = Boolean(title || headerLeft || headerRight);
   const hasFooter = showBack || Boolean(footer);
@@ -43,11 +47,16 @@ export function ScreenLayout({
 
       {hasFooter && (
         <footer className="screen__footer">
-          {showBack && (
-            <NavButton to={backTo} hotkey="esc">
-              Back
-            </NavButton>
-          )}
+          {showBack &&
+            (backDisabled ? (
+              <NavButton hotkey="esc" disabled>
+                Back
+              </NavButton>
+            ) : (
+              <NavButton to={backTo} hotkey="esc">
+                Back
+              </NavButton>
+            ))}
           {footer}
         </footer>
       )}
