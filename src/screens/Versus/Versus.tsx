@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { NavButton } from '../../components/NavButton/NavButton';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
-import { ResultsPanel } from '../../features/typing/components/ResultsPanel';
-import { LiveStats, Stat, StatsBar } from '../../features/typing/components/StatsBar';
+import { ResultsPanel, WordBankBox } from '../../features/typing/components/ResultsPanel';
+import { LiveStats, StatsBar } from '../../features/typing/components/StatsBar';
 import {
   computeBigramLatency,
   computeBigrams,
@@ -13,6 +13,7 @@ import {
 import type { TestResult } from '../../features/typing/stats/types';
 import { WordsDisplay } from '../../features/typing/components/WordsDisplay';
 import { EmoteChat } from '../../features/versus/EmoteChat';
+import { PlayerCards } from '../../features/versus/PlayerCards';
 import { PlayerProgress } from '../../features/versus/PlayerProgress';
 import { useEmoteKeys } from '../../features/versus/useEmoteKeys';
 import { useVersusRace } from '../../features/versus/useVersusRace';
@@ -108,6 +109,7 @@ export default function Versus() {
       result={result}
       sessionId={sessionId}
       emotes={emotes}
+      chatOpen={status === 'finished' && !roomEnded}
       playAgain={playAgain}
       playAgainTone={playAgainTone}
       footer={footer}
@@ -128,16 +130,25 @@ type RaceProps = {
   result: ReturnType<typeof useQuickMatch>['result'];
   sessionId: string | null;
   emotes: Emote[];
+  /** The room is still open after the results, so the players can keep chatting. */
+  chatOpen: boolean;
   playAgain: string;
   playAgainTone: RematchTone;
   footer?: React.ReactNode;
 };
 
 // Split out so the race state (the words and counts) starts fresh with each match.
-function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, emotes, playAgain, playAgainTone, footer }: RaceProps) {
+function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, emotes, chatOpen, playAgain, playAgainTone, footer }: RaceProps) {
   const race = useVersusRace(words, racing, startedAt, durationMs);
-  // The arrow keys send emotes while the race is on (P43).
-  useEmoteKeys(racing);
+  // After the match one short summary fits the screen. D swaps it for the full
+  // breakdown, which scrolls inside its own box, so the page itself never scrolls.
+  const [showDetails, setShowDetails] = useState(false);
+  const summary = finished && Boolean(result);
+  useHotkeys({ d: () => { if (summary) setShowDetails((open) => !open); } });
+  // The arrow keys send emotes during the race and on the summary, until the room closes (P43).
+  // Not on the Details view, where the arrows are free to scroll.
+  const chatLive = racing || (summary && !showDetails && chatOpen);
+  useEmoteKeys(chatLive);
 
   const mine = result && sessionId ? result.results[sessionId] : undefined;
   const theirs = result ? Object.entries(result.results).find(([id]) => id !== sessionId)?.[1] : undefined;
@@ -160,10 +171,35 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
     : null;
   const headline = !result ? '' : result.winner === null ? "It's a draw" : result.winner === sessionId ? 'You win!' : 'Opponent wins';
 
+  const screenFooter = (
+    <>
+      {footer}
+      {summary && myResult && (
+        <NavButton hotkey="D" onClick={() => setShowDetails((open) => !open)}>
+          {showDetails ? 'Summary' : 'Details'}
+        </NavButton>
+      )}
+    </>
+  );
+
+  // Details: the same one-screen results layout Time Attack uses. The ResultsPanel has to be
+  // the direct child of the screen body for that layout to fit the window.
+  if (summary && showDetails) {
+    return (
+      <ScreenLayout title="Versus" backTo="/multiplayer" footer={screenFooter}>
+        {myResult ? (
+          <ResultsPanel result={myResult} board={race.board} saveStatus="saved" hideSaveStatus compact />
+        ) : (
+          <p>You: no result</p>
+        )}
+      </ScreenLayout>
+    );
+  }
+
   return (
-    <ScreenLayout title="Versus" backTo="/multiplayer" footer={footer}>
+    <ScreenLayout title="Versus" backTo="/multiplayer" footer={screenFooter}>
       <div className="time-attack">
-        <div className="tt">
+        <div className={`tt versus-tt${summary ? ' is-summary' : ''}`}>
           {/* The live row ticks on its own while racing, so the clock doesn't re-render the race. */}
           {racing ? (
             <LiveStats
@@ -183,20 +219,37 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
             />
           )}
 
-          <WordsDisplay board={race.board} showCursor={racing} />
+          {!summary && <WordsDisplay board={race.board} showCursor={racing} />}
 
-          <PlayerProgress words={words} wordResults={opponent.wordResults ?? ''} />
+          {!summary && <PlayerProgress words={words} wordResults={opponent.wordResults ?? ''} />}
 
-          <EmoteChat emotes={emotes} sessionId={sessionId} racing={racing} />
+          {/* Sidebar: both players' numbers and the chat. */}
+          <aside className="versus-side">
+            {!summary && (
+            <PlayerCards
+              racing={racing}
+              startedAt={startedAt}
+              durationMs={durationMs}
+              me={{ typed: race.typed, correct: race.correct, errors: race.errors }}
+              opponent={opponent}
+              myOfficial={mine ? { wpm: mine.wpm, accuracy: mine.accuracy } : undefined}
+              theirOfficial={theirs ? { wpm: theirs.wpm, accuracy: theirs.accuracy } : undefined}
+              winner={!result || result.winner === null ? null : result.winner === sessionId ? 'me' : 'them'}
+            />
+            )}
+            <EmoteChat emotes={emotes} sessionId={sessionId} active={chatLive} closed={finished && !chatOpen} />
+          </aside>
 
+          {!summary && (
           <p className="tt-hint">
             {countdown !== null && `Starting in ${countdown}...`}
             {racing && !race.finishedTyping && `Opponent: ${opponent.correct} correct / ${opponent.typed} typed`}
             {racing && race.finishedTyping && 'Finished! Waiting for the results...'}
             {!racing && !finished && countdown === null && 'Waiting for the match to start...'}
           </p>
+          )}
 
-          {finished && result && (
+          {summary && result && (
             <div className="versus-results">
               <h2 className="versus-headline">{headline}</h2>
               {playAgain && (
@@ -204,22 +257,31 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
                   {playAgain}
                 </p>
               )}
-              {theirs && (
-                <div className="tt-stats versus-opponent" aria-label="Opponent results">
-                  <Stat label="Opponent WPM" value={theirs.wpm.toString()} />
-                  <Stat label="Opponent accuracy" value={`${theirs.accuracy}%`} />
-                  <Stat label="Opponent keystrokes" value={theirs.typed.toString()} />
+              {mine && theirs && (
+                <div className="versus-compare" aria-label="Final numbers">
+                  <CompareCard name="You" wpm={mine.wpm} accuracy={mine.accuracy} typed={mine.typed} isWinner={result.winner === sessionId} />
+                  <CompareCard name="Opponent" wpm={theirs.wpm} accuracy={theirs.accuracy} typed={theirs.typed} isWinner={result.winner !== null && result.winner !== sessionId} />
                 </div>
               )}
-              {myResult ? (
-                <ResultsPanel result={myResult} board={race.board} saveStatus="saved" />
-              ) : (
-                <p>You: no result</p>
-              )}
+              <div className="versus-wordbank"><WordBankBox board={race.board} /></div>
+              <p className="versus-more">Press D for the full breakdown.</p>
             </div>
           )}
         </div>
       </div>
     </ScreenLayout>
+  );
+}
+
+function CompareCard({ name, wpm, accuracy, typed, isWinner }: { name: string; wpm: number; accuracy: number; typed: number; isWinner: boolean }) {
+  return (
+    <div className={`versus-compare__card${isWinner ? ' is-winner' : ''}`}>
+      <h3 className="versus-compare__name">{name}</h3>
+      <div className="versus-compare__numbers">
+        <span><strong>{wpm}</strong> WPM</span>
+        <span><strong>{accuracy}%</strong> accuracy</span>
+        <span><strong>{typed}</strong> keystrokes</span>
+      </div>
+    </div>
   );
 }

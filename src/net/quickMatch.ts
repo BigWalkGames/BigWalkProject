@@ -329,7 +329,8 @@ function attach(joined: ClientRoom) {
     if (room !== joined) return;
     room = null;
     if (leaving) return;
-    if (state.mode === 'custom' && state.status === 'finished') setState({ roomEnded: true });
+    // On the results screen the room closing just ends the chat (and the rematch, in Custom Game).
+    if (state.status === 'finished') setState({ roomEnded: true });
     else if (!state.result && !state.endReason) endMatch('connection_lost');
   });
 }
@@ -344,11 +345,12 @@ export function sendProgress(typed: number, correct: number, wordResults: string
 }
 
 /**
- * P43: send an emote. Only works while racing, and at most one every half second
- * (the server's limit). Returns true if it was sent.
+ * P43: send an emote. Works while racing and on the results screen (until the room
+ * closes), and at most one every half second (the server's limit). Returns true if sent.
  */
 export function sendEmote(id: EmoteId) {
-  if (!room || state.status !== 'racing') return false;
+  const chatOpen = state.status === 'racing' || (state.status === 'finished' && !state.roomEnded);
+  if (!room || !chatOpen) return false;
   const now = Date.now();
   if (now - lastEmoteSentAt < EMOTE_COOLDOWN_MS) return false;
   lastEmoteSentAt = now;
