@@ -78,3 +78,75 @@
 @media (prefers-reduced-motion: reduce) {
   .versus-rematch.is-request { animation: none; }
 }
+/* Match chat (P43), styled like the Chatroom panel. Fixed height, so a new emote never
+   moves the words. */
+.emote-chat {
+  order: 4;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-container);
+  border: 3px solid var(--color-frame);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--shadow-soft);
+}
+
+.emote-chat__title {
+  margin: 0;
+  padding: 8px 24px;
+  font-size: 30px;
+  font-weight: normal;
+  color: var(--color-light);
+  background: var(--color-frame);
+}
+
+.emote-chat__log {
+  list-style: none;
+  margin: 0;
+  padding: 12px 24px 0;
+  height: calc(5 * 1.3em + 12px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  font-size: 28px;
+  line-height: 1.3;
+}
+
+.emote-chat__empty { color: var(--color-frame); }
+
+.emote-chat__line {
+  animation: emote-in 0.25s ease-out;
+}
+.emote-chat__who { color: var(--color-frame); }
+.emote-chat__line.is-mine .emote-chat__who { color: var(--color-ink); }
+.emote-chat__text { color: var(--color-ink); }
+
+.emote-chat__keys {
+  margin: 0;
+  padding: 10px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  font-size: 22px;
+  color: var(--color-light);
+  background: var(--color-frame);
+}
+.emote-chat__key kbd {
+  font: inherit;
+  padding: 0 8px;
+  color: var(--color-ink);
+  background: var(--color-light);
+  border: 2px solid var(--color-light);
+  border-radius: 6px;
+}
+
+@keyframes emote-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .emote-chat__line { animation: none; }
+}

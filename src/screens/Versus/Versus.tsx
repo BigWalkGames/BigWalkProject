@@ -12,11 +12,13 @@ import {
 } from '../../features/typing/stats/computeStats';
 import type { TestResult } from '../../features/typing/stats/types';
 import { WordsDisplay } from '../../features/typing/components/WordsDisplay';
+import { EmoteChat } from '../../features/versus/EmoteChat';
 import { PlayerProgress } from '../../features/versus/PlayerProgress';
+import { useEmoteKeys } from '../../features/versus/useEmoteKeys';
 import { useVersusRace } from '../../features/versus/useVersusRace';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import { useQuickMatch } from '../../net/useQuickMatch';
-import { getState, setReady, type Progress } from '../../net/quickMatch';
+import { getState, setReady, type Emote, type Progress } from '../../net/quickMatch';
 import '../../features/typing/components/typing.css';
 import '../TimeAttack/TimeAttack.css';
 import '../../features/versus/versus.css';
@@ -30,7 +32,7 @@ import '../../features/versus/versus.css';
  */
 export default function Versus() {
   const navigate = useNavigate();
-  const { status, mode, match, countdown, raceStartedAt, opponent, result, sessionId, lobby, matchNumber, roomEnded } =
+  const { status, mode, match, countdown, raceStartedAt, opponent, result, sessionId, lobby, matchNumber, roomEnded, emotes } =
     useQuickMatch();
 
   // Custom Game rematch: who has pressed Ready again.
@@ -105,6 +107,7 @@ export default function Versus() {
       opponent={opponent}
       result={result}
       sessionId={sessionId}
+      emotes={emotes}
       playAgain={playAgain}
       playAgainTone={playAgainTone}
       footer={footer}
@@ -124,14 +127,17 @@ type RaceProps = {
   opponent: Progress;
   result: ReturnType<typeof useQuickMatch>['result'];
   sessionId: string | null;
+  emotes: Emote[];
   playAgain: string;
   playAgainTone: RematchTone;
   footer?: React.ReactNode;
 };
 
 // Split out so the race state (the words and counts) starts fresh with each match.
-function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, playAgain, playAgainTone, footer }: RaceProps) {
+function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, emotes, playAgain, playAgainTone, footer }: RaceProps) {
   const race = useVersusRace(words, racing, startedAt, durationMs);
+  // The arrow keys send emotes while the race is on (P43).
+  useEmoteKeys(racing);
 
   const mine = result && sessionId ? result.results[sessionId] : undefined;
   const theirs = result ? Object.entries(result.results).find(([id]) => id !== sessionId)?.[1] : undefined;
@@ -180,6 +186,8 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
           <WordsDisplay board={race.board} showCursor={racing} />
 
           <PlayerProgress words={words} wordResults={opponent.wordResults ?? ''} />
+
+          <EmoteChat emotes={emotes} sessionId={sessionId} racing={racing} />
 
           <p className="tt-hint">
             {countdown !== null && `Starting in ${countdown}...`}

@@ -4,6 +4,8 @@ import {
   useTypingSettings,
   type CaretSpeed,
 } from '../../features/typing/typingSettings';
+import { EMOTE_LIBRARY, EMOTE_SLOTS, type EmoteId } from '../../features/versus/emotes';
+import { resetEmoteSlots, setEmoteSlot, useEmoteSlots } from '../../features/versus/emoteSettings';
 import './Settings.css';
 
 const CARET_SPEEDS: { value: CaretSpeed; label: string }[] = [
@@ -15,6 +17,7 @@ const CARET_SPEEDS: { value: CaretSpeed; label: string }[] = [
 
 export default function Settings() {
   const { caretSpeed, smoothLines } = useTypingSettings();
+  const emoteSlots = useEmoteSlots();
 
   return (
     <ScreenLayout title="Settings">
@@ -41,6 +44,29 @@ export default function Settings() {
             onChange={(event) => setTypingSettings({ smoothLines: event.target.checked })}
           />
         </label>
+      </section>
+
+      <section className="settings-section" aria-labelledby="settings-emotes">
+        <h2 id="settings-emotes" className="settings-section__title">Match emotes</h2>
+        <p className="settings-note">Pick what each arrow key says during a Quick Match or Custom Game.</p>
+
+        {EMOTE_SLOTS.map(({ slot, arrow, name }) => (
+          <label key={slot} className="settings-row">
+            <span>{arrow} {name} arrow</span>
+            <select
+              value={emoteSlots[slot]}
+              onChange={(event) => setEmoteSlot(slot, event.target.value as EmoteId)}
+            >
+              {EMOTE_LIBRARY.map(({ id, label }) => (
+                <option key={id} value={id}>{label}</option>
+              ))}
+            </select>
+          </label>
+        ))}
+
+        <button type="button" className="settings-button" onClick={resetEmoteSlots}>
+          Reset emotes
+        </button>
       </section>
     </ScreenLayout>
   );
