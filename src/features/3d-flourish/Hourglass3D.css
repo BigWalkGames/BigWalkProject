@@ -1,0 +1,7 @@
+/* Same box as the 2D .menu-btn__img (70px), and click-through so the
+   button underneath still gets every click. */
+.hourglass3d {
+  width: 70px !important; /* R3F sets an inline 100% size */
+  height: 70px !important;
+  pointer-events: none;
+}

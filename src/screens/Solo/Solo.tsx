@@ -5,6 +5,7 @@ import { MenuButton } from '../../components/MenuButton/MenuButton';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import hourglass from '../../assets/hourglass.png';
 import hourglassPressed from '../../assets/hourglasspressed.png';
+import { HourglassIcon } from '../../features/3d-flourish/HourglassIcon';
 
 export default function Solo() {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ export default function Solo() {
               hotkey="Q"
               to="/solo/time-attack"
               icon={{ normal: hourglass, pressed: hourglassPressed }}
+              iconScene={(state, fallback) => <HourglassIcon {...state} fallback={fallback} />}
             >
               Time Attack
             </MenuButton>

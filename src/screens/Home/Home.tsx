@@ -1,3 +1,4 @@
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { KeyCap } from '../../components/KeyCap/KeyCap';
 import { NavButton } from '../../components/NavButton/NavButton';
@@ -13,7 +14,18 @@ import accountIconPressed from '../../assets/accounticonpressed.png';
 import gearIcon from '../../assets/gearicon.png';
 import gearIconPressed from '../../assets/geariconpressed.png';
 import { useAuth } from '../../hooks/auth/useAuth';
+import { Hero3DBoundary } from '../../features/3d-flourish/Hero3DBoundary';
+import { SwirlBackground } from '../../features/3d-flourish/SwirlBackground';
 import './Home.css';
+
+// The 3D hero (with three.js) is its own chunk. Start downloading it as soon
+// as the app loads (this module is imported at startup), so it's usually ready
+// by the time Home shows, even during the login check or login screen.
+const heroChunk = import('../../features/3d-flourish/HomeHero3D');
+const HomeHero3D = lazy(() => heroChunk);
+
+/** Lets the F + J press animation show before switching screens. */
+const CHORD_DELAY_MS = 150;
 
 export default function Home() {
   const navigate = useNavigate();
@@ -33,11 +45,33 @@ export default function Home() {
     r: () => navigate('/settings'),
   });
 
-  useKeyChord(['f', 'j'], () => navigate('/solo/time-attack'));
+  const chordTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(chordTimer.current), []);
+  useKeyChord(['f', 'j'], () => {
+    window.clearTimeout(chordTimer.current);
+    chordTimer.current = window.setTimeout(() => navigate('/solo/time-attack'), CHORD_DELAY_MS);
+  });
   const keysDown = useKeysDown(['f', 'j']);
+
+  // The 2D hero: only if the 3D one fails (no WebGL, or the chunk failed).
+  const flatHero = (asHeading: boolean) => (
+    <>
+      {asHeading ? (
+        <h1 className="home__title">B!GWALK</h1>
+      ) : (
+        <div className="home__title" aria-hidden="true">B!GWALK</div>
+      )}
+      <div className="home__keys">
+        <KeyCap label="F" pressed={keysDown.has('f')} />
+        <span className="home__plus">+</span>
+        <KeyCap label="J" pressed={keysDown.has('j')} />
+      </div>
+    </>
+  );
 
   return (
     <main className="home">
+      <SwirlBackground />
       {playerName && (
         <p className="home__player" aria-label={`Signed in as ${playerName}`}>
           {playerName}
@@ -57,12 +91,14 @@ export default function Home() {
         </p>
       )}
       <section className="home__hero">
-        <h1 className="home__title">B!GWALK</h1>
-        <div className="home__keys">
-          <KeyCap label="F" pressed={keysDown.has('f')} />
-          <span className="home__plus">+</span>
-          <KeyCap label="J" pressed={keysDown.has('j')} />
-        </div>
+        <Hero3DBoundary fallback={flatHero(true)}>
+          <h1 className="home__sr-only">B!GWALK</h1>
+          {/* While loading, hold the canvas's space empty: the 3D intro pops the
+              letters in from nothing, so there's no flash of the 2D hero. */}
+          <Suspense fallback={<div className="home__hero-placeholder" aria-hidden="true" />}>
+            <HomeHero3D keysDown={keysDown} fallback={flatHero(false)} />
+          </Suspense>
+        </Hero3DBoundary>
       </section>
 
       <nav className="home__nav" aria-label="Main">
