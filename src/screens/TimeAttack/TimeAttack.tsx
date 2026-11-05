@@ -19,7 +19,7 @@ export default function TimeAttack() {
   );
 
   return (
-    <ScreenLayout title="Time Attack" backTo="/solo">
+    <ScreenLayout title="Time Attack" backTo="/solo" background="faded-still">
       <div className="time-attack">
         <TypingTest durationMs={30_000} onFinish={showResults} />
       </div>

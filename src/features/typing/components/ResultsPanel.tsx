@@ -1,9 +1,10 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { KeyboardHeatmap } from '../heatmap/KeyboardHeatmap';
 import type { Board } from '../models/Board';
 import type { Word } from '../models/Word';
 import type { BigramStats, TestResult } from '../stats/types';
 import { displayKey, formatPercent } from './format';
+import { RollingNumber } from './RollingNumber';
 import { Stat } from './StatsBar';
 import { WordLetters } from './WordsDisplay';
 import { NavButton } from '../../../components/NavButton/NavButton';
@@ -41,6 +42,7 @@ export function ResultsPanel({
   improvements = [],
   onRestart,
   onMenu,
+  highScore,
 }: {
   result: TestResult;
   board?: Board;
@@ -52,7 +54,12 @@ export function ResultsPanel({
   improvements?: Improvement[];
   onRestart?: () => void;
   onMenu?: () => void;
+  /** A new personal best: celebrate once the WPM finishes rolling. */
+  highScore?: boolean;
 }) {
+  const [wpmLanded, setWpmLanded] = useState(false);
+  const celebrate = Boolean(highScore) && wpmLanded;
+
   useEffect(() => {
     if (!onRestart && !onMenu) return;
     const readyAt = Date.now() + HOTKEY_DELAY_MS;
@@ -118,15 +125,33 @@ export function ResultsPanel({
           )}
 
           <div className="tt-results__summary">
-            <Stat className="tt-stat--hero" label="WPM" value={Math.round(result.wpm).toString()} />
-            <Stat label="Accuracy" value={formatPercent(result.accuracy)} />
-            <Stat
-              label="Bigram Latency"
-              value={
-                result.bigramLatencyMs === null ? '—' : `${Math.round(result.bigramLatencyMs)}ms`
-              }
-            />
-            {!hideSaveStatus && <p className={`tt-save is-${saveStatus}`}>{SAVE_LABEL[saveStatus]}</p>}
+            <div className="tt-results__hero">
+              <Stat
+                className={celebrate ? 'tt-stat--hero is-celebrating' : 'tt-stat--hero'}
+                label="WPM"
+                value={
+                  <RollingNumber
+                    key={result.completedAt}
+                    value={result.wpm}
+                    onLanded={() => setWpmLanded(true)}
+                  />
+                }
+              />
+              {celebrate && <SparkBurst />}
+            </div>
+            <div className="tt-results__side">
+              {celebrate && <p className="tt-highscore">New high score!</p>}
+              <div className="tt-results__minor">
+                <Stat label="Accuracy" value={formatPercent(result.accuracy)} />
+                <Stat
+                  label="Bigram Latency"
+                  value={
+                    result.bigramLatencyMs === null ? '—' : `${Math.round(result.bigramLatencyMs)}ms`
+                  }
+                />
+                {!hideSaveStatus && <p className={`tt-save is-${saveStatus}`}>{SAVE_LABEL[saveStatus]}</p>}
+              </div>
+            </div>
           </div>
 
           <KeyboardHeatmap perKey={result.perKey} />
@@ -142,6 +167,29 @@ export function WordBankBox({ board }: { board: Board }) {
     <Box title="Word Bank" className="tt-box--words">
       <WordReview board={board} />
     </Box>
+  );
+}
+
+const SPARK_COUNT = 18;
+
+/**
+ * Sand-colored pixels bursting out of the WPM for a new high score. Directions
+ * are spread evenly (no randomness), and each spark arcs out then drops.
+ */
+function SparkBurst() {
+  return (
+    <span className="tt-sparks" aria-hidden="true">
+      {Array.from({ length: SPARK_COUNT }, (_, i) => {
+        const angle = (i / SPARK_COUNT) * Math.PI * 2 + 0.3;
+        const distance = i % 2 === 0 ? 110 : 75;
+        const style = {
+          '--dx': `${Math.round(Math.cos(angle) * distance)}px`,
+          '--dy': `${Math.round(Math.sin(angle) * distance * 0.7)}px`,
+          animationDelay: `${(i % 3) * 40}ms`,
+        } as CSSProperties;
+        return <span key={i} className="tt-spark" style={style} />;
+      })}
+    </span>
   );
 }
 

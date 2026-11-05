@@ -1,0 +1,9 @@
+/* The canvas takes the hero's place: full width, height scaled with the
+   viewport so the layout (designed at 1100 x 460) fits on small screens. */
+.hero3d {
+  width: 100%;
+  height: min(460px, 42vw) !important; /* R3F sets an inline 100% height */
+  max-width: 1100px;
+  margin: 0 auto;
+  display: block;
+}

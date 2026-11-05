@@ -61,7 +61,7 @@ export default function Versus() {
   useHotkeys({ r: rematch, q: playAgainNow });
 
   if (!match) {
-    return <ScreenLayout title="Versus" backTo="/multiplayer"><p>Waiting for the match...</p></ScreenLayout>;
+    return <ScreenLayout title="Versus" backTo="/multiplayer" background="faded-still"><p>Waiting for the match...</p></ScreenLayout>;
   }
   // The rematch banner under the headline. `request` is the one that must not be missed.
   const friendWantsRematch = canRematch && Boolean(friend?.ready) && !me?.ready;
@@ -186,7 +186,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
   // the direct child of the screen body for that layout to fit the window.
   if (summary && showDetails) {
     return (
-      <ScreenLayout title="Versus" backTo="/multiplayer" footer={screenFooter}>
+      <ScreenLayout title="Versus" backTo="/multiplayer" footer={screenFooter} background="faded-still">
         {myResult ? (
           <ResultsPanel result={myResult} board={race.board} saveStatus="saved" hideSaveStatus compact />
         ) : (
@@ -197,7 +197,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
   }
 
   return (
-    <ScreenLayout title="Versus" backTo="/multiplayer" footer={screenFooter}>
+    <ScreenLayout title="Versus" backTo="/multiplayer" footer={screenFooter} background="faded-still">
       <div className="time-attack">
         <div className={`tt versus-tt${summary ? ' is-summary' : ''}`}>
           {/* The live row ticks on its own while racing, so the clock doesn't re-render the race. */}
