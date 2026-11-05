@@ -1,5 +1,6 @@
 import { Client } from '@colyseus/sdk';
 import { getSupabase } from '../lib/supabase';
+import { isEmoteId, type EmoteId } from '../features/versus/emotes';
 
 /**
  * Quick Match connection (P15, P16, P17, P18, P19, P21).
@@ -55,6 +56,14 @@ export type EndReason =
 /** Why a room code could not be used. Shown on the Join Room screen. */
 export type JoinError = 'invalid' | 'full' | 'expired' | 'rate_limited' | 'connect_failed';
 
+/** One emote in the match chat. `from` is the sender's session id; `n` is a running number. */
+export type Emote = { n: number; id: EmoteId; from: string };
+
+/** Keep the chat short: only the newest ones are kept. */
+const MAX_EMOTES = 30;
+/** The server drops emotes sent faster than this per player, so don't bother sending them. */
+const EMOTE_COOLDOWN_MS = 500;
+
 export type LobbyPlayer = { id: string; ready: boolean };
 export type Lobby = { code: string; players: LobbyPlayer[] };
 
@@ -75,6 +84,8 @@ export type QuickMatchState = {
   matchNumber: number;
   /** Custom Game: the room closed while the results were showing (the friend left). */
   roomEnded: boolean;
+  /** The match chat: emotes from both players, oldest first. Cleared for every new match. */
+  emotes: Emote[];
 };
 
 const initialState: QuickMatchState = {
@@ -90,6 +101,7 @@ const initialState: QuickMatchState = {
   endReason: null,
   matchNumber: 0,
   roomEnded: false,
+  emotes: [],
 };
 
 type ClientRoom = Awaited<ReturnType<Client['joinOrCreate']>>;
@@ -99,6 +111,8 @@ const listeners = new Set<() => void>();
 let room: ClientRoom | null = null;
 let leaving = false; // true when WE closed the connection on purpose
 let searchId = 0; // lets a stale search notice it was cancelled
+let emoteCount = 0; // numbers the emotes so the chat can tell them apart
+let lastEmoteSentAt = 0;
 
 function setState(patch: Partial<QuickMatchState>) {
   state = { ...state, ...patch };
@@ -286,6 +300,7 @@ function attach(joined: ClientRoom) {
       countdown: null,
       raceStartedAt: null,
       matchNumber: state.matchNumber + 1,
+      emotes: [],
     }),
   );
   joined.onMessage('countdown', ({ seconds }: { seconds: number }) =>
@@ -298,6 +313,12 @@ function attach(joined: ClientRoom) {
   joined.onMessage('match_result', (result: MatchResult) =>
     setState({ status: 'finished', result }),
   );
+  // P43: an emote from either player (the server sends it to both, the sender too).
+  joined.onMessage('emote', (message: { id?: unknown; from?: unknown }) => {
+    if (!isEmoteId(message?.id) || typeof message.from !== 'string') return;
+    const emote: Emote = { n: ++emoteCount, id: message.id, from: message.from };
+    setState({ emotes: [...state.emotes, emote].slice(-MAX_EMOTES) });
+  });
   joined.onMessage('opponent_left', () => endMatch('opponent_left'));
   joined.onMessage('no_opponent', () => endMatch('no_opponent'));
   joined.onMessage('room_closed', () => endMatch('room_closed'));
@@ -308,7 +329,8 @@ function attach(joined: ClientRoom) {
     if (room !== joined) return;
     room = null;
     if (leaving) return;
-    if (state.mode === 'custom' && state.status === 'finished') setState({ roomEnded: true });
+    // On the results screen the room closing just ends the chat (and the rematch, in Custom Game).
+    if (state.status === 'finished') setState({ roomEnded: true });
     else if (!state.result && !state.endReason) endMatch('connection_lost');
   });
 }
@@ -320,6 +342,20 @@ function attach(joined: ClientRoom) {
  */
 export function sendProgress(typed: number, correct: number, wordResults: string, errors: number) {
   room?.send('progress', { typed, correct, wordResults, errors });
+}
+
+/**
+ * P43: send an emote. Works while racing and on the results screen (until the room
+ * closes), and at most one every half second (the server's limit). Returns true if sent.
+ */
+export function sendEmote(id: EmoteId) {
+  const chatOpen = state.status === 'racing' || (state.status === 'finished' && !state.roomEnded);
+  if (!room || !chatOpen) return false;
+  const now = Date.now();
+  if (now - lastEmoteSentAt < EMOTE_COOLDOWN_MS) return false;
+  lastEmoteSentAt = now;
+  room.send('emote', { id });
+  return true;
 }
 
 // A screen that is part of Quick Match "claims" the session while it is on screen.

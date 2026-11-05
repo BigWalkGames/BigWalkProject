@@ -1,7 +1,9 @@
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { KeyCap } from '../../components/KeyCap/KeyCap';
 import { NavButton } from '../../components/NavButton/NavButton';
+import { NoticeScreen } from '../../components/StateMessage/NoticeScreen';
+import type { Notice } from '../../net/useQuickMatch';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import { useKeyChord } from '../../hooks/useKeyChord';
 import { useKeysDown } from '../../hooks/useKeysDown';
@@ -30,7 +32,9 @@ const CHORD_DELAY_MS = 150;
 export default function Home() {
   const navigate = useNavigate();
   // A message from a screen that sent the player back here (for example, no opponent found).
-  const notice = (useLocation().state as { notice?: string } | null)?.notice;
+  const routed = (useLocation().state as { notice?: Notice } | null)?.notice;
+  const [closed, setClosed] = useState<Notice | null>(null);
+  const notice = routed && routed !== closed ? routed : null;
 
   const { user, isGuest } = useAuth();
 
@@ -77,19 +81,7 @@ export default function Home() {
           {playerName}
         </p>
       )}
-      {notice && (
-        <p
-          role="status"
-          style={{
-            position: 'absolute',
-            top: 16,
-            left: 0,
-            right: 0,
-            textAlign: 'center',
-          }}>
-          {notice}
-        </p>
-      )}
+      {notice && <NoticeScreen notice={notice} onClose={() => setClosed(notice)} />}
       <section className="home__hero">
         <Hero3DBoundary fallback={flatHero(true)}>
           <h1 className="home__sr-only">B!GWALK</h1>
