@@ -40,3 +40,50 @@
   width: 20px;
   height: 20px;
 }
+
+/* Tabs above the settings box, same width as the box. */
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.settings .settings-section {
+  max-width: none;
+}
+
+.settings .tab-nav__tabs {
+  flex: 1;
+}
+
+.settings .tab-nav__tab {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Audio volume sliders */
+.settings-row__note {
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+
+.settings-slider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-slider input[type='range'] {
+  width: 200px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.settings-slider__value {
+  min-width: 3ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

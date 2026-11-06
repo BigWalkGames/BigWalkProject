@@ -9,6 +9,7 @@ import { Stat } from './StatsBar';
 import { WordLetters } from './WordsDisplay';
 import { NavButton } from '../../../components/NavButton/NavButton';
 import type { Improvement } from '../stats/improvements';
+import { playSound } from '../../audio/sound';
 import './typing.css';
 
 export type SaveStatus = 'saving' | 'saved' | 'error';
@@ -64,6 +65,7 @@ export function ResultsPanel({
       const action = { r: onRestart, e: onMenu }[event.key.toLowerCase()];
       if (!action) return;
       event.preventDefault();
+      playSound('menuSelect');
       action();
     }
     document.addEventListener('keydown', onKeyDown);

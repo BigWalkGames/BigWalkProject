@@ -3,6 +3,7 @@ import { sendProgress } from '../../net/quickMatch'
 import { backspace, getCurrentLetter, isFinished, typeChar, type Board } from '../typing/models/Board'
 import type { Keystroke } from '../typing/stats/types'
 import { useFrameKeys } from '../typing/useFrameKeys'
+import { createTypingSoundTracker } from '../audio/typingSounds'
 import { boardFromWords } from './boardFromWords'
 
 /** Roughly 10 updates a second. The server disconnects clients that send more than 30. */
@@ -117,13 +118,19 @@ export function useVersusRace(words: string[], racing: boolean, startedAt: numbe
     return () => clearTimeout(id)
   }, [racing, startedAt, durationMs])
 
+  // Key clicks, same as Time Attack: right, wrong, space and Backspace.
+  const [sounds] = useState(() => createTypingSoundTracker(state.board))
+
   // Accept keys only while the race is on.
   const acceptingInput = racing && !timeIsUp
-  useFrameKeys(acceptingInput, (keys) =>
-    dispatch({
-      type: 'keys',
-      keys: keys.map(({ key, at }) => ({ key, t: Math.max(0, at - (startedAt ?? at)) })),
-    }),
+  useFrameKeys(
+    acceptingInput,
+    (keys) =>
+      dispatch({
+        type: 'keys',
+        keys: keys.map(({ key, at }) => ({ key, t: Math.max(0, at - (startedAt ?? at)) })),
+      }),
+    sounds.press,
   )
 
   // Send the running totals while racing, only when they changed.
