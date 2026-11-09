@@ -8,8 +8,9 @@
 }
 
 /* Everything on Home sits above the swirl background. The player name is
-   left out so it keeps its absolute position; it sets its own z-index. */
-.home > :not(.swirl-bg, .home__player) {
+   left out so it keeps its absolute position; it sets its own z-index. The
+   full-screen notice (P37) is left out so it stays position: fixed. */
+.home > :not(.swirl-bg, .home__player, .notice-screen) {
   position: relative;
   z-index: 1;
 }
