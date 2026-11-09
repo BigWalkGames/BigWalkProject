@@ -47,11 +47,14 @@ export default function Versus() {
 
   const canRematch = status === 'finished' && mode === 'custom' && !roomEnded;
   // Custom Game rematch: ready up again (press again to undo). The room stays open.
+  // Both return false when they don't apply (e.g. typing R or Q mid-race), so
+  // no menu click plays.
   const rematch = () => {
-    if (canRematch) setReady(!me?.ready);
+    if (!canRematch) return false;
+    setReady(!me?.ready);
   };
   const playAgainNow = () => {
-    if (status !== 'finished') return;
+    if (status !== 'finished') return false;
     // Quick Match: queue again. Custom Game: leave this room to make or join another.
     navigate(mode === 'custom' ? '/multiplayer/custom' : '/multiplayer/matchmaking', { replace: true });
   };

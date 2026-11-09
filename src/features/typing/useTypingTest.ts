@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { createTypingSoundTracker } from '../audio/typingSounds'
 import {
   backspace,
   createBoard,
@@ -166,15 +167,19 @@ function initState(durationMs: number): State {
 export function useTypingTest(durationMs: number) {
   const [state, dispatch] = useReducer(reducer, durationMs, initState)
   const loadRequest = useRef(0)
-  
+  // Key clicks: knows right from wrong the moment a key is pressed.
+  const [sounds] = useState(createTypingSoundTracker)
+
   // Each load retries Supabase; only the newest request is applied.
   const load = useCallback(() => {
     const request = ++loadRequest.current
     void loadWordBank().then(({ words, source }) => {
       if (request !== loadRequest.current) return
-      dispatch({ type: 'loaded', board: createBoard(words), source, durationMs })
+      const board = createBoard(words)
+      sounds.reset(board)
+      dispatch({ type: 'loaded', board, source, durationMs })
     })
-  }, [durationMs])
+  }, [durationMs, sounds])
   
   useEffect(() => {
     load()
@@ -191,7 +196,11 @@ export function useTypingTest(durationMs: number) {
   }, [load])
   
   const acceptingInput = state.status === 'idle' || state.status === 'running'
-  const flushKeys = useFrameKeys(acceptingInput, (keys) => dispatch({ type: 'keys', keys }))
+  const flushKeys = useFrameKeys(
+    acceptingInput,
+    (keys) => dispatch({ type: 'keys', keys }),
+    sounds.press,
+  )
 
   // Ends the test when time runs out. One timer for the deadline, not a
   // ticking clock: the on-screen countdown ticks inside LiveStats, so clock
