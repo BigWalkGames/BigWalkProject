@@ -55,6 +55,35 @@
   }
 }
 
+/* Gameplay header: the HUD and shortcut legends share the bar with the title,
+   so its buttons are compact and it wraps to two rows sooner. */
+.screen__header-slot {
+  display: contents;
+}
+
+.screen--gameplay .screen__header-left,
+.screen--gameplay .screen__header-right {
+  gap: 16px;
+}
+
+.screen--gameplay .screen__header .nav-btn {
+  gap: 12px;
+  padding: 5px 12px;
+  font-size: var(--fs-chat);
+}
+
+@media (max-width: 1250px) {
+  .screen--gameplay .screen__header {
+    grid-template-columns: 1fr auto;
+    row-gap: 0;
+    padding-block: 8px;
+  }
+  .screen--gameplay .screen__title {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
 .screen__body {
   flex: 1;
   display: flex;
