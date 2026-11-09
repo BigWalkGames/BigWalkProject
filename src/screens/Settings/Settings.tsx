@@ -26,6 +26,7 @@ const CARET_SPEEDS: { value: CaretSpeed; label: string }[] = [
 const TABS: Tab[] = [
   { id: 'typing', label: 'Typing' },
   { id: 'audio', label: 'Audio' },
+  { id: 'emotes', label: 'Emotes' },
 ];
 
 const VOLUMES: { channel: AudioChannel; label: string; note?: string }[] = [
@@ -44,7 +45,9 @@ export default function Settings() {
     <ScreenLayout title="Settings">
       <div className="settings">
         <TabNav tabs={TABS} active={tab} onChange={setTab} label="Settings sections" />
-        {tab === 'typing' ? <TypingSettings /> : <AudioSettings />}
+        {tab === 'typing' && <TypingSettings />}
+        {tab === 'audio' && <AudioSettings />}
+        {tab === 'emotes' && <EmoteSettings />}
       </div>
     </ScreenLayout>
   );
@@ -121,6 +124,36 @@ function AudioSettings() {
           </span>
         </label>
       ))}
+    </section>
+  );
+}
+
+/** What each arrow key sends as an emote during a match. */
+function EmoteSettings() {
+  const emoteSlots = useEmoteSlots();
+
+  return (
+    <section className="settings-section" aria-labelledby="settings-emotes">
+      <h2 id="settings-emotes" className="settings-section__title">Match emotes</h2>
+      <p className="settings-note">Pick what each arrow key says during a Quick Match or Custom Game.</p>
+
+      {EMOTE_SLOTS.map(({ slot, arrow, name }) => (
+        <label key={slot} className="settings-row">
+          <span>{arrow} {name} arrow</span>
+          <select
+            value={emoteSlots[slot]}
+            onChange={(event) => setEmoteSlot(slot, event.target.value as EmoteId)}
+          >
+            {EMOTE_LIBRARY.map(({ id, label }) => (
+              <option key={id} value={id}>{label}</option>
+            ))}
+          </select>
+        </label>
+      ))}
+
+      <button type="button" className="settings-button" onClick={resetEmoteSlots}>
+        Reset emotes
+      </button>
     </section>
   );
 }

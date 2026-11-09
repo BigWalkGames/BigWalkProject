@@ -64,6 +64,8 @@
 .settings-button:hover,
 .settings-button:focus-visible {
   background: var(--color-ink);
+}
+
 /* Tabs above the settings box, same width as the box. */
 .settings {
   display: flex;
