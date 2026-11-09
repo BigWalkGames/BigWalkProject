@@ -1,4 +1,5 @@
 import { useHotkeys } from '../../hooks/useHotkeys';
+import { playSound } from '../../features/audio/sound';
 import { useKeysDown } from '../../hooks/useKeysDown';
 import { KeyCap } from '../KeyCap/KeyCap';
 import './TabNav.css';
@@ -17,12 +18,19 @@ type TabNavProps = {
 export function TabNav({ tabs, active, onChange, label = 'Sections', hotkeysEnabled = true }: TabNavProps) {
   const index = Math.max(0, tabs.findIndex((t) => t.id === active));
 
-  const go = (offset: number) => {
-    const next = tabs[index + offset];
-    if (next) onChange(next.id);
+  // Switching tabs plays the menu move click (not select).
+  const select = (id: string) => {
+    if (id === active) return;
+    playSound('menuMove');
+    onChange(id);
   };
 
-  useHotkeys({ q: () => go(-1), e: () => go(1) }, { enabled: hotkeysEnabled });
+  const go = (offset: number) => {
+    const next = tabs[index + offset];
+    if (next) select(next.id);
+  };
+
+  useHotkeys({ q: () => go(-1), e: () => go(1) }, { enabled: hotkeysEnabled, sound: false });
   const keysDown = useKeysDown(['q', 'e']);
 
   return (
@@ -40,7 +48,7 @@ export function TabNav({ tabs, active, onChange, label = 'Sections', hotkeysEnab
             role="tab"
             aria-selected={tab.id === active}
             className={`tab-nav__tab${tab.id === active ? ' is-active' : ''}`}
-            onClick={() => onChange(tab.id)}
+            onClick={() => select(tab.id)}
           >
             {tab.label}
           </button>

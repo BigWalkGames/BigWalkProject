@@ -1,6 +1,8 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type FocusEvent, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { KeyCap } from '../KeyCap/KeyCap';
+import { playSound } from '../../features/audio/sound';
+import { menuMoveSound } from '../../features/audio/menuSounds';
 import './MenuButton.css';
 
 type MenuIcon = {
@@ -56,12 +58,10 @@ export function MenuButton({ hotkey, children, icon, iconScene, to, onClick }: M
   // Hover/press tracking only matters for an animated icon.
   const track = iconScene
     ? {
-        onPointerEnter: () => setHovered(true),
         onPointerLeave: () => {
           setHovered(false);
           setPressed(false);
         },
-        onFocus: () => setHovered(true),
         onBlur: () => setHovered(false),
         onPointerDown: () => setPressed(true),
         onPointerUp: () => setPressed(false),
@@ -69,16 +69,31 @@ export function MenuButton({ hotkey, children, icon, iconScene, to, onClick }: M
       }
     : {};
 
+  // Menu clicks: move on hover / keyboard focus, select on click.
+  const onPointerEnter = () => {
+    menuMoveSound.onPointerEnter();
+    if (iconScene) setHovered(true);
+  };
+  const onFocus = (event: FocusEvent<HTMLElement>) => {
+    menuMoveSound.onFocus(event);
+    if (iconScene) setHovered(true);
+  };
+  const click = () => {
+    playSound('menuSelect');
+    onClick?.();
+  };
+  const handlers = { ...track, onPointerEnter, onFocus, onClick: click };
+
   if (to) {
     return (
-      <Link to={to} className="menu-btn" aria-keyshortcuts={hotkey} {...track}>
+      <Link to={to} className="menu-btn" aria-keyshortcuts={hotkey} {...handlers}>
         {content}
       </Link>
     );
   }
 
   return (
-    <button type="button" className="menu-btn" onClick={onClick} aria-keyshortcuts={hotkey} {...track}>
+    <button type="button" className="menu-btn" aria-keyshortcuts={hotkey} {...handlers}>
       {content}
     </button>
   );

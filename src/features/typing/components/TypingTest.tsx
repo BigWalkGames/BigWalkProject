@@ -7,6 +7,7 @@ import { useTypingTest } from '../useTypingTest'
 import { ResultsPanel, type SaveStatus } from './ResultsPanel'
 import { LiveStats } from './StatsBar'
 import { WordsDisplay } from './WordsDisplay'
+import { playSound } from '../../audio/sound'
 import './typing.css'
 
 const DEFAULT_STATS_SINK: StatsSink = supabaseStatsSink
@@ -63,6 +64,7 @@ export function TypingTest({
       event.preventDefault() // also blocks the browser's hard reload on Ctrl+Shift+R
       event.stopPropagation()
       ;(document.activeElement as HTMLElement | null)?.blur()
+      playSound('menuSelect')
       restart()
     }
     window.addEventListener('keydown', onKeyDown, true)
