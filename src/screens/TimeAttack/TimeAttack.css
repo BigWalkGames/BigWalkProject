@@ -65,7 +65,7 @@
 /* Too narrow to fit beside the title: the header grows a row, the stats keep
    the top row and the title sits underneath. */
 @media (max-width: 939px) {
-  .screen:not(.screen--gameplay):has(.time-attack) .screen__header {
+  .screen:has(.time-attack .tt:not(.tt--header-hud)) .screen__header {
     padding-top: var(--header-height);
   }
 }

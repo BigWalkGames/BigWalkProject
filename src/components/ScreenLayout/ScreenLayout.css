@@ -72,13 +72,14 @@
   font-size: var(--fs-chat);
 }
 
+/* Only with the HUD in the header; Versus positions its stats itself. */
 @media (max-width: 1250px) {
-  .screen--gameplay .screen__header {
+  .screen--gameplay:has(.tt--header-hud) .screen__header {
     grid-template-columns: 1fr auto;
     row-gap: 0;
     padding-block: 8px;
   }
-  .screen--gameplay .screen__title {
+  .screen--gameplay:has(.tt--header-hud) .screen__title {
     grid-column: 1 / -1;
     grid-row: 2;
   }
