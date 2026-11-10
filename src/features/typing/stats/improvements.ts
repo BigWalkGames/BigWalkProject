@@ -4,7 +4,7 @@ export interface Improvement {
   kind: 'bigram' | 'key';
   item: string;
   current_accuracy: number;
-  previous_accuracy: number;
+  previous_accuracy: number; // Accruracy from last 10 matches
 }
 
 export async function fetchImprovements(matchEnd: string): Promise<Improvement[]> {

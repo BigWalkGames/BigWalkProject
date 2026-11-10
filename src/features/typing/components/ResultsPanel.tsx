@@ -249,7 +249,7 @@ function BigramLists({
   );
 }
 
-/** Bigrams that beat the player's recent matches, biggest gain first. */
+/** Bigrams that beat the player's recent matches, biggest improvement first. */
 function ImprovedColumn({ items }: { items: Improvement[] }) {
   return (
     <div className="tt-bigrams__col">
@@ -260,8 +260,11 @@ function ImprovedColumn({ items }: { items: Improvement[] }) {
             <span className="tt-bigrams__pair">
               {i.item[0]}, {i.item[1]}
             </span>
-            <span className="tt-improved">
-              {formatPercent(i.previous_accuracy)} → {formatPercent(i.current_accuracy)}
+            <span>
+              <span className="tt-muted">{formatPercent(i.current_accuracy)}</span>{' '}
+              <span className="tt-improved">
+                ^{Math.round(i.current_accuracy * 100) - Math.round(i.previous_accuracy * 100)}%
+              </span>
             </span>
           </li>
         ))}
@@ -341,7 +344,9 @@ function KeyAccuracies({
                 {up && (
                   <span className="tt-improved">
                     {' '}
-                    (up from {formatPercent(up.previous_accuracy)})
+                    ^
+                    {Math.round(up.current_accuracy * 100) - Math.round(up.previous_accuracy * 100)}
+                    %
                   </span>
                 )}
               </td>
