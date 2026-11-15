@@ -33,7 +33,7 @@ function formatBigramMap(map: Record<string, number>): string {
   return Object.entries(map).map(([b, v]) => `${b}:${v}`).join(', ')
 }
 
-const fieldStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 2, fontSize: 14 }
+const fieldStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 2, fontSize: 22 }
 const inputStyle: CSSProperties = { font: 'inherit', fontFamily: 'var(--mono)', padding: '4px 6px', minWidth: 0 }
 const fieldsetStyle: CSSProperties = {
   border: '1px solid var(--border)',

@@ -1,6 +1,8 @@
 import { Fragment } from 'react'
 import { Link } from 'react-router'
 import { KeyCap } from '../KeyCap/KeyCap'
+import { playSound } from '../../features/audio/sound'
+import { isBackHotkey, menuMoveSound } from '../../features/audio/menuSounds'
 import './NavButton.css'
 
 type NavButtonProps = {
@@ -28,6 +30,14 @@ export function NavButton({
 }: NavButtonProps) {
   const keys = Array.isArray(hotkey) ? hotkey : [hotkey]
 
+  // Menu clicks: move on hover / keyboard focus, select (or back, for Esc) on
+  // click. Disabled buttons stay silent.
+  const sounds = disabled ? {} : menuMoveSound
+  const click = () => {
+    if (disabled) return
+    playSound(isBackHotkey(hotkey) ? 'menuBack' : 'menuSelect')
+    onClick?.()
+  }
 
   const content = (
     <>
@@ -65,7 +75,8 @@ export function NavButton({
         to={to}
         className={`nav-btn${highlight ? ' nav-btn--highlight' : ''}`}
         aria-keyshortcuts={keys.join('+')}
-        onClick={onClick}>
+        onClick={click}
+        {...sounds}>
         {content}
       </Link>
     )
@@ -76,8 +87,9 @@ export function NavButton({
       type={type}
       className={`nav-btn${highlight ? ' nav-btn--highlight' : ''}`}
       aria-keyshortcuts={keys.join('+')}
-      onClick={onClick}
-      disabled={disabled}>
+      onClick={click}
+      disabled={disabled}
+      {...sounds}>
       {content}
     </button>
   )

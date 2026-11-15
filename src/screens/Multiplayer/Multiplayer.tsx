@@ -5,6 +5,7 @@ import { MenuButton } from '../../components/MenuButton/MenuButton';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import hourglass from '../../assets/hourglass.png';
 import hourglassPressed from '../../assets/hourglasspressed.png';
+import { HourglassIcon } from '../../features/3d-flourish/HourglassIcon';
 
 export default function Multiplayer() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function Multiplayer() {
               hotkey="Q"
               to="/multiplayer/matchmaking"
               icon={{ normal: hourglass, pressed: hourglassPressed }}
+              iconScene={(state, fallback) => <HourglassIcon {...state} fallback={fallback} />}
             >
               Quick Match
             </MenuButton>
