@@ -1,0 +1,205 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="word-engine-context" name="Word Engine Context">
+    <mxGraphModel dx="1400" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1420" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ===================== Center: Word Engine ===================== -->
+        <mxCell id="engine" value="Word Engine&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:11px&quot;&gt;web/src/features/word-engine · pure TS · no network, storage or UI&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=4;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=3;verticalAlign=top;fontStyle=1;fontSize=15;spacingTop=6;container=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="340" width="400" height="330" as="geometry" />
+        </mxCell>
+        <mxCell id="e_build" value="&lt;b&gt;1. Build&lt;/b&gt;&lt;br&gt;getWordBank()&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;60% weak-bigram targeted · 40% top-3000 common&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" vertex="1" parent="engine">
+          <mxGeometry x="20" y="55" width="360" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="e_mode" value="&lt;b&gt;Mode&lt;/b&gt;&lt;br&gt;computeBaselines() → pickMode()&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;beginner · cold_start · speed&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" vertex="1" parent="engine">
+          <mxGeometry x="20" y="125" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e_weak" value="&lt;b&gt;Weakness&lt;/b&gt;&lt;br&gt;bigramWeakness()&lt;br&gt;scoreWord()&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;internal&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;dashed=1;" vertex="1" parent="engine">
+          <mxGeometry x="210" y="125" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="e_learn" value="&lt;b&gt;2. Learn&lt;/b&gt;&lt;br&gt;cleanKeystrokes() → updateStats()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" vertex="1" parent="engine">
+          <mxGeometry x="20" y="210" width="360" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e_report" value="&lt;b&gt;3. Report&lt;/b&gt;&lt;br&gt;getFeedback()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=12;" vertex="1" parent="engine">
+          <mxGeometry x="20" y="270" width="360" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== Top: Supabase ===================== -->
+        <mxCell id="supa" value="Supabase" style="rounded=1;whiteSpace=wrap;html=1;arcSize=4;fillColor=#f5f5f5;strokeColor=#1F9D63;strokeWidth=2;verticalAlign=top;fontStyle=1;fontSize=14;fontColor=#1F9D63;container=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="30" width="640" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="s_words" value="&lt;b&gt;public.words&lt;/b&gt;&lt;br&gt;9,048 rows · rank-ordered&lt;br&gt;RLS: read by anon + authenticated&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;db/words/schema.sql&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1F9D63;fontSize=11;" vertex="1" parent="supa">
+          <mxGeometry x="20" y="40" width="190" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="s_auth" value="&lt;b&gt;Auth&lt;/b&gt;&lt;br&gt;auth.getUser()&lt;br&gt;→ userId&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;falls back to 'local'&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1F9D63;fontSize=11;" vertex="1" parent="supa">
+          <mxGeometry x="225" y="40" width="190" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="s_player" value="&lt;b&gt;word_engine.player_data&lt;/b&gt;&lt;br&gt;owner-only access via functions&lt;br&gt;account_id, net_wpm, net_accuracy,&lt;br&gt;bigram_stats jsonb, key_stats jsonb,&lt;br&gt;recent_words text[]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1F9D63;fontSize=11;" vertex="1" parent="supa">
+          <mxGeometry x="430" y="40" width="190" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== Left: Web client ===================== -->
+        <mxCell id="web" value="Web client (web/src)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=3;fillColor=#f5f5f5;strokeColor=#6c8ebf;strokeWidth=2;verticalAlign=top;fontStyle=1;fontSize=14;fontColor=#3d5a80;container=1;" vertex="1" parent="1">
+          <mxGeometry x="20" y="260" width="380" height="560" as="geometry" />
+        </mxCell>
+        <mxCell id="w_load" value="&lt;b&gt;loadWordBank()&lt;/b&gt;&lt;br&gt;typing/wordbank&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;caches word list once · keeps last 3 banks as recentWords&lt;br&gt;3s timeout → FALLBACK_WORDS (bypasses engine)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="web">
+          <mxGeometry x="20" y="40" width="340" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="w_typing" value="&lt;b&gt;Time Attack&lt;/b&gt; · useTypingTest()&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;builds engine Keystroke log · computes netWpm / accuracy&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="web">
+          <mxGeometry x="20" y="150" width="340" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="w_store" value="&lt;b&gt;playerStore&lt;/b&gt;&lt;br&gt;loadPlayer() · recordMatch()&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;serializes saves; new player = empty stats&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="web">
+          <mxGeometry x="20" y="240" width="340" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="w_ls" value="&lt;b&gt;localStorage&lt;/b&gt;&lt;br&gt;bigwalk.player.&amp;lt;userId&amp;gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;signed-out players + failed saves&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="web">
+          <mxGeometry x="20" y="330" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="w_feedback" value="&lt;b&gt;Feedback UI&lt;/b&gt;&lt;br&gt;&lt;i&gt;not built&lt;/i&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;getFeedback() has no caller&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontSize=11;dashed=1;fontColor=#666666;" vertex="1" parent="web">
+          <mxGeometry x="200" y="330" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="w_versus" value="&lt;b&gt;Versus&lt;/b&gt; · useVersusRace()&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;types the server's word list · wordBankSource 'server'&lt;br&gt;keystrokes not fed to the engine&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="web">
+          <mxGeometry x="20" y="460" width="340" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== Right: Multiplayer server ===================== -->
+        <mxCell id="srv" value="Multiplayer server (server/multiplayer · Colyseus)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=4;fillColor=#f5f5f5;strokeColor=#9673a6;strokeWidth=2;verticalAlign=top;fontStyle=1;fontSize=14;fontColor=#6a4c80;container=1;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="300" width="380" height="330" as="geometry" />
+        </mxCell>
+        <mxCell id="r_room" value="&lt;b&gt;MatchRoom&lt;/b&gt;&lt;br&gt;Quick Match + Custom Game&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;sends match_found { words, countdown, duration }&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="srv">
+          <mxGeometry x="20" y="45" width="340" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_words" value="&lt;b&gt;rooms/words.ts · pickWords()&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;PLACEHOLDER: ~200 hard-coded words, uniform random&lt;br&gt;does not use the engine or Supabase words&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="srv">
+          <mxGeometry x="20" y="140" width="340" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="r_sink" value="&lt;b&gt;supabaseResultSink&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;rpc save_multiplayer_result · match results only, no engine stats&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="srv">
+          <mxGeometry x="20" y="240" width="340" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== Bottom: Build + dev tooling ===================== -->
+        <mxCell id="tool" value="Build + dev tooling (web/)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=4;fillColor=#f5f5f5;strokeColor=#d79b00;strokeWidth=2;verticalAlign=top;fontStyle=1;fontSize=14;fontColor=#9a6b00;container=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="860" width="840" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="t_build" value="&lt;b&gt;scripts/build-words.mjs&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;google-10000-english → filter → QWERTY features&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="tool">
+          <mxGeometry x="20" y="45" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="t_csv" value="&lt;b&gt;db/words/words.csv&lt;/b&gt;" style="shape=note;whiteSpace=wrap;html=1;size=12;fillColor=#ffffff;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="tool">
+          <mxGeometry x="240" y="50" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="t_bundled" value="&lt;b&gt;words.ts&lt;/b&gt; (exported &lt;i&gt;words&lt;/i&gt;)&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;CSV bundled via ?raw · dev/test only&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="tool">
+          <mxGeometry x="420" y="45" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="t_bank" value="&lt;b&gt;banktest.html&lt;/b&gt; + simulate.ts&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;simulated typist · tune config&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="tool">
+          <mxGeometry x="630" y="45" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="t_debug" value="&lt;b&gt;tests/wordEngineDebug.ts&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;checks logs against the keystroke contract&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" vertex="1" parent="tool">
+          <mxGeometry x="630" y="120" width="190" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- ===================== Edges ===================== -->
+        <!-- Supabase -> web -->
+        <mxCell id="ed1" value="paged select, order by rank&lt;br&gt;once per session" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#1F9D63;strokeWidth=2;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="s_words" target="w_load">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="495" y="250" /><mxPoint x="210" y="250" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ed2" value="userId" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#1F9D63;strokeWidth=2;fontSize=10;labelBackgroundColor=#ffffff;exitX=0;exitY=1;exitDx=40;exitDy=0;entryX=1;entryY=0.5;" edge="1" parent="1" source="s_auth" target="w_store">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="645" y="290" /><mxPoint x="430" y="290" /><mxPoint x="430" y="532" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ed3" value="get_player_stats / update_player_stats" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;startArrow=block;strokeColor=#1F9D63;strokeWidth=2;fontSize=10;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=1;entryY=0.25;" edge="1" parent="1" source="s_player" target="w_store">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="905" y="300" /><mxPoint x="450" y="300" /><mxPoint x="450" y="516" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- web <-> engine -->
+        <mxCell id="ed4" value="words, player, recentWords&lt;br&gt;→ Word[] bank (30)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;startArrow=block;strokeColor=#6c8ebf;strokeWidth=2;fontSize=10;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="w_load" target="e_build">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="470" y="340" /><mxPoint x="470" y="422" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ed5" value="loadPlayer()" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;fontSize=10;labelBackgroundColor=#ffffff;exitX=0;exitY=0.3;entryX=0;entryY=0.5;" edge="1" parent="1" source="w_store" target="w_load">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="30" y="519" /><mxPoint x="30" y="340" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ed6" value="bank" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;fontSize=10;labelBackgroundColor=#ffffff;exitX=0.75;exitY=1;entryX=0.75;entryY=0;" edge="1" parent="1" source="w_load" target="w_typing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ed7" value="recordMatch(log, netWpm, acc)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#6c8ebf;fontSize=10;labelBackgroundColor=#ffffff;exitX=0.75;exitY=1;entryX=0.75;entryY=0;" edge="1" parent="1" source="w_typing" target="w_store">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ed8" value="PlayerData + Keystroke[]&lt;br&gt;→ updated PlayerData" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;startArrow=block;strokeColor=#6c8ebf;strokeWidth=2;fontSize=10;labelBackgroundColor=#ffffff;exitX=1;exitY=0.75;entryX=0;entryY=0.5;" edge="1" parent="1" source="w_store" target="e_learn">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="490" y="549" /><mxPoint x="490" y="572" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ed9" value="read / write JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;startArrow=block;strokeColor=#6c8ebf;fontSize=10;labelBackgroundColor=#ffffff;exitX=0.25;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="w_store" target="w_ls">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ed10" value="PlayerFeedback (not wired)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#999999;fontSize=10;labelBackgroundColor=#ffffff;fontColor=#666666;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1" source="e_report" target="w_feedback">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="450" y="632" /><mxPoint x="450" y="630" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ed11" value="planned: record Versus matches" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#999999;fontSize=10;labelBackgroundColor=#ffffff;fontColor=#666666;exitX=1;exitY=0.5;entryX=0.25;entryY=1;" edge="1" parent="1" source="w_versus" target="engine">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- server -->
+        <mxCell id="ed12" value="pickWords(count)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;fontSize=10;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" edge="1" parent="1" source="r_words" target="r_room">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ed13" value="match_found words&lt;br&gt;(WebSocket)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#9673a6;strokeWidth=2;fontSize=10;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1" source="r_room" target="w_versus">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1030" y="377" /><mxPoint x="1030" y="815" /><mxPoint x="420" y="815" /><mxPoint x="420" y="755" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ed14" value="planned" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#999999;fontSize=10;labelBackgroundColor=#ffffff;fontColor=#666666;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="e_build" target="r_words">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="960" y="422" /><mxPoint x="960" y="472" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ed15" value="results via REST rpc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#1F9D63;fontSize=10;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1" source="r_sink" target="supa">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1410" y="570" /><mxPoint x="1410" y="125" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- tooling -->
+        <mxCell id="ed16" value="writes" style="html=1;endArrow=block;strokeColor=#d79b00;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_build" target="t_csv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ed17" value="?raw import" style="html=1;endArrow=block;strokeColor=#d79b00;fontSize=10;labelBackgroundColor=#ffffff;" edge="1" parent="1" source="t_csv" target="t_bundled">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ed18" value="" style="html=1;endArrow=block;strokeColor=#d79b00;" edge="1" parent="1" source="t_bundled" target="t_bank">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ed19" value="manual import&lt;br&gt;(Table Editor)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;dashed=1;strokeColor=#d79b00;fontSize=10;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;entryX=0.8;entryY=1;" edge="1" parent="1" source="t_csv" target="s_words">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <Array as="points"><mxPoint x="735" y="845" /><mxPoint x="940" y="845" /><mxPoint x="940" y="235" /><mxPoint x="552" y="235" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ed20" value="real engine calls" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#d79b00;strokeWidth=2;fontSize=10;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;entryX=0.75;entryY=1;" edge="1" parent="1" source="t_bank" target="engine">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1140" y="740" /><mxPoint x="800" y="740" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ed21" value="cleanKeystrokes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#d79b00;fontSize=10;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=1;entryY=0.75;" edge="1" parent="1" source="t_debug" target="engine">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1280" y="1007" /><mxPoint x="1280" y="680" /><mxPoint x="960" y="680" /><mxPoint x="960" y="587" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br&gt;solid edge = wired today&lt;br&gt;dashed grey edge / box = planned or not wired&lt;br&gt;&lt;span style=&quot;color:#1F9D63&quot;&gt;■&lt;/span&gt; Supabase &amp;nbsp;&lt;span style=&quot;color:#6c8ebf&quot;&gt;■&lt;/span&gt; web &amp;nbsp;&lt;span style=&quot;color:#9673a6&quot;&gt;■&lt;/span&gt; server &amp;nbsp;&lt;span style=&quot;color:#d79b00&quot;&gt;■&lt;/span&gt; tooling &amp;nbsp;&lt;span style=&quot;color:#82b366&quot;&gt;■&lt;/span&gt; engine&lt;br&gt;&lt;i&gt;Snapshot of feature/word-engine, 2026-11-03&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;align=left;spacingLeft=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="20" y="860" width="380" height="110" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

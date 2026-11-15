@@ -1,8 +1,9 @@
-import { DEFAULT_CONFIG, getWordBank, type Word } from '../../../features/word-engine'
+import { DEFAULT_CONFIG, buildWordBank, type Word } from '../../../features/word-engine'
 import { FALLBACK_WORDS } from './fallbackWordBank'
 import { supabaseWordBank } from './supabaseWordBank'
 import type { LoadedWordBank, WordBankSource } from './types'
 import { loadPlayer } from '../player/playerStore'
+import { rememberWordBank } from './wordBankDebug'
 
 const DEFAULT_TIMEOUT_MS = 3000
 
@@ -33,8 +34,10 @@ export async function loadWordBank(
       return null
     })
     const recent = new Set(recentBanks.flat())
-    const words = getWordBank(cachedWords, DEFAULT_CONFIG.bankSize, player, recent).map((w) => w.word)
+    const bank = buildWordBank(cachedWords, DEFAULT_CONFIG.bankSize, player, recent)
+    const words = bank.words.map((w) => w.word)
     if (words.length > 0) {
+      rememberWordBank(bank, player)
       recentBanks = [...recentBanks, words].slice(-RECENT_BANK_COUNT)
       return { words, source: primary.name }
     }
@@ -42,6 +45,7 @@ export async function loadWordBank(
   } catch (error) {
     console.warn(`[wordbank] "${primary.name}" failed; using fallback.`, error)
   }
+  rememberWordBank('fallback')
   return { words: normalizeWords(FALLBACK_WORDS), source: 'fallback' }
 }
 
