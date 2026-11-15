@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { supabaseStatsSink } from '../stats/supabaseStatsSink'
 import { NavButton } from '../../../components/NavButton/NavButton'
+import { useGameplayHeader } from '../../../components/ScreenLayout/useGameplayHeader'
 import type { Board } from '../models/Board'
 import type { StatsSink, TestResult } from '../stats/types'
 import { useTypingTest } from '../useTypingTest'
 import { ResultsPanel, type SaveStatus } from './ResultsPanel'
 import { LiveStats } from './StatsBar'
 import { WordsDisplay } from './WordsDisplay'
+import { playSound } from '../../audio/sound'
 import './typing.css'
 
 const DEFAULT_STATS_SINK: StatsSink = supabaseStatsSink
@@ -14,10 +17,13 @@ const DEFAULT_STATS_SINK: StatsSink = supabaseStatsSink
 export function TypingTest({
   durationMs = 60_000,
   statsSink = DEFAULT_STATS_SINK,
+  headerHud = false,
   onFinish,
 }: {
   durationMs?: number
   statsSink?: StatsSink
+  /** Show the HUD and Restart in the screen's gameplay header instead of around the words. */
+  headerHud?: boolean
   /**
    * Called once when the test ends, with the result and the final board (for
    * the results screen's Word Bank box). When provided, the parent shows the
@@ -27,6 +33,7 @@ export function TypingTest({
 }) {
   const test = useTypingTest(durationMs)
   const { result, restart, board } = test
+  const header = useGameplayHeader()
 
   // Save each finished result once; the status is tied to that result so a
   // restart can't show a stale "Saved".
@@ -63,6 +70,7 @@ export function TypingTest({
       event.preventDefault() // also blocks the browser's hard reload on Ctrl+Shift+R
       event.stopPropagation()
       ;(document.activeElement as HTMLElement | null)?.blur()
+      playSound('menuSelect')
       restart()
     }
     window.addEventListener('keydown', onKeyDown, true)
@@ -75,16 +83,35 @@ export function TypingTest({
     )
   }
 
+  const stats = (
+    <LiveStats
+      startedAt={test.startedAt}
+      endedAt={test.endedAt}
+      durationMs={test.durationMs}
+      keystrokeCount={test.keystrokeCount}
+      correctCount={test.correctCount}
+      failCount={test.failCount}
+    />
+  )
+
+  const restartButton = (
+    <NavButton
+      hotkey={['Sh', 'R']}
+      onClick={() => {
+        // Drop focus so the next space bar press types instead of
+        // clicking the button again.
+        ;(document.activeElement as HTMLElement | null)?.blur()
+        restart()
+      }}>
+      Restart
+    </NavButton>
+  )
+
   return (
-    <div className="tt">
-      <LiveStats
-        startedAt={test.startedAt}
-        endedAt={test.endedAt}
-        durationMs={test.durationMs}
-        keystrokeCount={test.keystrokeCount}
-        correctCount={test.correctCount}
-        failCount={test.failCount}
-      />
+    <div className={headerHud ? 'tt tt--header-hud' : 'tt'}>
+      {!headerHud && stats}
+      {headerHud && header?.hud && createPortal(stats, header.hud)}
+      {headerHud && header?.shortcuts && createPortal(restartButton, header.shortcuts)}
 
       {test.board ? (
         <WordsDisplay
@@ -96,18 +123,7 @@ export function TypingTest({
       )}
 
       <div className="tt-actions">
-        <div className="tt-restart">
-          <NavButton
-            hotkey={['Sh', 'R']}
-            onClick={() => {
-              // Drop focus so the next space bar press types instead of
-              // clicking the button again.
-              ;(document.activeElement as HTMLElement | null)?.blur()
-              restart()
-            }}>
-            Restart
-          </NavButton>
-        </div>
+        {!headerHud && <div className="tt-restart">{restartButton}</div>}
         <span className="tt-hint">
           {test.status === 'idle' && 'Start typing to begin the timer.'}
           {test.wordBankSource === 'fallback' &&

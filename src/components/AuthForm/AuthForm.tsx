@@ -1,5 +1,6 @@
-import type { HTMLAttributes, ReactNode } from 'react'
-import './AuthForm.css'
+import { useState } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
+import './AuthForm.css';
 
 /**
  * Shared pieces for the login, sign-up, reset-password and account forms.
@@ -10,41 +11,41 @@ export function AuthForm({
   onEscape,
   children,
 }: {
-  onSubmit: () => void
-  onEscape?: () => void
-  children: ReactNode
+  onSubmit: () => void;
+  onEscape?: () => void;
+  children: ReactNode;
 }) {
   return (
     <form
       className="auth-form"
       noValidate
       onSubmit={(e) => {
-        e.preventDefault()
-        onSubmit()
+        e.preventDefault();
+        onSubmit();
       }}
       onKeyDown={(e) => {
         if (e.key === 'Escape' && onEscape) {
-          e.preventDefault()
-          onEscape()
+          e.preventDefault();
+          onEscape();
         }
       }}>
       {children}
     </form>
-  )
+  );
 }
 
 type FieldProps = {
-  id: string
-  label: string
-  value: string
-  onChange: (value: string) => void
-  type?: 'text' | 'email' | 'password'
-  autoComplete?: string
-  autoFocus?: boolean
-  maxLength?: number
-  inputMode?: HTMLAttributes<HTMLInputElement>['inputMode']
-  hint?: string
-}
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: 'text' | 'email' | 'password';
+  autoComplete?: string;
+  autoFocus?: boolean;
+  maxLength?: number;
+  inputMode?: HTMLAttributes<HTMLInputElement>['inputMode'];
+  hint?: string;
+};
 
 export function Field({
   id,
@@ -58,51 +59,62 @@ export function Field({
   inputMode,
   hint,
 }: FieldProps) {
+  // Password boxes get a Show/Hide button; other fields are unchanged.
+  const [visible, setVisible] = useState(false);
+  const isPassword = type === 'password';
+
   return (
     <div className="auth-field">
       <label className="auth-field__label" htmlFor={id}>
         {label}
       </label>
-      <input
-        id={id}
-        className="auth-field__input"
-        type={type}
-        value={value}
-        autoComplete={autoComplete}
-        autoFocus={autoFocus}
-        maxLength={maxLength}
-        inputMode={inputMode}
-        autoCapitalize="none"
-        spellCheck={false}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <div className="auth-field__control">
+        <input
+          id={id}
+          className={`auth-field__input${isPassword ? ' auth-field__input--password' : ''}`}
+          type={isPassword && visible ? 'text' : type}
+          value={value}
+          autoComplete={autoComplete}
+          autoFocus={autoFocus}
+          maxLength={maxLength}
+          inputMode={inputMode}
+          autoCapitalize="none"
+          spellCheck={false}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            className="auth-field__toggle"
+            onClick={() => setVisible((v) => !v)}
+            aria-controls={id}
+            aria-pressed={visible}
+            aria-label={visible ? 'Hide password' : 'Show password'}>
+            {visible ? 'Hide' : 'Show'}
+          </button>
+        )}
+      </div>
       {hint && <p className="auth-field__hint">{hint}</p>}
     </div>
-  )
+  );
 }
 
-export function FormMessage({
-  error,
-  notice,
-}: {
-  error?: string
-  notice?: string
-}) {
+export function FormMessage({ error, notice }: { error?: string; notice?: string }) {
   if (error) {
     return (
       <p className="auth-msg auth-msg--error" role="alert">
         {error}
       </p>
-    )
+    );
   }
   if (notice) {
     return (
       <p className="auth-msg auth-msg--notice" role="status">
         {notice}
       </p>
-    )
+    );
   }
-  return null
+  return null;
 }
 
 // Small text-style button for secondary actions like "Forgot password?"
@@ -111,17 +123,13 @@ export function LinkButton({
   disabled,
   children,
 }: {
-  onClick: () => void
-  disabled?: boolean
-  children: ReactNode
+  onClick: () => void;
+  disabled?: boolean;
+  children: ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      className="auth-link"
-      onClick={onClick}
-      disabled={disabled}>
+    <button type="button" className="auth-link" onClick={onClick} disabled={disabled}>
       {children}
     </button>
-  )
+  );
 }

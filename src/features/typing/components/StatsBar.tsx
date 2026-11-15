@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { computeNetWpm } from '../stats/computeStats'
 import { formatPercent } from './format'
 
@@ -77,7 +77,7 @@ export function Stat({
   className,
 }: {
   label: string
-  value: string
+  value: ReactNode
   className?: string
 }) {
   return (
