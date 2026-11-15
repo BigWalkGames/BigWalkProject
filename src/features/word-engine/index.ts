@@ -2,6 +2,7 @@
 export {
     BACKSPACE,
     DEFAULT_CONFIG,
+    buildWordBank,
     classifyBigram,
     cleanKeystrokes,
     computeBaselines,
@@ -13,7 +14,9 @@ export {
 export type {
     Baselines,
     BigramClass,
+    BuiltWordBank,
     CleanedSamples,
+    FocusedBigram,
     ItemStats,
     Keystroke,
     Mode,
