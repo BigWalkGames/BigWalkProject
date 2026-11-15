@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
+import { StateMessage } from '../../components/StateMessage/StateMessage';
 import { startSearch } from '../../net/quickMatch';
 import { useQuickMatch } from '../../net/useQuickMatch';
 
-/** P15: waiting screen. Both players leave it together when the second one joins. */
+/** P15: waiting screen. Both players leave it together when the second one joins. P37: styled. */
 export default function Matchmaking() {
   const navigate = useNavigate();
   const { status } = useQuickMatch();
@@ -21,8 +22,7 @@ export default function Matchmaking() {
 
   return (
     <ScreenLayout title="Quick Match">
-      <p>Finding Match...</p>
-      <p>Press Esc to cancel.</p>
+      <StateMessage title="Finding Match..." message="Press Esc to cancel." pulse />
     </ScreenLayout>
   );
 }

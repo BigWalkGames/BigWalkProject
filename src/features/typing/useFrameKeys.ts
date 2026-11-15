@@ -17,13 +17,22 @@ export interface QueuedKey {
  *
  * Returns `flush`, which applies the queued keys right away (call it before
  * ending a test so no key pressed in time is lost).
+ *
+ * `onKey`, if given, runs for each accepted key the moment it's pressed
+ * (before the frame applies it), e.g. to play its click with no delay.
  */
-export function useFrameKeys(enabled: boolean, onKeys: (keys: QueuedKey[]) => void) {
+export function useFrameKeys(
+  enabled: boolean,
+  onKeys: (keys: QueuedKey[]) => void,
+  onKey?: (key: string) => void,
+) {
   const queue = useRef<QueuedKey[]>([])
   const frame = useRef(0)
   const onKeysRef = useRef(onKeys)
+  const onKeyRef = useRef(onKey)
   useEffect(() => {
     onKeysRef.current = onKeys
+    onKeyRef.current = onKey
   })
 
   const flush = useCallback(() => {
@@ -45,6 +54,7 @@ export function useFrameKeys(enabled: boolean, onKeys: (keys: QueuedKey[]) => vo
       if (event.ctrlKey || event.metaKey || event.altKey) return
       if (event.key !== 'Backspace' && event.key.length !== 1) return
       event.preventDefault()
+      onKeyRef.current?.(event.key)
       queue.current.push({ key: event.key, at: Date.now(), ts: performance.now() })
       if (frame.current === 0) frame.current = requestAnimationFrame(flush)
     }
