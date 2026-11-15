@@ -206,6 +206,39 @@
   text-align: center;
 }
 
+/* Gameplay layout: the HUD and Restart are in the header, and the words use
+   the full content width between the design system's side margins. */
+
+.tt--header-hud {
+  max-width: var(--canvas-width);
+  padding-inline: var(--margin);
+}
+
+.tt--header-hud .tt-hint {
+  margin-top: 0;
+}
+
+.screen__header .tt-stats {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Label above the number; numbers keep their width as they change */
+.screen__header .tt-stat {
+  flex-direction: column-reverse;
+  align-items: center;
+  min-width: 3ch;
+}
+
+.screen__header .tt-stat-value {
+  font-size: var(--fs-filter);
+}
+
+.screen__header .tt-stat-label {
+  line-height: 1;
+}
+
 /* Results screen: two columns of boxes. Boxes scroll on their own so the
    screen itself stays still. */
 
