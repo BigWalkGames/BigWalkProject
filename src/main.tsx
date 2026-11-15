@@ -5,9 +5,13 @@ import './index.css';
 import App from './App.tsx';
 import AuthProvider from './hooks/auth/AuthProvider';
 import { startAudio } from './features/audio/sound';
+import { startSettingsSync } from './features/settings/settingsSync';
 
 // Loads the sound effects and turns audio on at the first key press or click.
 startAudio();
+
+// settings listener for changes made on an account
+startSettingsSync();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
