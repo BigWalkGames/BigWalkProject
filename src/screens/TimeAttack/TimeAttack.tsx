@@ -19,9 +19,9 @@ export default function TimeAttack() {
   );
 
   return (
-    <ScreenLayout title="Time Attack" backTo="/solo" background="faded-still">
+    <ScreenLayout title="Time Attack" backTo="/solo" background="faded-still" header="gameplay">
       <div className="time-attack">
-        <TypingTest durationMs={30_000} onFinish={showResults} />
+        <TypingTest durationMs={30_000} headerHud onFinish={showResults} />
       </div>
     </ScreenLayout>
   );
