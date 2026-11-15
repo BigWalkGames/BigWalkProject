@@ -1,0 +1,26 @@
+/* Round picture with a dark outline and a small drop shadow (Figma profile picture). */
+.profile-picture {
+  --pfp-size: 48px;
+
+  flex: none;
+  display: inline-block;
+  width: var(--pfp-size);
+  height: var(--pfp-size);
+  overflow: hidden;
+  border: max(2px, calc(var(--pfp-size) / 24)) solid var(--color-ink);
+  border-radius: 50%;
+  background: var(--color-container);
+  box-shadow: 0 max(2px, calc(var(--pfp-size) / 24)) 0 var(--shadow-strong);
+}
+
+.profile-picture img,
+.profile-picture svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 32 px pixel art scaled up stays sharp */
+.profile-picture img {
+  image-rendering: pixelated;
+}
