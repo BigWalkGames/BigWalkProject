@@ -171,3 +171,35 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Password box with a Show/Hide button inside its right edge */
+.auth-field__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-field__input--password {
+  padding-right: 110px;
+}
+
+.auth-field__toggle {
+  position: absolute;
+  right: 8px;
+  padding: 4px 12px;
+  background: var(--btn-bg);
+  border: 2px solid var(--btn-border);
+  border-radius: 10px;
+  color: var(--btn-text);
+  font-family: inherit;
+  font-size: var(--fs-hud-label);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.auth-field__toggle:hover,
+.auth-field__toggle:focus-visible {
+  background: var(--btn-bg-hover);
+  border-color: var(--btn-border-hover);
+  outline: none;
+}

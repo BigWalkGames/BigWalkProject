@@ -2,16 +2,34 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router';
 import { claimScreen, getState, releaseScreen, reset, subscribe, type EndReason } from './quickMatch';
 
-const NOTICES: Record<EndReason, string> = {
-  no_opponent: 'No opponent was found. Try again in a moment.',
-  opponent_left: 'Your opponent left the match.',
-  room_closed: 'The room closed because nobody started a match.',
-  connection_lost: 'The connection to the server was lost.',
-  connect_failed: 'Could not connect to the server.',
+export type Notice = {
+  title: string;
+  message: string;
+  /** Connection problems show the disconnect icon. */
+  disconnected?: boolean;
+};
+
+const NOTICES: Record<EndReason, Notice> = {
+  no_opponent: { title: 'No Opponent', message: 'No opponent was found. Try again in a moment.' },
+  opponent_left: { title: 'Opponent Left', message: 'Your opponent left the match.' },
+  room_closed: { title: 'Room Closed', message: 'The room closed because nobody started a match.' },
+  connection_lost: {
+    title: 'Connection Lost...',
+    message: 'The connection to the server was lost.',
+    disconnected: true,
+  },
+  connect_failed: {
+    title: 'Connection Lost...',
+    message: 'Could not connect to the server.',
+    disconnected: true,
+  },
 };
 
 // Custom Game: the room closes when the other player leaves, so say so.
-const CUSTOM_OPPONENT_LEFT = 'Your friend left, so the room was closed.';
+const CUSTOM_OPPONENT_LEFT: Notice = {
+  title: 'Room Closed',
+  message: 'Your friend left, so the room was closed.',
+};
 
 /**
  * Use this on every screen that is part of a Quick Match. It gives you the current

@@ -1,10 +1,14 @@
 import { useEffect, useRef } from 'react';
+import { playSound } from '../features/audio/sound';
 
-type HotkeyMap = Record<string, () => void>;
+/** An action can return false to say it was ignored (no click plays); anything else counts as handled. */
+type HotkeyMap = Record<string, () => unknown>;
 
 type Options = {
-  allowRepeat?: boolean; 
-  enabled?: boolean;  
+  allowRepeat?: boolean;
+  enabled?: boolean;
+  /** Play the menu select click (Esc: the back click) when a hotkey fires. Default true. */
+  sound?: boolean;
 };
 
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -19,7 +23,7 @@ function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 export function useHotkeys(map: HotkeyMap, options: Options = {}) {
-  const { allowRepeat = false, enabled = true } = options;
+  const { allowRepeat = false, enabled = true, sound = true } = options;
 
   const mapRef = useRef(map);
   useEffect(() => {
@@ -34,14 +38,16 @@ export function useHotkeys(map: HotkeyMap, options: Options = {}) {
       if (e.ctrlKey || e.metaKey || e.altKey) return; 
       if (isTypingTarget(e.target)) return;
 
-      const action = mapRef.current[e.key.toLowerCase()];
+      const key = e.key.toLowerCase();
+      const action = mapRef.current[key];
       if (action) {
         e.preventDefault();
-        action();
+        const handled = action() !== false;
+        if (handled && sound) playSound(key === 'escape' ? 'menuBack' : 'menuSelect');
       }
     };
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [allowRepeat, enabled]);
+  }, [allowRepeat, enabled, sound]);
 }
