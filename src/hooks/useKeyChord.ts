@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { playSound } from '../features/audio/sound';
 
 export function useKeyChord(keys: string[], onChord: () => void) {
 
@@ -23,7 +24,8 @@ export function useKeyChord(keys: string[], onChord: () => void) {
 
       down.add(e.key.toLowerCase());
       if (!fired && allDown()) {
-        fired = true; 
+        fired = true;
+        playSound('menuSelect');
         callback.current();
       }
     };
