@@ -33,8 +33,8 @@ These are owned by gameplay and backend code:
 |---|---|
 | **Loading the word list** | Fetch the `words` table from Supabase once per session and pass it to `getWordBank` (see [Supabase data calls](#supabase-data-calls)). |
 | **Typing UI and keystroke capture** | Record every keypress during a match as a `Keystroke`, following the [keystroke contract](#keystroke-contract). |
-| **WPM and accuracy** | Compute `netWpm` and `netAccuracy` after each match and write them into `PlayerData`. The engine only reads `netWpm` (to choose a mode). It never calculates it. |
-| **Saving and loading `PlayerData`** | Load it from Supabase before a match, save the result of `updateStats` after. The engine has no storage. |
+| **WPM and accuracy** | For signed-in players, `netWpm` and `netAccuracy` are all-time averages from `users.histories`. Signed-out players use their last match. The engine only reads `netWpm` (to choose a mode). It never calculates it. |
+| **Saving and loading `PlayerData`** | `typing/player/playerStore.ts` loads it from Supabase before a match and saves the result of `updateStats` after. The engine has no storage. |
 | **Recent words** | Keep the words from the player's last ~3 banks and pass them to `getWordBank` so words don't repeat across matches. |
 | **Creating new players** | Build an empty `PlayerData` for a first-time player (see [New player](#new-player)). |
 | **Showing feedback** | `getFeedback` returns data. Rendering it is up to the UI. |
@@ -51,8 +51,8 @@ import { getWordBank, cleanKeystrokes, updateStats, type Keystroke } from './fea
 const words = await loadWords()                         // Supabase: words table (see below)
 
 // Before the match
-const player = await loadPlayer(userId)                 // Supabase: player stats
-const recent = await loadRecentWords(userId)            // Supabase (or in memory): Set<string>
+const player = await loadPlayer()                       // Supabase: get_player_stats
+const recent = loadRecentWords()                        // in memory: Set<string>
 const bank = getWordBank(words, 30, player, recent)
 
 // During the match
@@ -60,10 +60,8 @@ const log: Keystroke[] = []                             // yours: push one entry
 
 // After the match
 const updated = updateStats(player, cleanKeystrokes(log))
-updated.netWpm = computeNetWpm(log)                     // yours
-updated.netAccuracy = computeNetAccuracy(log)           // yours
-await savePlayer(updated)                               // Supabase: player stats
-await saveRecentWords(userId, bank)                     // Supabase (or in memory)
+await savePlayer(updated)                               // Supabase: update_player_stats
+saveRecentWords(bank)                                   // in memory
 ```
 
 ## Supabase data calls (For Ramon)
@@ -73,10 +71,10 @@ The engine never calls Supabase itself. These are the points where gameplay or b
 | When | Call | Table | Feeds / stores |
 |---|---|---|---|
 | Once per session | Load word list | `words` (exists: `db/words/schema.sql`) | `words` argument of `getWordBank` |
-| Before each match | Load player | player stats (not created yet) | `player` argument of `getWordBank`, `updateStats`, `getFeedback` |
-| Before each match | Load recent words | player stats, or keep in memory | `recentWords` argument of `getWordBank` |
-| After each match | Save player | player stats | result of `updateStats`, plus `netWpm` / `netAccuracy` |
-| After each match | Save recent words | player stats, or keep in memory | the bank that was just played, last ~3 kept |
+| Before each match | Load player | `get_player_stats` | `player` argument of `getWordBank`, `updateStats`, `getFeedback` |
+| Before each match | Load recent words | kept in memory by `loadWordBank` | `recentWords` argument of `getWordBank` |
+| After each match | Save player | `update_player_stats` | `bigramStats` / `keyStats` from `updateStats` |
+| After each match | Save recent words | kept in memory by `loadWordBank` | the bank that was just played, last ~3 kept |
 
 ### Loading the word list (For Brandon and Kevin)
 
@@ -123,19 +121,14 @@ export async function loadWords(): Promise<Word[]> {
 
 ### Player stats table (for Ramon)
 
-`PlayerData` needs a table before load and save can be written. A suggested shape, one row per player:
+Stats live in `word_engine.player_data`, one row per player. Clients have no direct access. They use two functions, each limited to the signed-in player's own row:
 
-| Column | Type | Maps to |
-|---|---|---|
-| `user_id` | `uuid`, primary key, references `auth.users` | `userId` |
-| `net_wpm` | `real` | `netWpm` |
-| `net_accuracy` | `real` | `netAccuracy` |
-| `bigram_stats` | `jsonb` | `bigramStats` (store as-is) |
-| `key_stats` | `jsonb` | `keyStats` (store as-is) |
-| `recent_words` | `text[]` | `recentWords` (optional) |
-| `updated_at` | `timestamptz` | none |
+| Function | Does |
+|---|---|
+| `get_player_stats(acc_id)` | Returns the player's stats, with `net_wpm` / `net_accuracy` from `users.histories`. Returns empty stats if they have no row yet. |
+| `update_player_stats(acc_id, bigrams, keys)` | Upserts `bigram_stats` and `key_stats` (stored as-is). Never changes `net_wpm` / `net_accuracy`. |
 
-Row-level security should restrict each player to reading and writing their own row (`auth.uid() = user_id`).
+`playerStore` uses `localStorage` only for signed-out players and failed saves. See `db/20261104074854_player_data_owner_only_access.md`.
 
 ## Methods
 
@@ -146,6 +139,7 @@ Row-level security should restrict each player to reading and writing their own 
 | `getWordBank` | `words: Word[]` (sorted by rank), `count: number`, `player: PlayerData \| null = null`, `recentWords: ReadonlySet<string> = new Set()`, `config = DEFAULT_CONFIG` | `Word[]` | Builds the next match's word bank. With no player or too little data, returns common words only. Output is shuffled and has no duplicates. |
 | `cleanKeystrokes` | `log: Keystroke[]`, `config = DEFAULT_CONFIG` | `CleanedSamples` | Filters one match's raw keystrokes into usable samples. Drops backspaces, retypes, word starts, spaces, errors that follow another error, and long pauses. |
 | `updateStats` | `player: PlayerData`, `samples: CleanedSamples`, `config = DEFAULT_CONFIG` | `PlayerData` | Folds a match's samples into the player's per-bigram and per-key stats. Returns a new object. `netWpm` and `netAccuracy` are left unchanged. |
+| `buildWordBank` | Same as `getWordBank` | `BuiltWordBank` | The same bank plus how it was built: `targeted` and `natural` words, `mode`, `netWpm`, and `focusedBigrams`. |
 | `getFeedback` | `player: PlayerData`, `config = DEFAULT_CONFIG` | `PlayerFeedback` | Weakest 5 bigrams, average latency per bigram class, and accuracy per hand. Empty lists until enough data exists. |
 
 ### Mode
@@ -203,8 +197,8 @@ Example: typing `the` with one mistake on `h`:
 ```ts
 interface PlayerData {
   userId: string                           // Supabase auth user id (uuid)
-  netWpm: number                           // set by gameplay; engine reads it for mode
-  netAccuracy: number                      // set by gameplay; engine does not read it
+  netWpm: number                           // all-time average (last match if signed out); engine reads it for mode
+  netAccuracy: number                      // all-time average (last match if signed out); engine does not read it
   bigramStats: Record<string, ItemStats>   // owned by the engine, e.g. { th: {...} }
   keyStats: Record<string, ItemStats>      // owned by the engine, e.g. { e: {...} }
 }
@@ -307,6 +301,10 @@ These are starting values. Tune them on the test page.
 `pnpm dev`, then open `http://localhost:5173/banktest.html`.
 
 A simulated typist with configurable slow and error-prone bigrams plays matches through the real engine. The page shows the bank adapting, with weak bigrams highlighted. It isn't included in production builds. The simulator (`simulate.ts`) is test-only and isn't exported.
+
+## Console command
+
+In the running app, open Time Attack and run `focusedBigrams()` in the browser console. It shows which bigrams and words the engine targeted in the most recently loaded bank, and why nothing was targeted if so. During cold start, it lists the bigrams closest to `minSamples`. It's in every build, including previews and production, and only shows the player's own stats.
 
 ## Known limitations
 
