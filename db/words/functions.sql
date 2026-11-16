@@ -117,16 +117,17 @@ AS $$
 $$;
 
 -- Function: Multiplayer Leaderboard
--- get_multiplayer_leaderboard()
+-- get_multiplayer_leaderboard_revised()
 
--- Retrieves all the verified users who played multiplayer matches and orders them by effective WPM (WPM * Accuracy)
-CREATE FUNCTION get_multiplayer_leaderboard()
-RETURNS void
+-- Retrieves all the verified users who played multiplayer matches and orders them by effective WPM (WPM * Accuracy). Revised to now include wins.
+CREATE FUNCTION get_multiplayer_leaderboard_revised()
+RETURNS TABLE(username text, raw_wpm numeric, accuracy numeric, wins integer, effective_wpm numeric)
 LANGUAGE sql
+SECURITY definer 
 AS $$
-    SELECT "Username", "WPM", avg as "Accuracy", "Rating"
-    FROM users.multiplayer_histories
-    ORDER BY "Rating" DESC;
+    SELECT *
+    FROM users.multiplayer_histories_revised
+    ORDER BY "Effective WPM" DESC;
 $$;
 
 -- Function: WPM + Accuracy History Graph
