@@ -70,6 +70,11 @@ export function applyRemoteTypingSettings(raw: unknown) {
   store(clean(raw, current));
 }
 
+/** Back to the defaults, e.g. for a new guest. Not reported as an edit, so nothing is uploaded. */
+export function loadDefaultTypingSettings() {
+  store(DEFAULTS);
+}
+
 export function getTypingSettings(): TypingSettings {
   return current;
 }

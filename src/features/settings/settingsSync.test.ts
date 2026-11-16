@@ -75,8 +75,10 @@ async function setUp(prefs: Prefs | null = null) {
   return { fake, typing, emotes, audio };
 }
 
+let storage: Map<string, string>;
+
 beforeEach(() => {
-  fakeLocalStorage();
+  storage = fakeLocalStorage();
   vi.stubGlobal('document', { addEventListener: () => {}, visibilityState: 'visible' });
   vi.useFakeTimers();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -207,5 +209,113 @@ describe('settings sync', () => {
     await vi.runAllTimersAsync();
 
     expect(fake.saves.at(-1)).toEqual({ typing: { caretSpeed: 'off', smoothLines: true } });
+  });
+
+  describe('new guests', () => {
+    const DEFAULT_TYPING = { caretSpeed: 'medium', smoothLines: true };
+
+    // Settings a previous player left on this device.
+    function leftBy(owner: string) {
+      storage.set('bigwalk.settingsOwner', owner);
+      storage.set(
+        'bigwalk.typingSettings',
+        JSON.stringify({ caretSpeed: 'slow', smoothLines: false }),
+      );
+      storage.set('bigwalk.emoteSlots', JSON.stringify({ up: 'lol' }));
+    }
+
+    it('start on the defaults after another player', async () => {
+      leftBy('member-1');
+      const { fake, typing, emotes } = await setUp(null);
+      expect(typing.getTypingSettings().caretSpeed).toBe('slow'); // before the guest signs in
+
+      fake.signInAsGuest('guest-2');
+      await vi.runAllTimersAsync();
+
+      expect(typing.getTypingSettings()).toEqual(DEFAULT_TYPING);
+      expect(emotes.getEmoteSlots().up).toBe('gg');
+      expect(storage.get('bigwalk.settingsOwner')).toBe('guest-2');
+      expect(fake.saves).toEqual([]);
+    });
+
+    it('keep their own changes after a reload', async () => {
+      leftBy('member-1');
+      const first = await setUp(null);
+      first.fake.signInAsGuest('guest-2');
+      first.typing.setTypingSettings({ caretSpeed: 'fast' });
+
+      // Reload: fresh modules, same localStorage, same guest session.
+      const second = await setUp(null);
+      second.fake.signInAsGuest('guest-2');
+      await vi.runAllTimersAsync();
+
+      expect(second.typing.getTypingSettings().caretSpeed).toBe('fast');
+      expect(second.fake.saves).toEqual([]);
+    });
+
+    it('start on the default audio too', async () => {
+      leftBy('member-1');
+      const { fake, audio } = await setUp(null);
+      audio.setAudioSettings({ master: 10, sfx: 20 });
+
+      fake.signInAsGuest('guest-2');
+      await vi.runAllTimersAsync();
+
+      expect(audio.getAudioSettings()).toEqual(audio.DEFAULT_AUDIO_SETTINGS);
+      expect(fake.saves).toEqual([]); // audio is never sent
+    });
+
+    it('keep their own audio after a reload', async () => {
+      leftBy('member-1');
+      const first = await setUp(null);
+      first.fake.signInAsGuest('guest-2');
+      first.audio.setAudioSettings({ master: 10 });
+
+      const second = await setUp(null);
+      second.fake.signInAsGuest('guest-2');
+      await vi.runAllTimersAsync();
+
+      expect(second.audio.getAudioSettings().master).toBe(10);
+    });
+
+    it('keep the settings already there if no owner was recorded yet', async () => {
+      storage.set(
+        'bigwalk.typingSettings',
+        JSON.stringify({ caretSpeed: 'slow', smoothLines: false }),
+      );
+      const { fake, typing } = await setUp(null);
+
+      fake.signInAsGuest('guest-2');
+      await vi.runAllTimersAsync();
+
+      expect(typing.getTypingSettings().caretSpeed).toBe('slow');
+      expect(storage.get('bigwalk.settingsOwner')).toBe('guest-2');
+    });
+
+    it('upload the settings they chose when they upgrade', async () => {
+      leftBy('member-1');
+      const { fake, typing } = await setUp(null);
+      fake.signInAsGuest('guest-2');
+      typing.setTypingSettings({ caretSpeed: 'off' });
+
+      fake.upgradeGuest('guest-2');
+      await vi.runAllTimersAsync();
+
+      expect(fake.saves).toEqual([
+        {
+          typing: { caretSpeed: 'off', smoothLines: true },
+          emotes: expect.objectContaining({ up: 'gg' }),
+        },
+      ]);
+      expect(storage.get('bigwalk.settingsOwner')).toBe('guest-2');
+    });
+  });
+
+  it('records a member as the owner of the settings on this device', async () => {
+    const { fake } = await setUp(REMOTE);
+    fake.signIn('member-1');
+    await vi.runAllTimersAsync();
+
+    expect(storage.get('bigwalk.settingsOwner')).toBe('member-1');
   });
 });

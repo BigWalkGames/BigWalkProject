@@ -51,6 +51,11 @@ export function applyRemoteEmoteSlots(raw: unknown) {
   store(clean(raw, current));
 }
 
+/** Back to the defaults, e.g. for a new guest. Not reported as an edit (unlike resetEmoteSlots). */
+export function loadDefaultEmoteSlots() {
+  store(DEFAULT_EMOTE_SLOTS);
+}
+
 export function onEmoteSlotsEdited(listener: (slots: EmoteSlots) => void) {
   editListeners.add(listener);
   return () => {
