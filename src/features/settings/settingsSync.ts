@@ -7,7 +7,7 @@ import {
 import { applyRemoteEmoteSlots, getEmoteSlots, onEmoteSlotsEdited } from '../versus/emoteSettings';
 
 /**
- * Keeps typing and emote settings on the player's account (members and guests).
+ * Keeps typing and emote settings on the player's account.
  * Audio settings are deliberately left out: they stay on this device.
  */
 type Prefs = { typing?: unknown; emotes?: unknown };
