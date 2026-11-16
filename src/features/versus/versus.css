@@ -247,7 +247,8 @@
   line-height: 1.2;
 }
 .player-card__stats small { font-size: 0.8em; opacity: 0.8; }
-/* Picture beside the name (P32) */
+/* Picture beside the name (P32). The wrapper is what moves at the end of the match. */
+.versus-pfp { display: flex; }
 .player-card__who {
   display: flex;
   align-items: center;
@@ -261,19 +262,36 @@
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+/* The color and border sit on an empty layer behind the content (.versus-compare__bg), so the
+   end-of-match animation can resize just that layer (see useMatchEndMorph). */
 .versus-compare__card {
-  padding: 12px 20px;
+  position: relative;
+  isolation: isolate;
+  padding: 15px 23px;
+  color: var(--color-ink);
+}
+.versus-compare__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  box-sizing: border-box;
   background: var(--color-container);
   border: 3px solid var(--color-frame);
   border-radius: 12px;
   box-shadow: 0 4px 0 var(--shadow-soft);
 }
-.versus-compare__card.is-winner {
+.versus-compare__card.is-win .versus-compare__bg {
   background: var(--color-accent);
   border-color: var(--color-ink);
 }
+/* Draw: both boxes stay brown, like the cards during the race. */
+.versus-compare__card.is-draw { color: var(--color-light); }
+.versus-compare__card.is-draw .versus-compare__bg { background: var(--color-frame); }
 .versus-compare__name {
-  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
   font-size: var(--fs-chat);
   font-weight: normal;
   text-transform: uppercase;
@@ -348,4 +366,14 @@
   .tt-results--compact .kb { --kb-key: 32px; --kb-gap: 3px; }
   .tt-results--compact .kb-key { font-size: 14px; }
   .tt-results--compact .tt-keys th, .tt-results--compact .tt-keys td { padding-block: 1px; }
+}
+
+/* Read out by screen readers only (the count-up shows the final number to them right away). */
+.versus-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
