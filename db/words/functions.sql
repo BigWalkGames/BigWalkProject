@@ -117,10 +117,10 @@ AS $$
 $$;
 
 -- Function: Multiplayer Leaderboard
--- multi_leaderboard()
+-- get_multiplayer_leaderboard()
 
 -- Retrieves all the verified users who played multiplayer matches and orders them by effective WPM (WPM * Accuracy)
-CREATE FUNCTION multi_leaderboard()
+CREATE FUNCTION get_multiplayer_leaderboard()
 RETURNS void
 LANGUAGE sql
 AS $$
@@ -128,3 +128,100 @@ AS $$
     FROM users.multiplayer_histories
     ORDER BY "Rating" DESC;
 $$;
+
+-- Function: WPM + Accuracy History Graph
+-- get_wpm_accur_history(acc_id uuid, p_from timestamp, p_to timestamp)
+
+-- Retrieves the WPM & accuracy of matches within the timeframe specified for the graphs to be drawn on the history page.
+CREATE FUNCTION get_wpm_accur_history(acc_id uuid, p_from timestamp with time zone DEFAULT NULL::timestamp with time zone, p_to timestamp with time zone DEFAULT NULL::timestamp with time zone)
+RETURNS TABLE(wpm numeric, accuracy numeric)
+LANGUAGE plpgsql
+SECURITY definer
+AS $$
+  begin
+    if acc_id is distinct from auth.uid() then
+      raise exception 'not allowed' using errcode = '42501';
+    end if;
+
+    if p_from >= p_to then
+      raise exception 'p_from must be before p_to' using errcode = '22023';
+    end if;
+
+    return query
+      select m.wpm, m.accuracy
+      from users.matches m
+      where m.account_id = acc_id
+        and (p_from is null or m.match_time >= p_from)
+        and (p_to is null or m.match_time < p_to)
+      order by m.match_time desc;
+  end;
+$$;
+
+-- Function: Availability of username
+-- username_available(p_username text)
+
+-- Checks to see if the username is taken or not
+CREATE FUNCTION username_available(p_username text)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY definer
+AS $$
+    select p_username ~ '^[A-Za-z0-9_]{3,20}$'
+     and not exists (
+       select 1 from users.users
+       where lower(username) = lower(p_username)
+     );
+$$;
+
+-- Function: Update player stats
+CREATE FUNCTION update_player_stats(acc_id uuid, bigrams jsonb, keys jsonb)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY definer
+AS $$
+    begin
+    if acc_id is distinct from auth.uid() then
+        raise exception 'not allowed' using errcode = '42501';
+    end if;
+
+    insert into word_engine.player_data (account_id, net_wpm, net_accuracy, bigram_stats, key_stats, updated_at)
+    select h.account_id, h.total_wpm, h.total_accuracy, bigrams, keys, now()
+    from users.histories h
+    where h.account_id = acc_id
+    on conflict (account_id) do update
+        set bigram_stats = excluded.bigram_stats,
+            key_stats    = excluded.key_stats,
+            updated_at   = excluded.updated_at;
+    end;
+$$;
+
+-- Function: Set username
+CREATE FUNCTION set_username(p_username text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY definer
+AS $$
+    begin
+    if auth.uid() is null then
+        raise exception 'not signed in' using errcode = '42501';
+    end if;
+
+    if p_username is null or p_username !~ '^[A-Za-z0-9_]{3,20}$' then
+        raise exception 'invalid username' using errcode = '22023';
+    end if;
+
+    update users.users u
+    set username = p_username,
+        name     = p_username
+    where u.account_id = auth.uid()
+        and (
+            u.username is null
+            or exists (select 1 from auth.users a where a.id = auth.uid() and a.is_anonymous)
+        );                                   -- unique index raises 23505 if taken
+
+    if not found then
+        raise exception 'username already set';
+    end if;
+    end;
+$$;
+
