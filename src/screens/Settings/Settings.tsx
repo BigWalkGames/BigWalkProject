@@ -115,6 +115,7 @@ function AudioSettings() {
               max={100}
               step={1}
               value={levels[channel]}
+              style={{ '--fill': `${levels[channel]}%` } as React.CSSProperties}
               onChange={(event) => {
                 setAudioSettings({ [channel]: Number(event.target.value) });
                 preview(channel);
