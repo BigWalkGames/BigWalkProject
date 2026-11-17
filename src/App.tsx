@@ -17,10 +17,12 @@ import History from './screens/History/History';
 import MatchHistory from './screens/MatchHistory/MatchHistory';
 import Leaderboards from './screens/Leaderboards/Leaderboards';
 import ResetPassword from './screens/ResetPassword/ResetPassword';
+import { KeySkinApplier } from './features/skins/KeySkinApplier';
 
 export default function App() {
   return (
     <AuthGate fallback={<GuestLoginPage />}>
+      <KeySkinApplier />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/solo" element={<Solo />} />

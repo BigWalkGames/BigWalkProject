@@ -23,9 +23,10 @@ export interface Palette {
   ink: string
   inkSide: string
   keyLabel: string
+  /** Label color on dark skin textures, like the 2D --skin-label. */
+  keyLabelLight: string
   /** Label color while pressed, like the 2D .keycap.is-pressed. */
   keyLabelPressed: string
-  keySide: string
 }
 
 export function readPalette(): Palette {
@@ -36,7 +37,7 @@ export function readPalette(): Palette {
     ink: token('--color-ink', '#1c1410'),
     inkSide: token('--color-shade', '#4a3a2c'),
     keyLabel: token('--color-frame', '#3a2c22'),
+    keyLabelLight: token('--color-light', '#e8dcc8'),
     keyLabelPressed: token('--color-accent', '#d98e36'),
-    keySide: '#866d58', // keycap.png's outer border color
   }
 }

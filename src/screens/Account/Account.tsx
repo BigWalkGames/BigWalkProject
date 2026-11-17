@@ -12,6 +12,7 @@ import { GuestUpgrade } from './GuestUpgrade';
 import { ProfilePicture } from '../../components/ProfilePicture/ProfilePicture';
 import { ProfilePicturePicker } from '../../features/profile/ProfilePicturePicker';
 import { useMyProfilePicture } from '../../features/profile/useMyProfilePicture';
+import { KeySkinPicker } from '../../features/skins/KeySkinPicker';
 import { AccountPrompt } from './AccountPrompt';
 
 // To add a tab later: add it here, then add its content below.
@@ -137,15 +138,7 @@ export default function Account() {
             </>
           )}
 
-          {activeTab === 'customization' && (
-            <section className="account__skins" aria-labelledby="account-skins-title">
-              <h3 id="account-skins-title" className="account__section-title">
-                Keyboard Skins
-              </h3>
-              {/* Skin options go here (M7). */}
-              <ul className="account__skin-list" />
-            </section>
-          )}
+          {activeTab === 'customization' && <KeySkinPicker />}
         </div>
 
         {formOpen && (
