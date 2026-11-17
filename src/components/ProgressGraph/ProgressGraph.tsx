@@ -1,34 +1,20 @@
 import './ProgressGraph.css';
 import { useLayoutEffect, useRef, useState } from 'react';
-import { useMatchHistory, type HistoryEntry } from '../../hooks/useMatchHistory';
+import { useMatchHistory } from '../../hooks/useMatchHistory';
+import { emptyMessage, type HistoryPeriod } from '../../hooks/historyPeriod';
+import { graphAxis, graphPoints, type Point } from './graphAxis';
 
-const HEIGHT = 260;
+const DEFAULT_HEIGHT = 260;
 const PAD = { top: 16, right: 64, bottom: 40, left: 64 };
-const DAY = 86_400_000;
 
-type Point = { t: number; wpm: number; acc: number };
+type ProgressGraphProps = {
+  period?: HistoryPeriod; // default: full history
+  height?: number;         // plot height in px, default 260
+};
 
-const tickFormat = new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit' });
-
-/** One point per day: the average WPM and accuracy of that day's matches. */
-function dailyAverages(entries: HistoryEntry[]): Point[] {
-  const days = new Map<number, { wpm: number; acc: number; n: number }>();
-  for (const e of entries) {
-    const d = new Date(e.id); // id is the match timestamp
-    const day = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-    const sum = days.get(day) ?? { wpm: 0, acc: 0, n: 0 };
-    sum.wpm += e.wpm;
-    sum.acc += e.accuracy;
-    sum.n += 1;
-    days.set(day, sum);
-  }
-  return [...days.entries()]
-    .map(([t, s]) => ({ t, wpm: s.wpm / s.n, acc: s.acc / s.n }))
-    .sort((a, b) => a.t - b.t);
-}
-
-export function ProgressGraph() {
-  const { entries, status } = useMatchHistory('all');
+/** WPM and accuracy over time. With a period, it shows only that day, week, month or year. */
+export function ProgressGraph({ period = 'all', height: HEIGHT = DEFAULT_HEIGHT }: ProgressGraphProps) {
+  const { entries, status } = useMatchHistory(period);
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
 
@@ -42,20 +28,16 @@ export function ProgressGraph() {
     return () => ro.disconnect();
   }, []);
 
-  const points = dailyAverages(entries);
+  const points = graphPoints(entries, period);
   const hasData = !status && points.length > 0;
 
   let chart: React.ReactNode = null;
   if (hasData && width > 0) {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const t0 = points[0].t;
-    const t1 = Math.max(today, t0 + DAY);
-
     const wpmMax = Math.max(10, Math.ceil(Math.max(...points.map((p) => p.wpm)) / 10) * 10);
     const accMin = Math.max(0, Math.floor((Math.min(...points.map((p) => p.acc)) - 5) / 10) * 10);
 
     const plotW = Math.max(0, width - PAD.left - PAD.right);
+    const { t0, t1, ticks, tickLabel, pointLabel } = graphAxis(period, points, plotW);
     const plotH = HEIGHT - PAD.top - PAD.bottom;
     const x = (t: number) => PAD.left + ((t - t0) / (t1 - t0)) * plotW;
     const yWpm = (v: number) => PAD.top + plotH - (v / wpmMax) * plotH;
@@ -65,8 +47,6 @@ export function ProgressGraph() {
       points.map((p) => `${x(p.t)},${y(pick(p))}`).join(' ');
 
     const gridSteps = [0, 0.25, 0.5, 0.75, 1];
-    const tickCount = Math.max(2, Math.min(7, Math.floor(plotW / 110)));
-    const ticks = Array.from({ length: tickCount }, (_, i) => t0 + ((t1 - t0) * i) / (tickCount - 1));
 
     chart = (
       <svg className="progress-graph__svg" width={width} height={HEIGHT} role="img"
@@ -88,7 +68,7 @@ export function ProgressGraph() {
 
         {ticks.map((t) => (
           <text key={t} className="progress-graph__tick" x={x(t)} y={HEIGHT - 12} textAnchor="middle">
-            {tickFormat.format(new Date(t))}
+            {tickLabel(t)}
           </text>
         ))}
 
@@ -97,10 +77,10 @@ export function ProgressGraph() {
         {points.map((p) => (
           <g key={p.t}>
             <circle className="progress-graph__dot progress-graph__dot--wpm" cx={x(p.t)} cy={yWpm(p.wpm)} r={5}>
-              <title>{`${tickFormat.format(new Date(p.t))}: ${Math.round(p.wpm)} WPM`}</title>
+              <title>{`${pointLabel(p.t)}: ${Math.round(p.wpm)} WPM`}</title>
             </circle>
             <circle className="progress-graph__dot progress-graph__dot--acc" cx={x(p.t)} cy={yAcc(p.acc)} r={5}>
-              <title>{`${tickFormat.format(new Date(p.t))}: ${Math.round(p.acc)}% accuracy`}</title>
+              <title>{`${pointLabel(p.t)}: ${Math.round(p.acc)}% accuracy`}</title>
             </circle>
           </g>
         ))}
@@ -114,8 +94,8 @@ export function ProgressGraph() {
         <span className="progress-graph__key progress-graph__key--wpm">WPM</span>
         <span className="progress-graph__key progress-graph__key--acc">Accuracy</span>
       </div>
-      <div className="progress-graph__plot" ref={ref}>
-        {hasData ? chart : <p className="progress-graph__status">{status ?? 'No matches yet.'}</p>}
+      <div className="progress-graph__plot" ref={ref} style={{ minHeight: HEIGHT }}>
+        {hasData ? chart : <p className="progress-graph__status">{status ?? emptyMessage(period)}</p>}
       </div>
     </section>
   );

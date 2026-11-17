@@ -36,3 +36,7 @@
   flex: 1 1 0;
   min-width: 0;
 }
+/* the graph keeps its full height; the table below takes what is left and scrolls */
+.history__content .progress-graph {
+  flex-shrink: 0;
+}
