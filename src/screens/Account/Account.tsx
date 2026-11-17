@@ -9,6 +9,9 @@ import { TabNav, type Tab } from '../../components/TabNav/TabNav';
 import { useAuth } from '../../hooks/auth/useAuth';
 import { signOut } from '../../hooks/auth/authActions';
 import { GuestUpgrade } from './GuestUpgrade';
+import { ProfilePicture } from '../../components/ProfilePicture/ProfilePicture';
+import { ProfilePicturePicker } from '../../features/profile/ProfilePicturePicker';
+import { useMyProfilePicture } from '../../features/profile/useMyProfilePicture';
 import { AccountPrompt } from './AccountPrompt';
 
 // To add a tab later: add it here, then add its content below.
@@ -20,6 +23,7 @@ const TABS: Tab[] = [
 
 export default function Account() {
   const { user, isGuest } = useAuth();
+  const myPicture = useMyProfilePicture();
   const [tab, setTab] = useState('stats');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -56,6 +60,7 @@ export default function Account() {
     <ScreenLayout title="Account" backDisabled={formOpen || showPrompt}>
       <div className="account">
         <header className="account__header">
+          <ProfilePicture pictureId={myPicture} size="lg" label="Your profile picture" />
           <h2 className="account__name">{displayName}</h2>
         </header>
 
@@ -72,6 +77,8 @@ export default function Account() {
         <div className="account__panel">
           {activeTab === 'profile' && (
             <>
+              <ProfilePicturePicker />
+
               {isGuest ? (
                 <div className="account__create">
                   <button className="auth-button" onClick={openForm}>

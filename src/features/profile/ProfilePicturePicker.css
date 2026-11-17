@@ -1,0 +1,57 @@
+/* Panel like the Figma "Change profile picture" box: dark title bar, brown body. */
+.pfp-picker {
+  width: min(100%, 1000px);
+  overflow: hidden;
+  background: var(--color-shade);
+  border: 3px solid var(--color-ink);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--shadow-soft);
+}
+
+.pfp-picker__title {
+  margin: 0;
+  padding: 6px 24px;
+  font-size: var(--fs-chat);
+  font-weight: normal;
+  text-transform: uppercase;
+  color: var(--color-light);
+  background: var(--color-ink);
+}
+
+.pfp-picker__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 24px;
+}
+
+.pfp-picker__option {
+  padding: 4px;
+  background: none;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 80ms steps(2), transform 80ms steps(2);
+}
+
+.pfp-picker__option:hover,
+.pfp-picker__option:focus-visible {
+  outline: none;
+  border-color: var(--color-outline-light);
+}
+
+/* The current picture */
+.pfp-picker__option[aria-pressed='true'] {
+  border-color: var(--color-accent);
+}
+
+.pfp-picker__option:active {
+  transform: translateY(2px);
+}
+
+/* Smaller pictures on narrow windows */
+@media (max-width: 700px) {
+  .pfp-picker__option .profile-picture {
+    --pfp-size: 72px !important;
+  }
+}
