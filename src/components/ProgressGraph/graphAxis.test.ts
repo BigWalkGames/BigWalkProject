@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DAY, graphAxis, graphPoints } from './graphAxis';
+import { DAY, graphAxis, graphPoints, matchPoints } from './graphAxis';
 
 const entry = (iso: string, wpm: number, accuracy: number) => ({ id: iso, date: '', wpm, accuracy });
 
@@ -56,5 +56,17 @@ describe('graphAxis', () => {
     expect(axis.t0).toBe(first);
     expect(axis.t1).toBe(new Date(2026, 10, 18).getTime());
     expect(axis.t1 - axis.t0).toBeGreaterThanOrEqual(DAY);
+  });
+});
+
+describe('matchPoints', () => {
+  it('keeps every match with its result, oldest first, even on the same day', () => {
+    const points = matchPoints([
+      { time: new Date(2026, 10, 18, 14).toISOString(), wpm: 60, accuracy: 95, outcome: 'loss' },
+      { time: new Date(2026, 10, 18, 9).toISOString(), wpm: 40, accuracy: 90, outcome: 'win' },
+      { time: new Date(2026, 10, 18, 11).toISOString(), wpm: 50, accuracy: 92, outcome: 'draw' },
+    ]);
+    expect(points.map((p) => p.outcome)).toEqual(['win', 'draw', 'loss']);
+    expect(points[0]).toEqual({ t: new Date(2026, 10, 18, 9).getTime(), wpm: 40, acc: 90, outcome: 'win' });
   });
 });

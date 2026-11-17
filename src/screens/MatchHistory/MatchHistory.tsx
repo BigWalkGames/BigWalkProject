@@ -4,6 +4,8 @@ import './MatchHistory.css';
 import { useState } from 'react';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { TabNav } from '../../components/TabNav/TabNav';
+import { ProgressChart } from '../../components/ProgressGraph/ProgressGraph';
+import { matchPoints } from '../../components/ProgressGraph/graphAxis';
 import { PERIOD_TABS, type HistoryPeriod } from '../../hooks/historyPeriod';
 import { useMultiplayerHistory } from '../../hooks/useMultiplayerHistory';
 
@@ -22,6 +24,8 @@ export default function MatchHistory() {
             onChange={(id) => setPeriod(id as HistoryPeriod)}
             label="Match history period"
           />
+
+          <ProgressChart points={matchPoints(entries)} status={status} period={period} height={200} />
 
           <div className="history-panel">
             <div className="history-table match-history__table" role="table" aria-label="Match history">

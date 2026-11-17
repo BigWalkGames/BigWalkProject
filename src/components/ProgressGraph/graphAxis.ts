@@ -3,7 +3,13 @@ import type { HistoryEntry } from '../../hooks/useMatchHistory';
 
 export const DAY = 86_400_000;
 
-export type Point = { t: number; wpm: number; acc: number };
+export type Outcome = 'win' | 'loss' | 'draw';
+
+/** One plotted point. outcome is set when each point is a single multiplayer match. */
+export type Point = { t: number; wpm: number; acc: number; outcome?: Outcome };
+
+/** A match passed in from outside (multiplayer history). */
+export type GraphMatch = { time: string; wpm: number; accuracy: number; outcome: Outcome };
 
 export type Axis = {
   t0: number;
@@ -45,6 +51,17 @@ export function graphPoints(entries: HistoryEntry[], period: HistoryPeriod): Poi
   }
   return [...days.entries()]
     .map(([t, s]) => ({ t, wpm: s.wpm / s.n, acc: s.acc / s.n }))
+    .sort((a, b) => a.t - b.t);
+}
+
+/**
+ * Every match as its own point, oldest first, on every filter. Used for
+ * multiplayer, where each point carries its win / loss / draw, which a daily
+ * average could not show.
+ */
+export function matchPoints(matches: GraphMatch[]): Point[] {
+  return matches
+    .map((m) => ({ t: new Date(m.time).getTime(), wpm: m.wpm, acc: m.accuracy, outcome: m.outcome }))
     .sort((a, b) => a.t - b.t);
 }
 

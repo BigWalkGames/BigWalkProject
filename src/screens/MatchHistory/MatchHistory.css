@@ -58,3 +58,8 @@
   white-space: nowrap;
   padding-right: 16px;
 }
+
+/* the graph keeps its full height; the table below takes what is left and scrolls */
+.match-history__content .progress-graph {
+  flex-shrink: 0;
+}

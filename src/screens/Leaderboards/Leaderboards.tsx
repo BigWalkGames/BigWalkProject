@@ -4,14 +4,15 @@ import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { TabNav } from '../../components/TabNav/TabNav';
 import { LeaderboardRow } from '../../components/LeaderBoardRow/LeaderBoardRow';
 import { PERIOD_TABS, type HistoryPeriod } from '../../hooks/historyPeriod';
-import { useLeaderboard } from '../../hooks/useLeaderboard';
+import { filterLeaderboard, useLeaderboard } from '../../hooks/useLeaderboard';
 
 /** Multiplayer leaderboard: best effective WPM first, top three in gold, silver and bronze. */
 export default function Leaderboards() {
-  // TODO(supabase): the tabs switch, but every period shows the all-time list
-  // until the leaderboard RPC takes a date range (see useLeaderboard).
   const [period, setPeriod] = useState<HistoryPeriod>('all');
-  const { entries, status } = useLeaderboard();
+  const { entries: all, status: loadStatus } = useLeaderboard();
+  // Day / Week / Month / Year: players whose latest match is in that period.
+  const entries = filterLeaderboard(all, period);
+  const status = loadStatus ?? (entries.length === 0 ? 'No players in this period.' : null);
 
   return (
     <ScreenLayout title="Leaderboards" backTo="/multiplayer">
