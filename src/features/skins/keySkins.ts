@@ -4,7 +4,8 @@ import { useSyncExternalStore } from 'react'
  * The keyboard skins, in the order of their cells in
  * src/assets/skins/key-textures.png (left to right, then top to bottom).
  * The sheet's order is part of the format: add new skins at the end only, so
- * an equipped skin never points at a different cell.
+ * an equipped skin never points at a different cell. How to add one:
+ * src/assets/skins/README.md.
  *
  * TODO(art): mint, wood and speckle are placeholder textures until the
  * designer's sheet replaces key-textures.png.
