@@ -15,6 +15,7 @@ import { AccountPrompt } from './AccountPrompt';
 const TABS: Tab[] = [
   { id: 'stats', label: 'Stats' },
   { id: 'profile', label: 'Profile' },
+  { id: 'customization', label: 'Customization' },
 ];
 
 export default function Account() {
@@ -127,6 +128,16 @@ export default function Account() {
               <ProgressGraph />
               <HistoryTable />
             </>
+          )}
+
+          {activeTab === 'customization' && (
+            <section className="account__skins" aria-labelledby="account-skins-title">
+              <h3 id="account-skins-title" className="account__section-title">
+                Keyboard Skins
+              </h3>
+              {/* Skin options go here (M7). */}
+              <ul className="account__skin-list" />
+            </section>
           )}
         </div>
 
