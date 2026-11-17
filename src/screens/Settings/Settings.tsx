@@ -14,6 +14,8 @@ import {
   type AudioChannel,
 } from '../../features/audio/audioSettings';
 import { playSound } from '../../features/audio/sound';
+import { FONTS } from '../../features/fonts/fonts';
+import { setFontSettings, useFontSettings, type FontSettings } from '../../features/fonts/fontSettings';
 import './Settings.css';
 
 const CARET_SPEEDS: { value: CaretSpeed; label: string }[] = [
@@ -27,6 +29,12 @@ const TABS: Tab[] = [
   { id: 'typing', label: 'Typing' },
   { id: 'audio', label: 'Audio' },
   { id: 'emotes', label: 'Emotes' },
+  { id: 'gameplay', label: 'Gameplay' },
+];
+
+const FONT_PICKERS: { key: keyof FontSettings; label: string }[] = [
+  { key: 'menu', label: 'Menu Font' },
+  { key: 'typing', label: 'Typing Font' },
 ];
 
 const VOLUMES: { channel: AudioChannel; label: string; note?: string }[] = [
@@ -48,6 +56,7 @@ export default function Settings() {
         {tab === 'typing' && <TypingSettings />}
         {tab === 'audio' && <AudioSettings />}
         {tab === 'emotes' && <EmoteSettings />}
+        {tab === 'gameplay' && <GameplaySettings />}
       </div>
     </ScreenLayout>
   );
@@ -155,6 +164,31 @@ function EmoteSettings() {
       <button type="button" className="settings-button" onClick={resetEmoteSlots}>
         Reset emotes
       </button>
+    </section>
+  );
+}
+
+/** Fonts for menus and for the words being typed (list in features/fonts/fonts.ts). */
+function GameplaySettings() {
+  const fonts = useFontSettings();
+
+  return (
+    <section className="settings-section" aria-labelledby="settings-gameplay">
+      <h2 id="settings-gameplay" className="settings-section__title">Gameplay</h2>
+
+      {FONT_PICKERS.map(({ key, label }) => (
+        <label key={key} className="settings-row">
+          <span>{label}</span>
+          <select
+            value={fonts[key]}
+            onChange={(event) => setFontSettings({ [key]: event.target.value })}
+          >
+            {FONTS.map(({ name }) => (
+              <option key={name} value={name}>{name}</option>
+            ))}
+          </select>
+        </label>
+      ))}
     </section>
   );
 }
