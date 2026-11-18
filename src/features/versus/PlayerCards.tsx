@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
+import { ProfilePicture } from '../../components/ProfilePicture/ProfilePicture'
 import { computeNetWpm } from '../typing/stats/computeStats'
+import { opponentProfile } from '../profile/profilePicture'
+import { useMyProfilePicture } from '../profile/useMyProfilePicture'
 
 type Counts = { typed: number; correct: number; errors: number }
 type Official = { wpm: number; accuracy: number } // accuracy as a percent (0-100)
@@ -32,6 +35,8 @@ export function PlayerCards({
   winner: 'me' | 'them' | null
 }) {
   const [now, setNow] = useState(0)
+  const myPicture = useMyProfilePicture()
+  const theirProfile = opponentProfile()
 
   useEffect(() => {
     if (!racing) return
@@ -51,16 +56,32 @@ export function PlayerCards({
 
   return (
     <div className="player-cards">
-      <Card name="You" stats={mine} isWinner={winner === 'me'} />
-      <Card name="Opponent" stats={theirs} isWinner={winner === 'them'} />
+      <Card side="me" name="You" picture={myPicture} stats={mine} isWinner={winner === 'me'} />
+      <Card side="them" name={theirProfile.name} picture={theirProfile.picture} stats={theirs} isWinner={winner === 'them'} />
     </div>
   )
 }
 
-function Card({ name, stats, isWinner }: { name: string; stats?: Official; isWinner: boolean }) {
+function Card({
+  side,
+  name,
+  picture,
+  stats,
+  isWinner,
+}: {
+  /** Matches the result box this card turns into at the end of the match (see useMatchEndMorph). */
+  side: 'me' | 'them'
+  name: string
+  picture: string | null
+  stats?: Official
+  isWinner: boolean
+}) {
   return (
-    <div className={`player-card${isWinner ? ' is-winner' : ''}`} aria-label={`${name} stats`}>
-      <span className="player-card__name">{name}</span>
+    <div className={`player-card${isWinner ? ' is-winner' : ''}`} aria-label={`${name} stats`} data-morph={`card-${side}`}>
+      <span className="player-card__who">
+        <span className="versus-pfp" data-morph={`pfp-${side}`}><ProfilePicture pictureId={picture} size="md" /></span>
+        <span className="player-card__name" data-morph={`name-${side}`}>{name}</span>
+      </span>
       <span className="player-card__stats">
         <span>{stats ? stats.wpm : '--'}<small> WPM</small></span>
         <span>{stats ? `${stats.accuracy}%` : '--'}<small> ACC</small></span>

@@ -1,9 +1,3 @@
-@font-face {
-  font-family: 'Jersey10';
-  src: url('./assets/Jersey10-Regular.ttf') format('truetype');
-  font-display: block;
-}
-
 :root {
   /* General base */
   --color-screen: #ede7da;         /* screen background */
@@ -52,7 +46,9 @@
   --btn-text-active: var(--color-ink);
 
   /* Typography */
-  --font: 'Jersey10', monospace;
+  /* Both are set from the player's choice at startup (src/features/fonts) */
+  --font: 'Jersey 10', monospace;         /* menus: everything except the words being typed */
+  --font-typing: 'Jersey 10', monospace;  /* words in a match and the results word bank */
   --fs-logo: 250px;           /* logo title */
   --fs-state-title: 150px;    /* state titles */
   --fs-menu-primary: 100px;   /* primary main menu buttons */

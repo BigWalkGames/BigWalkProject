@@ -84,6 +84,7 @@
 
   overflow: hidden;
 
+  font-family: var(--font-typing);
   font-size: var(--fs-body);
   line-height: 1.4;
   user-select: none;
@@ -402,6 +403,7 @@
 .tt-review {
   display: flex;
   flex-wrap: wrap;
+  font-family: var(--font-typing);
   font-size: var(--fs-chat);
   line-height: 1.4;
 }
