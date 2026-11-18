@@ -54,3 +54,38 @@
 .progress-graph__dot--acc { fill: var(--graph-acc); }
 
 .progress-graph__status { margin: 0; font-size: var(--fs-chat); }
+
+/* Multiplayer: one marker per match under the plot, same colors as the match history rows */
+.progress-graph {
+  --graph-win: var(--color-positive);
+  --graph-loss: var(--color-negative);
+  --graph-draw: var(--color-outline-light);
+}
+
+.progress-graph__result { stroke: var(--color-ink); stroke-width: 1.5; }
+.progress-graph__result--win  { fill: var(--graph-win); }
+.progress-graph__result--loss { fill: var(--graph-loss); }
+.progress-graph__result--draw { fill: var(--graph-draw); }
+
+.progress-graph__key--result::before {
+  width: 12px;
+  border-radius: 2px;
+  outline: 1.5px solid var(--color-ink);
+}
+.progress-graph__key--win::before  { background: var(--graph-win); }
+.progress-graph__key--loss::before { background: var(--graph-loss); }
+.progress-graph__key--draw::before { background: var(--graph-draw); }
+
+/* fill: the graph takes its parent's height; the plot gets what the legend leaves */
+.progress-graph--fill {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.progress-graph--fill .progress-graph__plot {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
