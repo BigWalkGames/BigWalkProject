@@ -1,0 +1,72 @@
+/* Same panel as the profile picture picker: dark title bar, brown body. */
+.skin-picker {
+  width: min(100%, 1000px);
+  overflow: hidden;
+  background: var(--color-shade);
+  border: 3px solid var(--color-ink);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--shadow-soft);
+}
+
+.skin-picker__title {
+  margin: 0;
+  padding: 6px 24px;
+  font-size: var(--fs-chat);
+  font-weight: normal;
+  text-transform: uppercase;
+  color: var(--color-light);
+  background: var(--color-ink);
+}
+
+.skin-picker__note {
+  margin: 16px 24px 0;
+  font-size: var(--fs-chat);
+  color: var(--color-light);
+}
+
+.skin-picker__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 24px;
+}
+
+.skin-picker__option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  color: var(--color-light);
+  font: inherit;
+  font-size: var(--fs-chat);
+  background: none;
+  border: 3px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 80ms steps(2), transform 80ms steps(2);
+}
+
+.skin-picker__option:hover:not(:disabled),
+.skin-picker__option:focus-visible {
+  outline: none;
+  border-color: var(--color-outline-light);
+}
+
+/* The equipped skin */
+.skin-picker__option[aria-pressed='true'] {
+  border-color: var(--color-accent);
+}
+
+.skin-picker__option:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+.skin-picker__option:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.skin-picker__label {
+  text-transform: uppercase;
+}
