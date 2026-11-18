@@ -19,8 +19,10 @@ export default function History() {
             onChange={(id) => setPeriod(id as HistoryPeriod)}
             label="History period"
           />
-          <ProgressGraph period={period} height={200} />
-          <HistoryTable period={period} />
+          <div className="history__body">
+            <ProgressGraph period={period} fill />
+            <HistoryTable period={period} />
+          </div>
         </div>
       </div>
     </ScreenLayout>

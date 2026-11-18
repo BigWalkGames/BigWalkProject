@@ -36,7 +36,58 @@
   flex: 1 1 0;
   min-width: 0;
 }
-/* the graph keeps its full height; the table below takes what is left and scrolls */
-.history__content .progress-graph {
-  flex-shrink: 0;
+
+/* Below the tabs: graph on the left, table on the right, both down to the Back button. */
+.history__content {
+  height: 100%;
+}
+
+.history__body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 2fr 3fr;   /* graph 40%, table 60% */
+  gap: 16px;
+}
+
+.history__body .progress-graph {
+  max-width: none;
+  min-width: 0;
+}
+
+.history__body .history-panel {
+  height: 100%;
+  min-width: 0;
+}
+
+/* Too narrow for both side by side: graph on top, table below. */
+@media (max-width: 1399px) {
+  .history__body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .history__body .progress-graph {
+    flex: 0 0 260px;
+  }
+
+  .history__body .history-panel {
+    flex: 1;
+    height: auto;
+  }
+}
+
+/* Side by side: use more of the canvas, and smaller table text so the columns fit. */
+@media (min-width: 1400px) {
+  .history__content {
+    max-width: 1800px;
+  }
+
+  .history__body .history-panel {
+    max-width: none;
+  }
+
+  .history__body .history-table__head {
+    font-size: var(--fs-hud-stat);   /* 40px, so "Words Per Minute" fits on one line */
+  }
 }

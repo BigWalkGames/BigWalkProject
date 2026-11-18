@@ -6,7 +6,8 @@ import { graphAxis, graphPoints, type Outcome, type Point } from './graphAxis';
 
 const DEFAULT_HEIGHT = 260;
 const PAD = { top: 16, right: 64, bottom: 40, left: 64 };
-const STRIP = 22; // extra room under the plot for the win / loss strip
+const STRIP = 22;
+const MIN_FILL_HEIGHT = 160; // extra room under the plot for the win / loss strip
 
 const OUTCOME_LABEL: Record<Outcome, string> = { win: 'Win', loss: 'Loss', draw: 'Draw' };
 
@@ -20,12 +21,13 @@ const matchTime = new Intl.DateTimeFormat('en-US', {
 type ProgressGraphProps = {
   period?: HistoryPeriod; // default: full history
   height?: number;         // plot height in px, default 260
+  fill?: boolean;          // stretch to the height of the parent instead (overrides height)
 };
 
 /** Solo WPM and accuracy over time. With a period, it shows only that day, week, month or year. */
-export function ProgressGraph({ period = 'all', height }: ProgressGraphProps) {
+export function ProgressGraph({ period = 'all', height, fill }: ProgressGraphProps) {
   const { entries, status } = useMatchHistory(period);
-  return <ProgressChart points={graphPoints(entries, period)} status={status} period={period} height={height} />;
+  return <ProgressChart points={graphPoints(entries, period)} status={status} period={period} height={height} fill={fill} />;
 }
 
 type ProgressChartProps = {
@@ -33,20 +35,26 @@ type ProgressChartProps = {
   status: string | null;   // loading / error / empty message; null when there are points
   period?: HistoryPeriod;
   height?: number;
+  fill?: boolean; // stretch to the parent's height; the parent must give the graph a height
 };
 
 /**
  * The WPM and accuracy graph for points passed in. When the points carry a
  * match outcome, a strip under the plot marks each match as a win, loss or draw.
  */
-export function ProgressChart({ points, status, period = 'all', height: HEIGHT = DEFAULT_HEIGHT }: ProgressChartProps) {
+export function ProgressChart({ points, status, period = 'all', height = DEFAULT_HEIGHT, fill = false }: ProgressChartProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
+  const [plotHeight, setPlotHeight] = useState(0);
+  const HEIGHT = fill ? Math.max(MIN_FILL_HEIGHT, plotHeight) : height;
 
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const update = () => setWidth(el.clientWidth);
+    const update = () => {
+      setWidth(el.clientWidth);
+      setPlotHeight(el.clientHeight);
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
@@ -57,7 +65,7 @@ export function ProgressChart({ points, status, period = 'all', height: HEIGHT =
   const showResults = points.some((p) => p.outcome);
 
   let chart: React.ReactNode = null;
-  if (hasData && width > 0) {
+  if (hasData && width > 0 && (!fill || plotHeight > 0)) {
     const wpmMax = Math.max(10, Math.ceil(Math.max(...points.map((p) => p.wpm)) / 10) * 10);
     const accMin = Math.max(0, Math.floor((Math.min(...points.map((p) => p.acc)) - 5) / 10) * 10);
 
@@ -129,7 +137,7 @@ export function ProgressChart({ points, status, period = 'all', height: HEIGHT =
   }
 
   return (
-    <section className="progress-graph" aria-label="Progress over time">
+    <section className={`progress-graph${fill ? ' progress-graph--fill' : ''}`} aria-label="Progress over time">
       <div className="progress-graph__legend">
         <span className="progress-graph__key progress-graph__key--wpm">WPM</span>
         <span className="progress-graph__key progress-graph__key--acc">Accuracy</span>
@@ -141,7 +149,7 @@ export function ProgressChart({ points, status, period = 'all', height: HEIGHT =
           </>
         )}
       </div>
-      <div className="progress-graph__plot" ref={ref} style={{ minHeight: HEIGHT }}>
+      <div className="progress-graph__plot" ref={ref} style={fill ? undefined : { minHeight: HEIGHT }}>
         {hasData ? chart : <p className="progress-graph__status">{status ?? emptyMessage(period)}</p>}
       </div>
     </section>
