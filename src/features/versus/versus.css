@@ -240,8 +240,9 @@
 .player-card {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
+  gap: 4px 12px;
   padding: 8px 16px;
   color: var(--color-light);
   background: var(--color-frame);
@@ -257,8 +258,11 @@
 }
 .player-card__stats {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 16px;
+  margin-left: auto;
+  white-space: nowrap;
   font-size: 18px;
   line-height: 1.2;
 }
