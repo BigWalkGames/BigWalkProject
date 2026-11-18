@@ -1,11 +1,10 @@
-/* Keyboard heatmap. Keys are drawn with border-image so any width keeps
-   crisp pixel borders. keycap.png, keycapblank.png and spacebar.png share the
-   same frame in source pixels: top 6, right 7, bottom 8, left 7. */
+/* Keyboard heatmap. Keys are skinned keycaps (skinnedKey.css), so any width
+   keeps crisp pixel borders and the equipped skin's texture. */
 
 .kb {
   --kb-cols: 11;
   --kb-gap: 4px;
-  --kb-px: 2px; /* one keycap.png pixel on screen */
+  --kb-px: 2px; /* one keyframe.png pixel on screen */
 
   --kb-key: 48px; /* key size */
 
@@ -19,18 +18,9 @@
 }
 
 .kb-key {
-  position: relative;
-  display: grid;
-  place-items: center;
+  --key-px: var(--kb-px);
   aspect-ratio: 1;
-  border-style: solid;
-  border-image-source: url('../../../assets/keycap.png');
-  border-image-slice: 6 7 8 7 fill;
-  border-image-width: calc(var(--kb-px) * 6) calc(var(--kb-px) * 7)
-    calc(var(--kb-px) * 8) calc(var(--kb-px) * 7);
-  border-image-repeat: stretch;
-  image-rendering: pixelated;
-  color: var(--color-frame);
+  color: var(--skin-label, var(--color-frame));
   font-size: 20px;
   line-height: 1;
   text-transform: uppercase;
@@ -39,30 +29,33 @@
 /* The space bar spans several columns; it takes its height from the row. */
 .kb-key--space {
   aspect-ratio: auto;
-  border-image-source: url('../../../assets/spacebar.png');
 }
 
-/* Keys the test never uses (modifier positions) are grayed out. */
-.kb-key--blank {
+/* Keys the test never uses (modifier positions) are grayed out, untextured. */
+.kb-key--blank::before {
+  visibility: hidden;
+}
+
+.kb-key--blank::after {
   border-image-source: url('../../../assets/keycapblank.png');
 }
 
-/* Heat tint: a translucent circle behind the label, like the Figma. */
-.kb-key--heat::before {
-  content: '';
+/* The label is also the heat tint: a translucent circle behind the letter,
+   like the Figma. padding-bottom lifts the letter 2px. */
+.kb-key__label {
   position: absolute;
   inset: 14%;
+  display: grid;
+  place-items: center;
+  padding-bottom: 4px;
   border-radius: 50%;
-  background: var(--heat);
-  opacity: 0.8;
 }
 
-.kb-key--space.kb-key--heat::before {
+.kb-key--heat .kb-key__label {
+  background: color-mix(in srgb, var(--heat) 80%, transparent);
+}
+
+.kb-key--space .kb-key__label {
   inset: 14% 4%;
   border-radius: 999px;
-}
-
-.kb-key__label {
-  position: relative; /* above the heat circle */
-  transform: translateY(-2px);
 }

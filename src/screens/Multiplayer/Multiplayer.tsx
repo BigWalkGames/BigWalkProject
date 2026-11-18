@@ -5,6 +5,8 @@ import { MenuButton } from '../../components/MenuButton/MenuButton';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import hourglass from '../../assets/hourglass.png';
 import hourglassPressed from '../../assets/hourglasspressed.png';
+import { HourglassIcon } from '../../features/3d-flourish/HourglassIcon';
+import { LeaderboardPreview } from '../../components/LeaderboardPreview/LeaderboardPreview';
 
 export default function Multiplayer() {
   const navigate = useNavigate();
@@ -25,6 +27,7 @@ export default function Multiplayer() {
               hotkey="Q"
               to="/multiplayer/matchmaking"
               icon={{ normal: hourglass, pressed: hourglassPressed }}
+              iconScene={(state, fallback) => <HourglassIcon {...state} fallback={fallback} />}
             >
               Quick Match
             </MenuButton>
@@ -35,17 +38,10 @@ export default function Multiplayer() {
               Match History
             </MenuButton>
           </div>
-
-          {/* TEMPORARY: remove when the Leaderboards panel exists */}
-          <div className="menu-btn-group">
-            <MenuButton hotkey="A" to="/leaderboards">
-              Leaderboards
-            </MenuButton>
-          </div>
         </div>
 
         <aside className="multiplayer__panel">
-          {/* Leaderboards panel goes here later */}
+          <LeaderboardPreview />
         </aside>
       </div>
     </ScreenLayout>

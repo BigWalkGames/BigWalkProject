@@ -1,44 +1,42 @@
+/* Drawn by skinnedKey.css. Size a keycap by setting --key-size (its height). */
 .keycap {
+  --key-px: calc(var(--key-size) / 32);
   display: inline-grid;
   place-items: center;
-  color: var(--color-frame);
+  width: var(--key-size);
+  height: var(--key-size);
+  color: var(--skin-label, var(--color-frame));
   user-select: none;
   line-height: 1;
 }
 
-.keycap--lg { width: 100px; height: 100px; font-size: var(--fs-key); }
-.keycap--sm { width: 35px; height: 35px; font-size: var(--fs-chat); }
+.keycap--lg { --key-size: 100px; font-size: var(--fs-key); }
+.keycap--sm { --key-size: 35px; font-size: var(--fs-chat); }
 
-/* Long variant: same height, twice the width (the image is 64x32) */
-.keycap--lg.keycap--long { width: 200px; }
-.keycap--sm.keycap--long { width: 70px; }
-
-.keycap__img {
-  grid-area: 1 / 1;
-  width: 100%;
-  height: 100%;
-  image-rendering: pixelated;
+/* Long variant: same height, twice the width, with the outline inset 2 pixels
+   each side like the old 64x32 art */
+.keycap--long {
+  --key-pad-x: calc(var(--key-px) * 2);
+  width: calc(var(--key-size) * 2);
 }
 
 .keycap__label {
-  grid-area: 1 / 1;
   transform: translateY(-3px);
 }
 
-.keycap__img--pressed { visibility: hidden; }
-
-.keycap.is-pressed .keycap__img--normal,
-.keycap:active .keycap__img--normal,
-.nav-btn:active .keycap .keycap__img--normal,
-.menu-btn:active .keycap .keycap__img--normal {
+/* Pressed: the solid dark key, no texture */
+.keycap.is-pressed::before,
+.keycap:active::before,
+.nav-btn:active .keycap::before,
+.menu-btn:active .keycap::before {
   visibility: hidden;
 }
 
-.keycap.is-pressed .keycap__img--pressed,
-.keycap:active .keycap__img--pressed,
-.nav-btn:active .keycap .keycap__img--pressed,
-.menu-btn:active .keycap .keycap__img--pressed {
-  visibility: visible;
+.keycap.is-pressed::after,
+.keycap:active::after,
+.nav-btn:active .keycap::after,
+.menu-btn:active .keycap::after {
+  border-image-source: url('../../assets/keycappressed.png');
 }
 
 .keycap.is-pressed,

@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { NavButton } from '../../components/NavButton/NavButton';
+import { EmoteChat } from '../../features/versus/EmoteChat';
+import { useEmoteKeys } from '../../features/versus/useEmoteKeys';
 import { useHotkeys } from '../../hooks/useHotkeys';
-import { createRoom, getState, setReady } from '../../net/quickMatch';
+import { createRoom, getState, isChatOpen, isTextChatOpen, sendChat, setReady } from '../../net/quickMatch';
 import { useQuickMatch } from '../../net/useQuickMatch';
+import '../../features/versus/versus.css';
 import './CustomGame.css';
 
 /**
@@ -16,7 +19,7 @@ import './CustomGame.css';
  */
 export default function RoomLobby({ create = false }: { create?: boolean }) {
   const navigate = useNavigate();
-  const { status, lobby, sessionId } = useQuickMatch();
+  const { status, lobby, sessionId, emotes, roomEnded, textChat } = useQuickMatch();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -54,6 +57,10 @@ export default function RoomLobby({ create = false }: { create?: boolean }) {
 
   useHotkeys({ r: toggleReady, c: copyCode });
 
+  // The arrow keys send emotes once the friend is here, so you can talk before the race.
+  const chatLive = isChatOpen({ status, lobby, roomEnded });
+  useEmoteKeys(chatLive);
+
   return (
     <ScreenLayout
       title="Custom Game"
@@ -69,25 +76,38 @@ export default function RoomLobby({ create = false }: { create?: boolean }) {
         </>
       }
     >
-      <div className="lobby">
-        <p className="lobby__label">Room code</p>
-        <p className="lobby__code" aria-label="Room code" data-testid="room-code">
-          {lobby?.code ?? '·····'}
-        </p>
-        <p className="lobby__hint">Give this code to your friend. Press Esc to leave the room.</p>
+      <div className="lobby lobby--with-chat">
+        <div className="lobby__main">
+          <p className="lobby__label">Room code</p>
+          <p className="lobby__code" aria-label="Room code" data-testid="room-code">
+            {lobby?.code ?? '·····'}
+          </p>
+          <p className="lobby__hint">Give this code to your friend. Press Esc to leave the room.</p>
 
-        <ul className="lobby__players">
-          <PlayerCard name="You" ready={me?.ready ?? false} present={Boolean(me) || Boolean(lobby)} />
-          <PlayerCard name="Friend" ready={friend?.ready ?? false} present={Boolean(friend)} />
-        </ul>
+          <ul className="lobby__players">
+            <PlayerCard name="You" ready={me?.ready ?? false} present={Boolean(me) || Boolean(lobby)} />
+            <PlayerCard name="Friend" ready={friend?.ready ?? false} present={Boolean(friend)} />
+          </ul>
 
-        <p className="lobby__status" role="status">
-          {!friend
-            ? 'Waiting for your friend to join...'
-            : me?.ready
-              ? 'Waiting for your friend to press Ready...'
-              : 'Press R when you are ready.'}
-        </p>
+          <p className="lobby__status" role="status">
+            {!friend
+              ? 'Waiting for your friend to join...'
+              : me?.ready
+                ? 'Waiting for your friend to press Ready...'
+                : 'Press R when you are ready.'}
+          </p>
+        </div>
+
+        <div className="lobby__chat">
+          <EmoteChat
+            emotes={emotes}
+            sessionId={sessionId}
+            active={chatLive}
+            otherName="Friend"
+            canType={isTextChatOpen({ status, lobby, roomEnded, textChat })}
+            onSend={sendChat}
+          />
+        </div>
       </div>
     </ScreenLayout>
   );

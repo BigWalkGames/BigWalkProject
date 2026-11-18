@@ -1,5 +1,6 @@
 import { Client } from '@colyseus/sdk';
 import { getSupabase } from '../lib/supabase';
+import { isEmoteId, type EmoteId } from '../features/versus/emotes';
 
 /**
  * Quick Match connection (P15, P16, P17, P18, P19, P21).
@@ -55,6 +56,20 @@ export type EndReason =
 /** Why a room code could not be used. Shown on the Join Room screen. */
 export type JoinError = 'invalid' | 'full' | 'expired' | 'rate_limited' | 'connect_failed';
 
+/**
+ * One line in the match chat: an emote (`id`) or a typed message (`text`, already censored
+ * by the server). `from` is the sender's session id; `n` is a running number.
+ */
+export type Emote = { n: number; from: string } & ({ id: EmoteId; text?: undefined } | { text: string; id?: undefined });
+
+/** Keep the chat short: only the newest ones are kept. */
+const MAX_EMOTES = 30;
+/** The server drops emotes sent faster than this per player, so don't bother sending them. */
+const EMOTE_COOLDOWN_MS = 500;
+/** Typed chat: the server's limits (CHAT_COOLDOWN_MS, CHAT_MAX_LENGTH). Matching them here just saves a send. */
+const CHAT_COOLDOWN_MS = 1000;
+export const CHAT_MAX_LENGTH = 80;
+
 export type LobbyPlayer = { id: string; ready: boolean };
 export type Lobby = { code: string; players: LobbyPlayer[] };
 
@@ -75,6 +90,10 @@ export type QuickMatchState = {
   matchNumber: number;
   /** Custom Game: the room closed while the results were showing (the friend left). */
   roomEnded: boolean;
+  /** The match chat: emotes and typed messages from both players, oldest first. Cleared for every new match. */
+  emotes: Emote[];
+  /** The server said it understands typed chat. An older server does not, and would disconnect us if we sent it. */
+  textChat: boolean;
 };
 
 const initialState: QuickMatchState = {
@@ -90,6 +109,8 @@ const initialState: QuickMatchState = {
   endReason: null,
   matchNumber: 0,
   roomEnded: false,
+  emotes: [],
+  textChat: false,
 };
 
 type ClientRoom = Awaited<ReturnType<Client['joinOrCreate']>>;
@@ -99,6 +120,9 @@ const listeners = new Set<() => void>();
 let room: ClientRoom | null = null;
 let leaving = false; // true when WE closed the connection on purpose
 let searchId = 0; // lets a stale search notice it was cancelled
+let emoteCount = 0; // numbers the emotes so the chat can tell them apart
+let lastEmoteSentAt = 0;
+let lastChatSentAt = 0;
 
 function setState(patch: Partial<QuickMatchState>) {
   state = { ...state, ...patch };
@@ -268,6 +292,7 @@ function attach(joined: ClientRoom) {
   leaving = false;
   setState({
     sessionId: joined.sessionId,
+    textChat: false,
     // A Custom Game room starts in its lobby, and its id is the room code.
     ...(state.mode === 'custom'
       ? { status: 'lobby' as const, lobby: { code: joined.roomId, players: [] } }
@@ -286,6 +311,7 @@ function attach(joined: ClientRoom) {
       countdown: null,
       raceStartedAt: null,
       matchNumber: state.matchNumber + 1,
+      emotes: [],
     }),
   );
   joined.onMessage('countdown', ({ seconds }: { seconds: number }) =>
@@ -298,6 +324,22 @@ function attach(joined: ClientRoom) {
   joined.onMessage('match_result', (result: MatchResult) =>
     setState({ status: 'finished', result }),
   );
+  // P43: an emote from either player (the server sends it to both, the sender too).
+  joined.onMessage('emote', (message: { id?: unknown; from?: unknown }) => {
+    if (!isEmoteId(message?.id) || typeof message.from !== 'string') return;
+    const emote: Emote = { n: ++emoteCount, id: message.id, from: message.from };
+    setState({ emotes: [...state.emotes, emote].slice(-MAX_EMOTES) });
+  });
+  // Typed chat: the server's text, already censored. Shown exactly as it arrives.
+  joined.onMessage('chat', (message: { text?: unknown; from?: unknown }) => {
+    if (typeof message?.text !== 'string' || typeof message.from !== 'string') return;
+    const line: Emote = { n: ++emoteCount, text: message.text.slice(0, CHAT_MAX_LENGTH), from: message.from };
+    setState({ emotes: [...state.emotes, line].slice(-MAX_EMOTES) });
+  });
+  // What this server can do. Only a server that says so gets typed chat.
+  joined.onMessage('features', (features: { chat?: unknown }) => {
+    setState({ textChat: features?.chat === true });
+  });
   joined.onMessage('opponent_left', () => endMatch('opponent_left'));
   joined.onMessage('no_opponent', () => endMatch('no_opponent'));
   joined.onMessage('room_closed', () => endMatch('room_closed'));
@@ -308,7 +350,8 @@ function attach(joined: ClientRoom) {
     if (room !== joined) return;
     room = null;
     if (leaving) return;
-    if (state.mode === 'custom' && state.status === 'finished') setState({ roomEnded: true });
+    // On the results screen the room closing just ends the chat (and the rematch, in Custom Game).
+    if (state.status === 'finished') setState({ roomEnded: true });
     else if (!state.result && !state.endReason) endMatch('connection_lost');
   });
 }
@@ -320,6 +363,54 @@ function attach(joined: ClientRoom) {
  */
 export function sendProgress(typed: number, correct: number, wordResults: string, errors: number) {
   room?.send('progress', { typed, correct, wordResults, errors });
+}
+
+/**
+ * Can the player send an emote right now? In the Custom Game lobby once the friend has
+ * joined (the server has nobody to send to before that), during the countdown, while
+ * racing, and on the results screen until the room closes.
+ */
+export function isChatOpen(s: Pick<QuickMatchState, 'status' | 'lobby' | 'roomEnded'> = state) {
+  if (s.status === 'lobby') return (s.lobby?.players.length ?? 0) >= 2;
+  return s.status === 'countdown' || s.status === 'racing' || (s.status === 'finished' && !s.roomEnded);
+}
+
+/**
+ * Can the player TYPE a message right now? Like emotes, but not during the countdown or
+ * the race (the race is about to start, or the keys are typing the words), and only when
+ * the server said it supports typed chat.
+ */
+export function isTextChatOpen(s: Pick<QuickMatchState, 'status' | 'lobby' | 'roomEnded' | 'textChat'> = state) {
+  return s.textChat && s.status !== 'racing' && s.status !== 'countdown' && isChatOpen(s);
+}
+
+/**
+ * P43: send an emote. Works in the lobby, during the countdown, while racing and on the results screen (until
+ * the room closes), and at most one every half second (the server's limit). Returns true if sent.
+ */
+export function sendEmote(id: EmoteId) {
+  const chatOpen = isChatOpen();
+  if (!room || !chatOpen) return false;
+  const now = Date.now();
+  if (now - lastEmoteSentAt < EMOTE_COOLDOWN_MS) return false;
+  lastEmoteSentAt = now;
+  room.send('emote', { id });
+  return true;
+}
+
+/**
+ * Send a typed chat message. The server cleans and censors it and sends it back to both
+ * players, so nothing is added to the chat here. At most one a second (the server's
+ * limit). Returns true if sent.
+ */
+export function sendChat(text: string) {
+  const message = text.replace(/\s+/g, ' ').trim().slice(0, CHAT_MAX_LENGTH);
+  if (!room || !message || !isTextChatOpen()) return false;
+  const now = Date.now();
+  if (now - lastChatSentAt < CHAT_COOLDOWN_MS) return false;
+  lastChatSentAt = now;
+  room.send('chat', { text: message });
+  return true;
 }
 
 // A screen that is part of Quick Match "claims" the session while it is on screen.

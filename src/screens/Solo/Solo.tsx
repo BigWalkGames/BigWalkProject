@@ -5,6 +5,8 @@ import { MenuButton } from '../../components/MenuButton/MenuButton';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import hourglass from '../../assets/hourglass.png';
 import hourglassPressed from '../../assets/hourglasspressed.png';
+import { HourglassIcon } from '../../features/3d-flourish/HourglassIcon';
+import { HistoryPreview } from '../../components/HistoryPreview/HistoryPreview';
 
 export default function Solo() {
   const navigate = useNavigate();
@@ -23,21 +25,15 @@ export default function Solo() {
               hotkey="Q"
               to="/solo/time-attack"
               icon={{ normal: hourglass, pressed: hourglassPressed }}
+              iconScene={(state, fallback) => <HourglassIcon {...state} fallback={fallback} />}
             >
               Time Attack
-            </MenuButton>
-          </div>
-
-          {/* TEMPORARY: remove when the History panel exists */}
-          <div className="menu-btn-group">
-            <MenuButton hotkey="H" to="/history">
-              History
             </MenuButton>
           </div>
         </div>
 
         <aside className="solo__panel">
-          {/* History panel goes here later */}
+          <HistoryPreview />
         </aside>
       </div>
     </ScreenLayout>

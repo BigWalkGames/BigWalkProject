@@ -1,13 +1,15 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { KeyboardHeatmap } from '../heatmap/KeyboardHeatmap';
 import type { Board } from '../models/Board';
 import type { Word } from '../models/Word';
 import type { BigramStats, TestResult } from '../stats/types';
 import { displayKey, formatPercent } from './format';
+import { RollingNumber } from './RollingNumber';
 import { Stat } from './StatsBar';
 import { WordLetters } from './WordsDisplay';
 import { NavButton } from '../../../components/NavButton/NavButton';
 import type { Improvement } from '../stats/improvements';
+import { playSound } from '../../audio/sound';
 import './typing.css';
 
 export type SaveStatus = 'saving' | 'saved' | 'error';
@@ -36,17 +38,29 @@ export function ResultsPanel({
   result,
   board,
   saveStatus,
+  hideSaveStatus = false,
+  compact = false,
   improvements = [],
   onRestart,
   onMenu,
+  highScore,
 }: {
   result: TestResult;
   board?: Board;
   saveStatus: SaveStatus;
+  /** Hide the "Saved" label (Versus results are saved by the server, not by this screen). */
+  hideSaveStatus?: boolean;
+  /** Fewer rows and smaller type, so the whole panel fits one screen with nothing to scroll. */
+  compact?: boolean;
   improvements?: Improvement[];
   onRestart?: () => void;
   onMenu?: () => void;
+  /** A new personal best: celebrate once the WPM finishes rolling. */
+  highScore?: boolean;
 }) {
+  const [wpmLanded, setWpmLanded] = useState(false);
+  const celebrate = Boolean(highScore) && wpmLanded;
+
   useEffect(() => {
     if (!onRestart && !onMenu) return;
     const readyAt = Date.now() + HOTKEY_DELAY_MS;
@@ -57,6 +71,7 @@ export function ResultsPanel({
       const action = { r: onRestart, e: onMenu }[event.key.toLowerCase()];
       if (!action) return;
       event.preventDefault();
+      playSound('menuSelect');
       action();
     }
     document.addEventListener('keydown', onKeyDown);
@@ -65,11 +80,12 @@ export function ResultsPanel({
 
   return (
     <div className="tt is-finished">
-      <section className="tt-results" aria-label="Results">
+      <section className={`tt-results${compact ? ' tt-results--compact' : ''}`} aria-label="Results">
         <div className="tt-results__col">
           <Box title="Bigrams" className="tt-box--bigrams">
             <BigramLists
               bigrams={result.bigrams}
+              size={compact ? COMPACT_BIGRAMS : BIGRAM_LIST_SIZE}
               improved={improvements.filter((i) => i.kind === 'bigram')}
             />
           </Box>
@@ -77,6 +93,7 @@ export function ResultsPanel({
           <Box title="Key Accuracies" className="tt-box--keys">
             <KeyAccuracies
               perKey={result.perKey}
+              limit={compact ? COMPACT_KEYS : undefined}
               improved={improvements.filter((i) => i.kind === 'key')}
             />
           </Box>
@@ -110,21 +127,71 @@ export function ResultsPanel({
           )}
 
           <div className="tt-results__summary">
-            <Stat className="tt-stat--hero" label="WPM" value={Math.round(result.wpm).toString()} />
-            <Stat label="Accuracy" value={formatPercent(result.accuracy)} />
-            <Stat
-              label="Bigram Latency"
-              value={
-                result.bigramLatencyMs === null ? '—' : `${Math.round(result.bigramLatencyMs)}ms`
-              }
-            />
-            <p className={`tt-save is-${saveStatus}`}>{SAVE_LABEL[saveStatus]}</p>
+            <div className="tt-results__hero">
+              <Stat
+                className={celebrate ? 'tt-stat--hero is-celebrating' : 'tt-stat--hero'}
+                label="WPM"
+                value={
+                  <RollingNumber
+                    key={result.completedAt}
+                    value={result.wpm}
+                    onLanded={() => setWpmLanded(true)}
+                  />
+                }
+              />
+              {celebrate && <SparkBurst />}
+            </div>
+            <div className="tt-results__side">
+              {celebrate && <p className="tt-highscore">New high score!</p>}
+              <div className="tt-results__minor">
+                <Stat label="Accuracy" value={formatPercent(result.accuracy)} />
+                <Stat
+                  label="Bigram Latency"
+                  value={
+                    result.bigramLatencyMs === null ? '—' : `${Math.round(result.bigramLatencyMs)}ms`
+                  }
+                />
+                {!hideSaveStatus && <p className={`tt-save is-${saveStatus}`}>{SAVE_LABEL[saveStatus]}</p>}
+              </div>
+            </div>
           </div>
 
           <KeyboardHeatmap perKey={result.perKey} />
         </div>
       </section>
     </div>
+  );
+}
+
+/** Just the Word Bank box, for screens that show a short summary instead of the whole panel. */
+export function WordBankBox({ board }: { board: Board }) {
+  return (
+    <Box title="Word Bank" className="tt-box--words">
+      <WordReview board={board} />
+    </Box>
+  );
+}
+
+const SPARK_COUNT = 18;
+
+/**
+ * Sand-colored pixels bursting out of the WPM for a new high score. Directions
+ * are spread evenly (no randomness), and each spark arcs out then drops.
+ */
+function SparkBurst() {
+  return (
+    <span className="tt-sparks" aria-hidden="true">
+      {Array.from({ length: SPARK_COUNT }, (_, i) => {
+        const angle = (i / SPARK_COUNT) * Math.PI * 2 + 0.3;
+        const distance = i % 2 === 0 ? 110 : 75;
+        const style = {
+          '--dx': `${Math.round(Math.cos(angle) * distance)}px`,
+          '--dy': `${Math.round(Math.sin(angle) * distance * 0.7)}px`,
+          animationDelay: `${(i % 3) * 40}ms`,
+        } as CSSProperties;
+        return <span key={i} className="tt-spark" style={style} />;
+      })}
+    </span>
   );
 }
 
@@ -154,18 +221,24 @@ function byAccuracyAscending([a, x]: [string, BigramStats], [b, y]: [string, Big
   return x.accuracy - y.accuracy || y.attempts - x.attempts || a.localeCompare(b);
 }
 
+/** Compact (one-screen) results: rows kept in each list. */
+const COMPACT_BIGRAMS = 3;
+const COMPACT_KEYS = 6;
+
 function BigramLists({
   bigrams,
+  size = BIGRAM_LIST_SIZE,
   improved,
 }: {
   bigrams: Record<string, BigramStats>;
+  size?: number;
   improved: Improvement[];
 }) {
   const sorted = Object.entries(bigrams).sort(byAccuracyAscending);
   // Worst: the 5 lowest, missed bigrams only. Best: the 5 highest of the
   // rest, so a bigram never shows in both lists. Both read lowest to highest.
-  const worst = sorted.filter(([, s]) => s.accuracy < 1).slice(0, BIGRAM_LIST_SIZE);
-  const best = sorted.filter((entry) => !worst.includes(entry)).slice(-BIGRAM_LIST_SIZE);
+  const worst = sorted.filter(([, s]) => s.accuracy < 1).slice(0, size);
+  const best = sorted.filter((entry) => !worst.includes(entry)).slice(-size);
 
   return (
     <div className="tt-bigrams">
@@ -176,7 +249,7 @@ function BigramLists({
   );
 }
 
-/** Bigrams that beat the player's recent matches, biggest gain first. */
+/** Bigrams that beat the player's recent matches, biggest improvement first. */
 function ImprovedColumn({ items }: { items: Improvement[] }) {
   return (
     <div className="tt-bigrams__col">
@@ -187,8 +260,11 @@ function ImprovedColumn({ items }: { items: Improvement[] }) {
             <span className="tt-bigrams__pair">
               {i.item[0]}, {i.item[1]}
             </span>
-            <span className="tt-improved">
-              {formatPercent(i.previous_accuracy)} → {formatPercent(i.current_accuracy)}
+            <span>
+              <span className="tt-muted">{formatPercent(i.current_accuracy)}</span>{' '}
+              <span className="tt-improved">
+                ^{Math.round(i.current_accuracy * 100) - Math.round(i.previous_accuracy * 100)}%
+              </span>
             </span>
           </li>
         ))}
@@ -229,9 +305,12 @@ function BigramColumn({
 
 function KeyAccuracies({
   perKey,
+  limit,
   improved,
 }: {
   perKey: TestResult['perKey'];
+  /** Show only the `limit` lowest-accuracy keys (the heatmap shows the rest). */
+  limit?: number;
   improved: Improvement[];
 }) {
   const improvedByKey = new Map(improved.map((i) => [i.item, i]));
@@ -240,6 +319,7 @@ function KeyAccuracies({
     ([a, x], [b, y]) => x.accuracy - y.accuracy || y.attempts - x.attempts || a.localeCompare(b),
   );
   if (keys.length === 0) return <p className="tt-muted">No keys typed</p>;
+  const shown = limit ? keys.slice(0, limit) : keys;
 
   return (
     <table className="tt-keys">
@@ -252,7 +332,7 @@ function KeyAccuracies({
         </tr>
       </thead>
       <tbody>
-        {keys.map(([key, stats]) => {
+        {shown.map(([key, stats]) => {
           const up = improvedByKey.get(key);
           return (
             <tr key={key}>
@@ -264,7 +344,9 @@ function KeyAccuracies({
                 {up && (
                   <span className="tt-improved">
                     {' '}
-                    (up from {formatPercent(up.previous_accuracy)})
+                    ^
+                    {Math.round(up.current_accuracy * 100) - Math.round(up.previous_accuracy * 100)}
+                    %
                   </span>
                 )}
               </td>
