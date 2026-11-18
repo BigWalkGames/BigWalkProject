@@ -4,6 +4,8 @@ import './MatchHistory.css';
 import { useState } from 'react';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { TabNav } from '../../components/TabNav/TabNav';
+import { ProgressChart } from '../../components/ProgressGraph/ProgressGraph';
+import { matchPoints } from '../../components/ProgressGraph/graphAxis';
 import { PERIOD_TABS, type HistoryPeriod } from '../../hooks/historyPeriod';
 import { useMultiplayerHistory } from '../../hooks/useMultiplayerHistory';
 
@@ -23,34 +25,38 @@ export default function MatchHistory() {
             label="Match history period"
           />
 
-          <div className="history-panel">
-            <div className="history-table match-history__table" role="table" aria-label="Match history">
-              <div className="history-table__head" role="row">
-                <span role="columnheader">Date</span>
-                <span role="columnheader">Mode</span>
-                <span role="columnheader">Opponent</span>
-                <span role="columnheader">Result</span>
-                <span role="columnheader">You</span>
-                <span role="columnheader">Them</span>
-              </div>
+          <div className="match-history__body">
+            <ProgressChart points={matchPoints(entries)} status={status} period={period} fill />
 
-              <div role="rowgroup">
-                {status ? (
-                  <div className="history-table__status" role="row">
-                    <span role="cell">{status}</span>
-                  </div>
-                ) : (
-                  entries.map((row) => (
-                    <div key={row.id} className={`history-row match-history__row--${row.outcome}`} role="row">
-                      <span role="cell">{row.date}</span>
-                      <span role="cell">{row.mode}</span>
-                      <span className="match-history__opponent" role="cell">{row.opponent}</span>
-                      <span role="cell">{row.outcomeLabel}</span>
-                      <span role="cell">{row.wpm} WPM · {row.accuracy}%</span>
-                      <span role="cell">{row.opponentWpm} WPM · {row.opponentAccuracy}%</span>
+            <div className="history-panel">
+              <div className="history-table match-history__table" role="table" aria-label="Match history">
+                <div className="history-table__head" role="row">
+                  <span role="columnheader">Date</span>
+                  <span role="columnheader">Mode</span>
+                  <span role="columnheader">Opponent</span>
+                  <span role="columnheader">Result</span>
+                  <span role="columnheader">You</span>
+                  <span role="columnheader">Them</span>
+                </div>
+
+                <div role="rowgroup">
+                  {status ? (
+                    <div className="history-table__status" role="row">
+                      <span role="cell">{status}</span>
                     </div>
-                  ))
-                )}
+                  ) : (
+                    entries.map((row) => (
+                      <div key={row.id} className={`history-row match-history__row--${row.outcome}`} role="row">
+                        <span role="cell">{row.date}</span>
+                        <span role="cell">{row.mode}</span>
+                        <span className="match-history__opponent" role="cell">{row.opponent}</span>
+                        <span role="cell">{row.outcomeLabel}</span>
+                        <span role="cell">{row.wpm} WPM · {row.accuracy}%</span>
+                        <span role="cell">{row.opponentWpm} WPM · {row.opponentAccuracy}%</span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>

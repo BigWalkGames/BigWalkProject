@@ -22,8 +22,8 @@
   gap: 20px;
 }
 
-/* right: slot for the History panel */
+/* right: the History preview, about a third of the canvas wide (Figma), same as Multiplayer */
 .solo__panel {
-  flex: 1 1 360px;
-  min-width: 0;
+  flex: 0 1 670px;
+  min-width: 360px;
 }
