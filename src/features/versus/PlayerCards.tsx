@@ -56,28 +56,31 @@ export function PlayerCards({
 
   return (
     <div className="player-cards">
-      <Card name="You" picture={myPicture} stats={mine} isWinner={winner === 'me'} />
-      <Card name={theirProfile.name} picture={theirProfile.picture} stats={theirs} isWinner={winner === 'them'} />
+      <Card side="me" name="You" picture={myPicture} stats={mine} isWinner={winner === 'me'} />
+      <Card side="them" name={theirProfile.name} picture={theirProfile.picture} stats={theirs} isWinner={winner === 'them'} />
     </div>
   )
 }
 
 function Card({
+  side,
   name,
   picture,
   stats,
   isWinner,
 }: {
+  /** Matches the result box this card turns into at the end of the match (see useMatchEndMorph). */
+  side: 'me' | 'them'
   name: string
   picture: string | null
   stats?: Official
   isWinner: boolean
 }) {
   return (
-    <div className={`player-card${isWinner ? ' is-winner' : ''}`} aria-label={`${name} stats`}>
+    <div className={`player-card${isWinner ? ' is-winner' : ''}`} aria-label={`${name} stats`} data-morph={`card-${side}`}>
       <span className="player-card__who">
-        <ProfilePicture pictureId={picture} size="md" />
-        <span className="player-card__name">{name}</span>
+        <span className="versus-pfp" data-morph={`pfp-${side}`}><ProfilePicture pictureId={picture} size="md" /></span>
+        <span className="player-card__name" data-morph={`name-${side}`}>{name}</span>
       </span>
       <span className="player-card__stats">
         <span>{stats ? stats.wpm : '--'}<small> WPM</small></span>
