@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { NavButton } from '../../components/NavButton/NavButton';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
@@ -13,10 +13,15 @@ import {
 import type { TestResult } from '../../features/typing/stats/types';
 import { WordsDisplay } from '../../features/typing/components/WordsDisplay';
 import { EmoteChat } from '../../features/versus/EmoteChat';
+import { CountUp } from '../../features/versus/CountUp';
 import { PlayerCards } from '../../features/versus/PlayerCards';
 import { PlayerProgress } from '../../features/versus/PlayerProgress';
 import { useEmoteKeys } from '../../features/versus/useEmoteKeys';
 import { useVersusRace } from '../../features/versus/useVersusRace';
+import { COUNT_MS, NUMBERS_DELAY_MS, useMatchEndMorph } from '../../features/versus/useMatchEndMorph';
+import { ProfilePicture } from '../../components/ProfilePicture/ProfilePicture';
+import { opponentProfile } from '../../features/profile/profilePicture';
+import { useMyProfilePicture } from '../../features/profile/useMyProfilePicture';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import { useQuickMatch } from '../../net/useQuickMatch';
 import { getState, setReady, type Emote, type Progress } from '../../net/quickMatch';
@@ -146,7 +151,13 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
   // After the match one short summary fits the screen. D swaps it for the full
   // breakdown, which scrolls inside its own box, so the page itself never scrolls.
   const [showDetails, setShowDetails] = useState(false);
-  const summary = finished && Boolean(result);
+  // The cards grow into the result boxes when the results arrive (useMatchEndMorph).
+  // `revealed` turns on one render after the result, so the race layout can be measured first.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { revealed, animating } = useMatchEndMorph(rootRef, finished && Boolean(result));
+  const summary = finished && Boolean(result) && revealed;
+  const myPicture = useMyProfilePicture();
+  const theirProfile = opponentProfile();
   useHotkeys({ d: () => { if (summary) setShowDetails((open) => !open); } });
   // The arrow keys send emotes during the race and on the summary, until the room closes (P43).
   // Not on the Details view, where the arrows are free to scroll.
@@ -201,7 +212,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
 
   return (
     <ScreenLayout title="Versus" backTo="/multiplayer" footer={screenFooter} background="faded-still" header="gameplay">
-      <div className="time-attack">
+      <div className="time-attack" ref={rootRef}>
         <div className={`tt versus-tt${summary ? ' is-summary' : ''}`}>
           {/* The live row ticks on its own while racing, so the clock doesn't re-render the race. */}
           {racing ? (
@@ -240,7 +251,9 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
               winner={!result || result.winner === null ? null : result.winner === sessionId ? 'me' : 'them'}
             />
             )}
-            <EmoteChat emotes={emotes} sessionId={sessionId} active={chatLive} closed={finished && !chatOpen} />
+            <div data-morph="chat">
+              <EmoteChat emotes={emotes} sessionId={sessionId} active={chatLive} closed={finished && !chatOpen} />
+            </div>
           </aside>
 
           {!summary && (
@@ -254,20 +267,22 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
 
           {summary && result && (
             <div className="versus-results">
-              <h2 className="versus-headline">{headline}</h2>
+              <h2 className="versus-headline" data-reveal>{headline}</h2>
               {playAgain && (
-                <p className={`versus-rematch is-${playAgainTone}`} role="status">
+                <p className={`versus-rematch is-${playAgainTone}`} role="status" data-reveal>
                   {playAgain}
                 </p>
               )}
               {mine && theirs && (
                 <div className="versus-compare" aria-label="Final numbers">
-                  <CompareCard name="You" wpm={mine.wpm} accuracy={mine.accuracy} typed={mine.typed} isWinner={result.winner === sessionId} />
-                  <CompareCard name="Opponent" wpm={theirs.wpm} accuracy={theirs.accuracy} typed={theirs.typed} isWinner={result.winner !== null && result.winner !== sessionId} />
+                  <CompareCard side="me" name="You" picture={myPicture} wpm={mine.wpm} accuracy={mine.accuracy} typed={mine.typed}
+                    outcome={result.winner === null ? 'draw' : result.winner === sessionId ? 'win' : 'loss'} animate={animating} />
+                  <CompareCard side="them" name={theirProfile.name} picture={theirProfile.picture} wpm={theirs.wpm} accuracy={theirs.accuracy} typed={theirs.typed}
+                    outcome={result.winner === null ? 'draw' : result.winner === sessionId ? 'loss' : 'win'} animate={animating} />
                 </div>
               )}
-              <div className="versus-wordbank"><WordBankBox board={race.board} /></div>
-              <p className="versus-more">Press D for the full breakdown.</p>
+              <div className="versus-wordbank" data-reveal><WordBankBox board={race.board} /></div>
+              <p className="versus-more" data-reveal>Press D for the full breakdown.</p>
             </div>
           )}
         </div>
@@ -276,14 +291,34 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
   );
 }
 
-function CompareCard({ name, wpm, accuracy, typed, isWinner }: { name: string; wpm: number; accuracy: number; typed: number; isWinner: boolean }) {
+type CompareCardProps = {
+  /** Matches the race card that grows into this box (see useMatchEndMorph). */
+  side: 'me' | 'them';
+  name: string;
+  picture: string | null;
+  wpm: number;
+  accuracy: number;
+  typed: number;
+  /** Winner: orange. Loser: gray. Draw: both stay brown like the race cards. */
+  outcome: 'win' | 'loss' | 'draw';
+  /** Count the numbers up from 0 (only right when the match ends). */
+  animate: boolean;
+};
+
+function CompareCard({ side, name, picture, wpm, accuracy, typed, outcome, animate }: CompareCardProps) {
+  const count = { animate, delayMs: NUMBERS_DELAY_MS, durationMs: COUNT_MS };
   return (
-    <div className={`versus-compare__card${isWinner ? ' is-winner' : ''}`}>
-      <h3 className="versus-compare__name">{name}</h3>
-      <div className="versus-compare__numbers">
-        <span><strong>{wpm}</strong> WPM</span>
-        <span><strong>{accuracy}%</strong> accuracy</span>
-        <span><strong>{typed}</strong> keystrokes</span>
+    <div className={`versus-compare__card is-${outcome}`}>
+      {/* The box's color and border live on this empty layer, so only it changes size while morphing. */}
+      <span className="versus-compare__bg" data-morph={`card-${side}`} data-morph-kind="box" aria-hidden="true" />
+      <h3 className="versus-compare__name">
+        <span className="versus-pfp" data-morph={`pfp-${side}`}><ProfilePicture pictureId={picture} size="md" /></span>
+        <span data-morph={`name-${side}`}>{name}</span>
+      </h3>
+      <div className="versus-compare__numbers" data-morph-fade>
+        <span><strong><CountUp value={wpm} {...count} /></strong> WPM</span>
+        <span><strong><CountUp value={accuracy} suffix="%" {...count} /></strong> accuracy</span>
+        <span><strong><CountUp value={typed} {...count} /></strong> keystrokes</span>
       </div>
     </div>
   );
