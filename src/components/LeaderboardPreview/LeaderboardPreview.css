@@ -1,0 +1,121 @@
+/* Dark frame holding the header button and the top 5 rows (Figma: Multiplayer Menu). */
+.lb-preview {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--color-frame);
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 var(--shadow-strong);
+  overflow: hidden;
+}
+
+/* The header is a full-width menu button with a smaller label. */
+.lb-preview__header .menu-btn {
+  width: 100%;
+  justify-content: center;
+  font-size: var(--fs-title);
+  border-radius: 20px 20px 0 0;
+  box-shadow: inset 0 -4px 0 var(--shadow-soft);
+}
+
+.lb-preview__header .menu-btn:active {
+  transform: none; /* the header is part of the panel, so it doesn't jump */
+}
+
+.lb-preview__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 20px;
+  list-style: none;
+}
+
+.lb-preview__row {
+  --row-bg: var(--color-place-other);
+  --row-outline: var(--color-place-other-outline);
+
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr);
+  align-items: stretch;
+  background: var(--row-bg);
+  border: 2px solid var(--row-outline);
+  border-radius: 12px;
+  color: var(--color-ink);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.lb-preview__row[data-place='1'] { --row-bg: var(--color-place-1); --row-outline: var(--color-place-1-outline); }
+.lb-preview__row[data-place='2'] { --row-bg: var(--color-place-2); --row-outline: var(--color-place-2-outline); }
+.lb-preview__row[data-place='3'] { --row-bg: var(--color-place-3); --row-outline: var(--color-place-3-outline); }
+
+/* rank in its own column, split off by a line */
+.lb-preview__rank {
+  display: grid;
+  place-items: center;
+  border-right: 2px solid var(--row-outline);
+  font-size: var(--fs-list-value);
+}
+
+.lb-preview__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px 14px;
+}
+
+.lb-preview__who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.lb-preview__name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-hud-stat);
+}
+
+.lb-preview__stats {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-left: 60px; /* lines up under the name, past the picture */
+  font-size: var(--fs-hud-stat);
+  white-space: nowrap;
+}
+
+.lb-preview__unit {
+  margin-right: 10px;
+  font-size: var(--fs-hud-label);
+}
+
+.lb-preview__status {
+  margin: 0;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--color-light);
+  font-size: var(--fs-hud-stat);
+}
+
+/* Entrance: rows pop up one after another and settle, when the panel first shows them.
+   --row-i is the row's position (capped at 4), set in the component. */
+@keyframes lb-preview-row-in {
+  0%   { opacity: 0; transform: translateY(40px); }
+  60%  { opacity: 1; transform: translateY(-8px); }
+  80%  { transform: translateY(3px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.lb-preview__row {
+  animation: lb-preview-row-in 480ms cubic-bezier(0.25, 0.8, 0.35, 1) both;
+  animation-delay: calc(var(--row-i, 0) * 70ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lb-preview__row { animation: none; }
+}

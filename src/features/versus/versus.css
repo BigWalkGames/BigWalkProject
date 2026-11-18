@@ -167,6 +167,22 @@
   border-radius: 5px;
 }
 
+/* The typing box (lobby and results): sits between the messages and the arrow-key emotes. */
+.emote-chat__form { margin: 0; padding: 8px 12px; border-top: 3px solid var(--color-frame); }
+.emote-chat__input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 20px;
+  color: var(--color-ink);
+  background: var(--color-light);
+  border: 3px solid var(--color-frame);
+  border-radius: 8px;
+}
+.emote-chat__input::placeholder { color: var(--color-frame); opacity: 0.8; }
+.emote-chat__input:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 1px; }
+
 @keyframes emote-in {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
@@ -224,8 +240,9 @@
 .player-card {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
+  gap: 4px 12px;
   padding: 8px 16px;
   color: var(--color-light);
   background: var(--color-frame);
@@ -241,8 +258,11 @@
 }
 .player-card__stats {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 16px;
+  margin-left: auto;
+  white-space: nowrap;
   font-size: 18px;
   line-height: 1.2;
 }

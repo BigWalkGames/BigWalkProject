@@ -2,6 +2,7 @@ import './History.css';
 import { useState } from 'react';
 import { ScreenLayout } from '../../components/ScreenLayout/ScreenLayout';
 import { HistoryTable } from '../../components/HistoryTable/HistoryTable';
+import { ProgressGraph } from '../../components/ProgressGraph/ProgressGraph';
 import { TabNav } from '../../components/TabNav/TabNav';
 import { PERIOD_TABS, type HistoryPeriod } from '../../hooks/historyPeriod';
 
@@ -18,7 +19,10 @@ export default function History() {
             onChange={(id) => setPeriod(id as HistoryPeriod)}
             label="History period"
           />
-          <HistoryTable period={period} />
+          <div className="history__body">
+            <ProgressGraph period={period} fill />
+            <HistoryTable period={period} />
+          </div>
         </div>
       </div>
     </ScreenLayout>
