@@ -1,0 +1,107 @@
+/* Dark frame holding the header button and the history rows (Figma: Solo Menu).
+   Same frame and header as the Multiplayer leaderboard preview. */
+.history-preview {
+  --hp-row-height: 90px;
+  --hp-rows: 5;   /* rows visible at once; the rest scroll */
+  --hp-gap: 10px;
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--color-frame);
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 var(--shadow-strong);
+  overflow: hidden;
+}
+
+.history-preview__header .menu-btn {
+  width: 100%;
+  justify-content: center;
+  font-size: var(--fs-title);
+  border-radius: 20px 20px 0 0;
+  box-shadow: inset 0 -4px 0 var(--shadow-soft);
+}
+
+.history-preview__header .menu-btn:active {
+  transform: none; /* the header is part of the panel, so it doesn't jump */
+}
+
+.history-preview__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hp-gap);
+  max-height: calc(var(--hp-rows) * var(--hp-row-height) + (var(--hp-rows) - 1) * var(--hp-gap) + 40px);
+  margin: 0;
+  padding: 20px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none; /* it scrolls itself; the wheel still works */
+}
+
+.history-preview__list::-webkit-scrollbar { display: none; }
+
+/* light and tan stripes, like the History table */
+.history-preview__row {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: var(--hp-row-height);
+  padding: 0 24px;
+  background: var(--color-light);
+  border-radius: 8px;
+  color: var(--color-ink);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.history-preview__row:nth-child(even) {
+  background: var(--color-place-other);
+}
+
+.history-preview__date {
+  font-size: var(--fs-list-value);
+  white-space: nowrap;
+}
+
+/* WPM over accuracy */
+.history-preview__stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: var(--fs-hud-stat);
+  white-space: nowrap;
+}
+
+.history-preview__unit {
+  margin-left: 2px;
+}
+
+.history-preview__status {
+  margin: 0;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--color-light);
+  font-size: var(--fs-hud-stat);
+}
+
+/* Entrance: rows pop up one after another and settle, when the panel first shows them.
+   --row-i is the row's position (capped at 4), set in the component. */
+@keyframes history-preview-row-in {
+  0%   { opacity: 0; transform: translateY(40px); }
+  60%  { opacity: 1; transform: translateY(-8px); }
+  80%  { transform: translateY(3px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.history-preview__row {
+  animation: history-preview-row-in 480ms cubic-bezier(0.25, 0.8, 0.35, 1) both;
+  animation-delay: calc(var(--row-i, 0) * 70ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history-preview__row { animation: none; }
+}
