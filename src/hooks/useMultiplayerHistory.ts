@@ -19,6 +19,7 @@ type MultiplayerRow = {
 
 export type MultiplayerHistoryEntry = {
   id: string;
+  time: string;              // finished_at, ISO timestamp (for the graph)
   date: string;              // formatted, e.g. "09/08/26"
   mode: string;              // "Quick Match" | "Custom"
   opponent: string;
@@ -74,6 +75,7 @@ export function useMultiplayerHistory(period: HistoryPeriod = 'all') {
 
   const entries: MultiplayerHistoryEntry[] = (matches ?? []).map((row) => ({
     id: row.match_id,
+    time: row.finished_at,
     date: dateFormat.format(new Date(row.finished_at)),
     mode: modeLabel[row.mode],
     opponent: row.opponent_name,
