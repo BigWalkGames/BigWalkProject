@@ -58,3 +58,60 @@
   white-space: nowrap;
   padding-right: 16px;
 }
+
+
+/* Below the tabs: graph on the left, table on the right, both down to the Back button. */
+.match-history__content {
+  height: 100%;
+}
+
+.match-history__body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 2fr 3fr;   /* graph 40%, table 60% */
+  gap: 16px;
+}
+
+.match-history__body .progress-graph {
+  max-width: none;
+  min-width: 0;
+}
+
+.match-history__body .history-panel {
+  height: 100%;
+  min-width: 0;
+}
+
+/* Too narrow for both side by side: graph on top, table below. */
+@media (max-width: 1399px) {
+  .match-history__body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .match-history__body .progress-graph {
+    flex: 0 0 260px;
+  }
+
+  .match-history__body .history-panel {
+    flex: 1;
+    height: auto;
+  }
+}
+
+/* Side by side: use more of the canvas, and smaller table text so the columns fit. */
+@media (min-width: 1400px) {
+  .match-history__content {
+    max-width: 1800px;
+  }
+
+  .match-history__body .history-panel {
+    max-width: none;
+  }
+
+  .match-history__body .match-history__table .history-table__head,
+  .match-history__body .match-history__table .history-row {
+    font-size: var(--fs-chat);       /* 30px, so six columns fit at 60% width */
+  }
+}

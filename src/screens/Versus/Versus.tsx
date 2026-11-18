@@ -24,7 +24,7 @@ import { opponentProfile } from '../../features/profile/profilePicture';
 import { useMyProfilePicture } from '../../features/profile/useMyProfilePicture';
 import { useHotkeys } from '../../hooks/useHotkeys';
 import { useQuickMatch } from '../../net/useQuickMatch';
-import { getState, setReady, type Emote, type Progress } from '../../net/quickMatch';
+import { getState, sendChat, setReady, type Emote, type Progress } from '../../net/quickMatch';
 import '../../features/typing/components/typing.css';
 import '../TimeAttack/TimeAttack.css';
 import '../../features/versus/versus.css';
@@ -38,7 +38,7 @@ import '../../features/versus/versus.css';
  */
 export default function Versus() {
   const navigate = useNavigate();
-  const { status, mode, match, countdown, raceStartedAt, opponent, result, sessionId, lobby, matchNumber, roomEnded, emotes } =
+  const { status, mode, match, countdown, raceStartedAt, opponent, result, sessionId, lobby, matchNumber, roomEnded, emotes, textChat } =
     useQuickMatch();
 
   // Custom Game rematch: who has pressed Ready again.
@@ -118,6 +118,7 @@ export default function Versus() {
       sessionId={sessionId}
       emotes={emotes}
       chatOpen={status === 'finished' && !roomEnded}
+      textChat={textChat}
       playAgain={playAgain}
       playAgainTone={playAgainTone}
       footer={footer}
@@ -140,13 +141,15 @@ type RaceProps = {
   emotes: Emote[];
   /** The room is still open after the results, so the players can keep chatting. */
   chatOpen: boolean;
+  /** The server supports typed chat (so the typing box can show on the summary). */
+  textChat: boolean;
   playAgain: string;
   playAgainTone: RematchTone;
   footer?: React.ReactNode;
 };
 
 // Split out so the race state (the words and counts) starts fresh with each match.
-function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, emotes, chatOpen, playAgain, playAgainTone, footer }: RaceProps) {
+function Race({ words, durationMs, racing, startedAt, countdown, finished, opponent, result, sessionId, emotes, chatOpen, textChat, playAgain, playAgainTone, footer }: RaceProps) {
   const race = useVersusRace(words, racing, startedAt, durationMs);
   // After the match one short summary fits the screen. D swaps it for the full
   // breakdown, which scrolls inside its own box, so the page itself never scrolls.
@@ -161,7 +164,7 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
   useHotkeys({ d: () => { if (summary) setShowDetails((open) => !open); } });
   // The arrow keys send emotes during the race and on the summary, until the room closes (P43).
   // Not on the Details view, where the arrows are free to scroll.
-  const chatLive = racing || (summary && !showDetails && chatOpen);
+  const chatLive = racing || countdown !== null || (summary && !showDetails && chatOpen);
   useEmoteKeys(chatLive);
 
   const mine = result && sessionId ? result.results[sessionId] : undefined;
@@ -252,7 +255,14 @@ function Race({ words, durationMs, racing, startedAt, countdown, finished, oppon
             />
             )}
             <div data-morph="chat">
-              <EmoteChat emotes={emotes} sessionId={sessionId} active={chatLive} closed={finished && !chatOpen} />
+              <EmoteChat
+                emotes={emotes}
+                sessionId={sessionId}
+                active={chatLive}
+                closed={finished && !chatOpen}
+                canType={textChat && summary && !showDetails && chatOpen}
+                onSend={sendChat}
+              />
             </div>
           </aside>
 
