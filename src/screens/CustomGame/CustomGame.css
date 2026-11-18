@@ -96,6 +96,37 @@
   color: var(--color-negative);
 }
 
+/* The chat (P43) sits to the right of the lobby. The room code and the players stay exactly
+   where they were, centred; the chat takes the empty space on the right. */
+.lobby--with-chat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 560px) minmax(0, 1fr);
+  align-content: center;
+  align-items: center;
+  column-gap: 24px;
+  max-width: none;
+}
+.lobby__main {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.lobby__chat {
+  grid-column: 3;
+  justify-self: start;
+  width: min(380px, 100%);
+  text-align: left;
+}
+
+/* Too narrow for a side column: the chat goes under the lobby. */
+@media (max-width: 1100px) {
+  .lobby--with-chat { display: flex; flex-direction: column; max-width: 640px; }
+  .lobby__chat { width: 100%; max-width: 480px; }
+}
+
 @media (max-width: 700px) {
   .lobby__players { grid-template-columns: 1fr; }
 }

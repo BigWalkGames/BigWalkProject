@@ -17,6 +17,9 @@ export function useEmoteKeys(enabled: boolean) {
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return
+      // Typing in the chat box: the arrow keys move the cursor there.
+      const target = event.target
+      if (target instanceof HTMLElement && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
       const slot = EMOTE_SLOTS.find((candidate) => candidate.key === event.key)
       if (!slot) return
       event.preventDefault()
