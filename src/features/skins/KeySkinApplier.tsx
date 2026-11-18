@@ -1,14 +1,22 @@
 import { useEffect } from 'react'
+import { useAuth } from '../../hooks/auth/useAuth'
 import { artForSkin, keySkinVars, loadKeySkinArt } from './keySkinArt'
+import { loadKeySkin } from './keySkinSync'
 import { useMyKeySkin } from './useMyKeySkin'
 
 /**
  * Puts the player's equipped skin on the page root, so every 2D keycap
- * (skinnedKey.css) uses it. Renders nothing; mount once inside the auth
- * provider.
+ * (skinnedKey.css) uses it, and loads a Member's skin from their account at
+ * sign-in. Renders nothing; mount once inside the auth provider.
  */
 export function KeySkinApplier() {
+  const { user, isMember } = useAuth()
   const skin = useMyKeySkin()
+  const memberId = isMember ? user?.id : undefined
+
+  useEffect(() => {
+    if (memberId) void loadKeySkin(memberId)
+  }, [memberId])
 
   useEffect(() => {
     let cancelled = false

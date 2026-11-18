@@ -27,7 +27,7 @@ To see the shading as you draw, put `keyframe.png` on a layer above a 32×32 key
 ## Adding a skin
 
 1. **Add the tile** to `key-textures.png` in the next empty cell after the last skin.
-2. **Register it** by adding one line at the end of `KEY_SKINS` in `src/features/skins/keySkins.ts`:
+2. **Register it** in Supabase with `insert into users.keyboard_styles (name) values ('lava');`, and by adding one line at the end of `KEY_SKINS` in `src/features/skins/keySkins.ts`:
 
    ```ts
    { id: 'lava', label: 'Lava' },
@@ -59,6 +59,6 @@ Cells are read **left to right, then top to bottom**. The first cell is skin 1 i
 
 Replace the placeholder tiles in place (same cell, same ID) when the final art is ready.
 
-## Not done yet
+## Saving the equipped skin
 
-- **Saving to the account:** the equipped skin is stored in the player's browser only. Moving it to the account, and adding each new ID to the server's skin catalog, is part of M7's server work.
+A Member's equipped skin is saved on their account (`users.users.keyboard_style`), so it follows them to any device. Guests only have Classic. The skin IDs the account accepts are listed in the `users.keyboard_styles` table, so **a new skin also needs its ID added there**, or Members can't save it. See `db/` for the functions.

@@ -31,12 +31,9 @@ export function keySkinIndex(id: KeySkinId): number {
 }
 
 /*
- * Each account's equipped skin, saved in this browser only, keyed by user id
- * so two accounts on one computer don't share a skin.
- *
- * TODO(supabase): M7 moves this to the account: load the Member's equipped
- * skin at log-in, and save it through the equip-skin route in setKeySkin.
- * Until then a new device or browser starts with the default.
+ * Each account's equipped skin on this device, keyed by user id so two
+ * accounts on one computer don't share a skin. For Members it's a cache of
+ * the skin on their account (keySkinSync.ts).
  */
 const STORAGE_KEY = 'bigwalk.keySkins'
 

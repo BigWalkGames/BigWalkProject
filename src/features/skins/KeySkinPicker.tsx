@@ -4,7 +4,8 @@ import { useAuth } from '../../hooks/auth/useAuth'
 import { menuMoveSound } from '../audio/menuSounds'
 import { playSound } from '../audio/sound'
 import { artForSkin, keySkinVars, loadKeySkinArt } from './keySkinArt'
-import { DEFAULT_KEY_SKIN, KEY_SKINS, setKeySkin } from './keySkins'
+import { DEFAULT_KEY_SKIN, KEY_SKINS } from './keySkins'
+import { equipKeySkin } from './keySkinSync'
 import { useMyKeySkin } from './useMyKeySkin'
 import './KeySkinPicker.css'
 
@@ -29,7 +30,7 @@ export function KeySkinPicker() {
 }
 
 function SkinOptions({ isGuest }: { isGuest: boolean }) {
-  const { user } = useAuth()
+  const { user, isMember } = useAuth()
   const equipped = useMyKeySkin()
   const cells = use(loadKeySkinArt())
 
@@ -44,7 +45,7 @@ function SkinOptions({ isGuest }: { isGuest: boolean }) {
           disabled={isGuest && id !== DEFAULT_KEY_SKIN}
           onClick={() => {
             playSound('menuSelect')
-            setKeySkin(user?.id ?? 'local', id)
+            void equipKeySkin(user?.id ?? 'local', id, isMember)
           }}
           {...menuMoveSound}
         >
