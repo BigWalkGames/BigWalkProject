@@ -1,6 +1,8 @@
 import { Suspense, useState, type ReactNode } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { Center, Text3D } from '@react-three/drei'
+import { useMyKeySkin } from '../skins/useMyKeySkin'
+import type { KeySkinId } from '../skins/keySkins'
 import { KeyCap3D } from './KeyCap3D'
 import { Logo3D } from './Logo3D'
 import { DESIGN_HEIGHT, DESIGN_WIDTH, FONT_URL, readPalette, type Palette } from './scene'
@@ -29,6 +31,7 @@ export default function HomeHero3D({
 }) {
   const reducedMotion = usePrefersReducedMotion()
   const [palette] = useState(readPalette)
+  const skin = useMyKeySkin()
 
   return (
     <Canvas
@@ -52,7 +55,12 @@ export default function HomeHero3D({
             reducedMotion={reducedMotion}
             palette={palette}
           />
-          <Keys keysDown={keysDown} reducedMotion={reducedMotion} palette={palette} />
+          <Keys
+            keysDown={keysDown}
+            reducedMotion={reducedMotion}
+            palette={palette}
+            skin={skin}
+          />
         </FitToCanvas>
       </Suspense>
     </Canvas>
@@ -70,10 +78,12 @@ function Keys({
   keysDown,
   reducedMotion,
   palette,
+  skin,
 }: {
   keysDown: ReadonlySet<string>
   reducedMotion: boolean
   palette: Palette
+  skin: KeySkinId
 }) {
   const half = 50 + KEY_GAP + 25 // half a key + gap + half the "+"
   return (
@@ -84,6 +94,7 @@ function Keys({
         position={[-half, 0, 0]}
         reducedMotion={reducedMotion}
         palette={palette}
+        skin={skin}
       />
       <Center position={[0, 0, 0]}>
         <Text3D font={FONT_URL} size={PLUS_SIZE} height={6} curveSegments={2}>
@@ -97,6 +108,7 @@ function Keys({
         position={[half, 0, 0]}
         reducedMotion={reducedMotion}
         palette={palette}
+        skin={skin}
       />
     </group>
   )

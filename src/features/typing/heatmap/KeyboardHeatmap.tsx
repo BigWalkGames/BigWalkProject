@@ -3,6 +3,7 @@ import type { KeyStats } from '../stats/types'
 import { useAccessibilitySettings } from '../../accessibility/accessibilitySettings'
 import { heatColor } from './heatColor'
 import { KEYBOARD_ROWS } from './keyboardLayout'
+import '../../skins/skinnedKey.css'
 import './heatmap.css'
 
 /**
@@ -19,6 +20,7 @@ export function KeyboardHeatmap({ perKey }: { perKey: Record<string, KeyStats> }
         const color = heatColor(stats, colorblind)
         const className = [
           'kb-key',
+          'skinned-key',
           spec.char === undefined && 'kb-key--blank',
           spec.char === ' ' && 'kb-key--space',
           color && 'kb-key--heat',

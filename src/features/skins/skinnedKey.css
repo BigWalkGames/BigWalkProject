@@ -1,0 +1,49 @@
+/* A keycap drawn in two layers under its label: the equipped skin's texture
+   (--skin-texture, set by KeySkinApplier) filling the key's shape, and
+   keyframe.png on top, 9-sliced so any width keeps crisp pixel borders.
+   keyframe.png's face is clear and its edge and bevel are translucent black,
+   so they darken whatever texture is under them without changing its hue;
+   only the top highlight line is solid.
+
+   Set on the key:
+     --key-px     one keyframe.png pixel on screen
+     --key-pad-x  extra transparent space left and right (wide keys) */
+
+.skinned-key {
+  position: relative;
+  isolation: isolate; /* keeps both layers above the page, under the label */
+}
+
+.skinned-key::before,
+.skinned-key::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+/* Texture, in the key's shape: keyframe.png's 2px margin in, with a
+   1-pixel notch at each corner. Before it loads (and for the Classic skin)
+   the face color shows. */
+.skinned-key::before {
+  --n: var(--key-px);
+  inset: calc(var(--key-px) * 2) calc(var(--key-px) * 2 + var(--key-pad-x, 0px));
+  background: #e8d3c8 var(--skin-texture, none) 0 0 / calc(var(--key-px) * 16) repeat;
+  clip-path: polygon(
+    var(--n) 0, calc(100% - var(--n)) 0, calc(100% - var(--n)) var(--n),
+    100% var(--n), 100% calc(100% - var(--n)), calc(100% - var(--n)) calc(100% - var(--n)),
+    calc(100% - var(--n)) 100%, var(--n) 100%, var(--n) calc(100% - var(--n)),
+    0 calc(100% - var(--n)), 0 var(--n), var(--n) var(--n)
+  );
+}
+
+/* Shading. Its center is clear, so `fill` draws nothing there; the solid
+   pressed / blank art (set by the component) fills it. */
+.skinned-key::after {
+  inset: 0 var(--key-pad-x, 0px);
+  border-style: solid;
+  border-width: calc(var(--key-px) * 6) calc(var(--key-px) * 7) calc(var(--key-px) * 8);
+  /* Slices drawn at border-width, i.e. scaled by --key-px. */
+  border-image: url('../../assets/keyframe.png') 6 7 8 fill stretch;
+}

@@ -1,16 +1,17 @@
-import { useEffect, useRef } from 'react'
+import { use, useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Center, RoundedBox, Text3D, useTexture } from '@react-three/drei'
 import { NearestFilter, SRGBColorSpace, type Group, type Texture } from 'three'
-import keycapUrl from '../../assets/keycap.png'
 import keycapPressedUrl from '../../assets/keycappressed.png'
+import { artForSkin, loadKeySkinArt } from '../skins/keySkinArt'
+import type { KeySkinId } from '../skins/keySkins'
 import { FONT_URL, type Palette } from './scene'
 import { createSpring, isSettled, stepSpring } from './spring'
 
 /** Matches the 2D .keycap--lg (100px). */
 const KEY_SIZE = 100
 const KEY_DEPTH = 40
-/** keycap.png's art fills 28 of its 32 pixels; the body sits behind that. */
+/** The keycap art fills 28 of its 32 pixels; the body sits behind that. */
 const BODY_SIZE = KEY_SIZE * (28 / 32)
 /** How far the key sinks when pressed, in px. */
 const PRESS_DEPTH = 18
@@ -27,7 +28,7 @@ function pixelate(textures: Texture | Texture[]) {
 }
 
 /**
- * A 3D keycap using the keycap.png art on its face. It springs down while
+ * A 3D keycap with the `skin`'s keycap art on its face. It springs down while
  * `pressed` and pops back up on release (snaps instantly with reduced motion).
  */
 export function KeyCap3D({
@@ -36,14 +37,18 @@ export function KeyCap3D({
   position,
   reducedMotion,
   palette,
+  skin,
 }: {
   label: string
   pressed: boolean
   position: [number, number, number]
   reducedMotion: boolean
   palette: Palette
+  skin: KeySkinId
 }) {
-  const [face, facePressed] = useTexture([keycapUrl, keycapPressedUrl], pixelate)
+  const art = artForSkin(use(loadKeySkinArt()), skin)
+  const [face, facePressed] = useTexture([art.face, keycapPressedUrl], pixelate)
+  const labelColor = art.label === 'light' ? palette.keyLabelLight : palette.keyLabel
   const keyRef = useRef<Group>(null)
   const spring = useRef(createSpring(0))
   const invalidate = useThree((state) => state.invalidate)
@@ -69,7 +74,7 @@ export function KeyCap3D({
     <group position={position}>
       <group ref={keyRef}>
         <RoundedBox args={[BODY_SIZE, BODY_SIZE, KEY_DEPTH]} radius={8} smoothness={2}>
-          <meshBasicMaterial color={palette.keySide} />
+          <meshBasicMaterial color={art.side} />
         </RoundedBox>
         <mesh position={[0, 0, KEY_DEPTH / 2 + 0.5]}>
           <planeGeometry args={[KEY_SIZE, KEY_SIZE]} />
@@ -78,7 +83,7 @@ export function KeyCap3D({
         <Center position={[0, 4, KEY_DEPTH / 2 + 2]}>
           <Text3D font={FONT_URL} size={LABEL_SIZE} height={3} curveSegments={2}>
             {label}
-            <meshBasicMaterial color={pressed ? palette.keyLabelPressed : palette.keyLabel} />
+            <meshBasicMaterial color={pressed ? palette.keyLabelPressed : labelColor} />
           </Text3D>
         </Center>
       </group>

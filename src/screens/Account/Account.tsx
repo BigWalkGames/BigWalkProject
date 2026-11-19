@@ -12,12 +12,14 @@ import { GuestUpgrade } from './GuestUpgrade';
 import { ProfilePicture } from '../../components/ProfilePicture/ProfilePicture';
 import { ProfilePicturePicker } from '../../features/profile/ProfilePicturePicker';
 import { useMyProfilePicture } from '../../features/profile/useMyProfilePicture';
+import { KeySkinPicker } from '../../features/skins/KeySkinPicker';
 import { AccountPrompt } from './AccountPrompt';
 
 // To add a tab later: add it here, then add its content below.
 const TABS: Tab[] = [
   { id: 'stats', label: 'Stats' },
   { id: 'profile', label: 'Profile' },
+  { id: 'customization', label: 'Customization' },
 ];
 
 export default function Account() {
@@ -135,6 +137,8 @@ export default function Account() {
               <HistoryTable />
             </>
           )}
+
+          {activeTab === 'customization' && <KeySkinPicker />}
         </div>
 
         {formOpen && (

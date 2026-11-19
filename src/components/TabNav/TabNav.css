@@ -20,8 +20,7 @@
 }
 
 .tab-nav__keys .keycap {
-  width: 70px;
-  height: 70px;
+  --key-size: 70px;
   font-size: var(--fs-list-value);
 }
 
