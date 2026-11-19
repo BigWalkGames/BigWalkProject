@@ -8,8 +8,11 @@ import type { KeyStats } from '../stats/types'
  * Keys with no attempts this match get no color (undefined), so they show as
  * a plain, neutral keycap.
  */
-export function heatColor(stats: KeyStats | undefined): string | undefined {
+export function heatColor(stats: KeyStats | undefined, colorblind = false): string | undefined {
   if (!stats || stats.attempts === 0) return undefined
   const positive = Math.round(stats.accuracy * 100)
-  return `color-mix(in oklch, var(--tt-positive, var(--color-positive)) ${positive}%, var(--color-negative))`
+  // Colorblind Mode (blue / orange): a straight blend through gray. The oklch path
+  // would pass through purple, which is hard to tell from blue with colorblindness.
+  const space = colorblind ? 'oklab' : 'oklch'
+  return `color-mix(in ${space}, var(--tt-positive, var(--color-positive)) ${positive}%, var(--color-negative))`
 }

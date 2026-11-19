@@ -2,6 +2,7 @@ import { memo, useEffect, useLayoutEffect, useRef, useState, type CSSProperties,
 import type { Board } from '../models/Board'
 import type { Word } from '../models/Word'
 import { CARET_SLIDE_MS, LINE_SLIDE_MS, useTypingSettings } from '../typingSettings'
+import { reducedMotionNow } from '../../accessibility/accessibilitySettings'
 
 /** How long after the last keystroke the cursor starts blinking. */
 const CARET_IDLE_MS = 500
@@ -146,7 +147,7 @@ export function WordsDisplay({ board, showCursor }: { board: Board; showCursor: 
 
       const target = Math.max(0, top - lineHeight)
       if (target !== offsetRef.current) {
-        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        const reduceMotion = reducedMotionNow()
         if (target > offsetRef.current && smoothLines && !reduceMotion && !windowMoved) {
           const from = visibleOffset(layer)
           stopSlide()

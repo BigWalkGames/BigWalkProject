@@ -74,9 +74,8 @@
   50% { box-shadow: 0 0 0 8px transparent; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .versus-rematch.is-request { animation: none; }
-}
+/* Reduced motion: Motion Reduction setting or the device asks (see accessibilitySettings.ts). */
+:root[data-reduce-motion] .versus-rematch.is-request { animation: none; }
 /* Match chat (P43), the Chatroom panel in the sidebar. Fixed height, so a new emote never
    moves anything else. */
 .emote-chat {
@@ -187,9 +186,7 @@
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .emote-chat__line { animation: none; }
-}
+:root[data-reduce-motion] .emote-chat__line { animation: none; }
 
 /* Race layout: a sidebar (player cards and chat) beside the progress bar and words.
    On narrow windows it stacks and the sidebar goes under the words. */

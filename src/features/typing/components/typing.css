@@ -180,11 +180,10 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tt-caret {
-    transition: none;
-    animation: none;
-  }
+/* Reduced motion: Motion Reduction setting or the device asks (see accessibilitySettings.ts). */
+:root[data-reduce-motion] .tt-caret {
+  transition: none;
+  animation: none;
 }
 
 /* Actions: the wrapper disappears so Restart and the hint can be
@@ -534,14 +533,13 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tt-sparks {
-    display: none;
-  }
-  .tt-stat--hero.is-celebrating .tt-stat-value,
-  .tt-highscore {
-    animation: none;
-  }
+/* Reduced motion: Motion Reduction setting or the device asks (see accessibilitySettings.ts). */
+:root[data-reduce-motion] .tt-sparks {
+  display: none;
+}
+:root[data-reduce-motion] .tt-stat--hero.is-celebrating .tt-stat-value,
+:root[data-reduce-motion] .tt-highscore {
+  animation: none;
 }
 
 .tt-results__summary .tt-stat {
