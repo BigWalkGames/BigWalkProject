@@ -44,6 +44,5 @@
   50% { opacity: 0.45; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .state-message--pulse .state-message__title { animation: none; }
-}
+/* Reduced motion: Motion Reduction setting or the device asks (see accessibilitySettings.ts). */
+:root[data-reduce-motion] .state-message--pulse .state-message__title { animation: none; }

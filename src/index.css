@@ -79,6 +79,28 @@
   --row-gap: 13px;   /* 11-15px between rows on the canvas */
 }
 
+/* Colorblind Mode (P45, Settings > Accessibility): correct / missed become a blue / orange
+   pair that the common kinds of colorblindness can tell apart. Every use of these
+   feedback colors follows: the typing view, the heatmap, progress bars, win / loss rows. */
+:root[data-colorblind] {
+  --color-positive: #6f8fb0;        /* muted blue */
+  --color-positive-bright: #1f6fb2; /* blue */
+  --color-negative: #c75f0a;        /* vermillion */
+}
+
+/* Motion Reduction (P45): set when the setting is on or the device asks for reduced motion.
+   Components turn their own animations off; this catches anything left so it ends at once. */
+:root[data-reduce-motion] *,
+:root[data-reduce-motion] *::before,
+:root[data-reduce-motion] *::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important; /* not 0: transitionend still fires */
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body, #root { height: 100%; margin: 0; }

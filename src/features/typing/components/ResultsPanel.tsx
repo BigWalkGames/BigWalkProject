@@ -44,6 +44,7 @@ export function ResultsPanel({
   onRestart,
   onMenu,
   highScore,
+  lengthSeconds,
 }: {
   result: TestResult;
   board?: Board;
@@ -57,6 +58,8 @@ export function ResultsPanel({
   onMenu?: () => void;
   /** A new personal best: celebrate once the WPM finishes rolling. */
   highScore?: boolean;
+  /** Time Attack length in seconds (P48), shown beside Accuracy. Left out on Versus. */
+  lengthSeconds?: number;
 }) {
   const [wpmLanded, setWpmLanded] = useState(false);
   const celebrate = Boolean(highScore) && wpmLanded;
@@ -144,6 +147,7 @@ export function ResultsPanel({
             <div className="tt-results__side">
               {celebrate && <p className="tt-highscore">New high score!</p>}
               <div className="tt-results__minor">
+                {lengthSeconds !== undefined && <Stat label="Length" value={`${lengthSeconds}s`} />}
                 <Stat label="Accuracy" value={formatPercent(result.accuracy)} />
                 <Stat
                   label="Bigram Latency"

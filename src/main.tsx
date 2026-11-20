@@ -6,9 +6,13 @@ import App from './App.tsx';
 import AuthProvider from './hooks/auth/AuthProvider';
 import { startAudio } from './features/audio/sound';
 import { applyFontSettings } from './features/fonts/fontSettings';
+import { startAccessibilitySettings } from './features/accessibility/accessibilitySettings';
 
 // Loads the sound effects and turns audio on at the first key press or click.
 startAudio();
+
+// Marks the page for Colorblind Mode and Motion Reduction (Settings > Accessibility).
+startAccessibilitySettings();
 
 // Loads the player's menu and typing fonts and points the CSS font variables at them.
 void applyFontSettings();

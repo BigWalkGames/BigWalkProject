@@ -88,6 +88,5 @@
   50% { transform: translate(0, -4px); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .nav-btn--highlight { animation: none; }
-}
+/* Reduced motion: Motion Reduction setting or the device asks (see accessibilitySettings.ts). */
+:root[data-reduce-motion] .nav-btn--highlight { animation: none; }

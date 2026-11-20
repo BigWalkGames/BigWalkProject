@@ -102,6 +102,5 @@
   animation-delay: calc(var(--row-i, 0) * 70ms);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .history-preview__row { animation: none; }
-}
+/* Reduced motion: Motion Reduction setting or the device asks (see accessibilitySettings.ts). */
+:root[data-reduce-motion] .history-preview__row { animation: none; }

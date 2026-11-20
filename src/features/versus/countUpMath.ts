@@ -9,7 +9,5 @@ export function countUpValue(target: number, t: number): number {
   return Math.round(target * easeOutCubic(t));
 }
 
-/** True when the player's system asks for less motion. */
-export function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
-}
+/** True when animations should be skipped (Motion Reduction setting, or the device asks). */
+export { reducedMotionNow as prefersReducedMotion } from '../accessibility/accessibilitySettings';

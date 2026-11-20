@@ -9,7 +9,12 @@ import { isHighScore, usePreviousBest } from '../../features/typing/stats/usePre
 import { fetchImprovements, type Improvement } from '../../features/typing/stats/improvements';
 
 /** `board` is optional: without it the Word Bank box is hidden. */
-export type ResultsLocationState = { result: TestResult; board?: Board };
+export type ResultsLocationState = {
+  result: TestResult;
+  board?: Board;
+  /** The Time Attack length that was played (P48), shown with the results. */
+  lengthSeconds?: number;
+};
 
 export default function Results() {
   const navigate = useNavigate();
@@ -41,6 +46,7 @@ export default function Results() {
   const saveStatus: SaveStatus = save && save?.result === result ? save.status : 'saving';
 
   // Best earlier Time Attack WPM, for the "New high score!" celebration.
+  // TODO(server): compare per length once results are saved with their length (see timeAttackLength.ts).
   const previousBest = usePreviousBest(result);
 
   // Opened directly (no test was just played): send them to take one.
@@ -56,6 +62,7 @@ export default function Results() {
         onRestart={() => navigate('/solo/time-attack', { replace: true })}
         onMenu={() => navigate('/solo')}
         highScore={result ? isHighScore(result.wpm, previousBest) : false}
+        lengthSeconds={state?.lengthSeconds}
       />
     </ScreenLayout>
   );

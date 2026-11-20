@@ -16,6 +16,11 @@ import {
 import { playSound } from '../../features/audio/sound';
 import { FONTS } from '../../features/fonts/fonts';
 import { setFontSettings, useFontSettings, type FontSettings } from '../../features/fonts/fontSettings';
+import {
+  setAccessibilitySettings,
+  useAccessibilitySettings,
+  useSystemPrefersReducedMotion,
+} from '../../features/accessibility/accessibilitySettings';
 import './Settings.css';
 
 const CARET_SPEEDS: { value: CaretSpeed; label: string }[] = [
@@ -30,6 +35,7 @@ const TABS: Tab[] = [
   { id: 'audio', label: 'Audio' },
   { id: 'emotes', label: 'Emotes' },
   { id: 'gameplay', label: 'Gameplay' },
+  { id: 'accessibility', label: 'Accessibility' },
 ];
 
 const FONT_PICKERS: { key: keyof FontSettings; label: string }[] = [
@@ -57,6 +63,7 @@ export default function Settings() {
         {tab === 'audio' && <AudioSettings />}
         {tab === 'emotes' && <EmoteSettings />}
         {tab === 'gameplay' && <GameplaySettings />}
+        {tab === 'accessibility' && <AccessibilitySettings />}
       </div>
     </ScreenLayout>
   );
@@ -189,6 +196,46 @@ function GameplaySettings() {
           </select>
         </label>
       ))}
+    </section>
+  );
+}
+
+/** Colorblind Mode and Motion Reduction (P45). */
+function AccessibilitySettings() {
+  const { colorblind, reduceMotion } = useAccessibilitySettings();
+  const systemReducesMotion = useSystemPrefersReducedMotion();
+
+  return (
+    <section className="settings-section" aria-labelledby="settings-accessibility">
+      <h2 id="settings-accessibility" className="settings-section__title">Accessibility</h2>
+
+      <label className="settings-row">
+        <span>
+          Colorblind Mode
+          <span className="settings-row__note"> (blue / orange for correct and missed keys)</span>
+        </span>
+        <input
+          type="checkbox"
+          checked={colorblind}
+          onChange={(event) => setAccessibilitySettings({ colorblind: event.target.checked })}
+        />
+      </label>
+
+      <label className="settings-row">
+        <span>
+          Motion Reduction
+          <span className="settings-row__note"> (turns off non-essential animations)</span>
+        </span>
+        <input
+          type="checkbox"
+          checked={reduceMotion}
+          onChange={(event) => setAccessibilitySettings({ reduceMotion: event.target.checked })}
+        />
+      </label>
+
+      {systemReducesMotion && !reduceMotion && (
+        <p className="settings-note">Your device asks for reduced motion, so animations are already off.</p>
+      )}
     </section>
   );
 }

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { KeyStats } from '../stats/types'
+import { useAccessibilitySettings } from '../../accessibility/accessibilitySettings'
 import { heatColor } from './heatColor'
 import { KEYBOARD_ROWS } from './keyboardLayout'
 import '../../skins/skinnedKey.css'
@@ -11,11 +12,12 @@ import './heatmap.css'
  * everything else is a plain keycap.
  */
 export function KeyboardHeatmap({ perKey }: { perKey: Record<string, KeyStats> }) {
+  const { colorblind } = useAccessibilitySettings()
   return (
     <div className="kb" role="group" aria-label="Per-key accuracy heatmap">
       {KEYBOARD_ROWS.flat().map((spec) => {
         const stats = spec.char !== undefined ? perKey[spec.char] : undefined
-        const color = heatColor(stats)
+        const color = heatColor(stats, colorblind)
         const className = [
           'kb-key',
           'skinned-key',

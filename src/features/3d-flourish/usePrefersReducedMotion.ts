@@ -1,14 +1,9 @@
-import { useSyncExternalStore } from 'react'
+import { useReducedMotion } from '../accessibility/accessibilitySettings'
 
-const QUERY = '(prefers-reduced-motion: reduce)'
-
-function subscribe(onChange: () => void) {
-  const media = window.matchMedia(QUERY)
-  media.addEventListener('change', onChange)
-  return () => media.removeEventListener('change', onChange)
-}
-
-/** True when the player's OS asks for reduced motion. */
+/**
+ * True when animations should be skipped: the Motion Reduction setting (Settings >
+ * Accessibility) is on, or the player's device asks for reduced motion.
+ */
 export function usePrefersReducedMotion(): boolean {
-  return useSyncExternalStore(subscribe, () => window.matchMedia(QUERY).matches)
+  return useReducedMotion()
 }
