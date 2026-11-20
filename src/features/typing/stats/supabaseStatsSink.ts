@@ -7,6 +7,7 @@ export const supabaseStatsSink: StatsSink = {
     const { data, error: authError } = await supabase.auth.getUser();
     if (authError || !data.user) throw authError ?? new Error('Not signed in');
 
+    // TODO(server): send the Time Attack length once save_match_stats accepts it (P48).
     const { error } = await supabase.rpc('save_match_stats', {
       id: data.user.id,
       match_end: result.completedAt,

@@ -27,3 +27,72 @@
   flex: 0 1 670px;
   min-width: 360px;
 }
+
+
+/* Time Attack and its length dropdown (P48) side by side; the dropdown wraps
+   under the button when the row doesn't fit. */
+.solo__time-attack {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 20px;
+}
+/* The dropdown keeps its size; on very narrow screens it wraps under Time Attack. */
+.solo__time-attack > .length-picker {
+  flex: none;
+}
+
+.length-picker {
+  position: relative;
+  display: flex;
+}
+.length-picker__trigger {
+  gap: 18px;
+}
+.length-picker__value {
+  min-width: 2.2em; /* "15s" and "60s" keep the same width */
+  text-transform: none; /* "30s", not "30S" */
+}
+.length-picker__caret {
+  font-size: 0.5em;
+}
+
+/* The list floats over whatever is below, so nothing moves when it opens. */
+.length-picker__list {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 10;
+  min-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  background: var(--btn-bg);
+  border: 3px solid var(--btn-border);
+  border-radius: 15px;
+  box-shadow: 4px 4px 0 var(--shadow-strong);
+}
+.length-picker__option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px 6px 6px;
+  color: var(--btn-text);
+  font-size: var(--fs-chat);
+  border: 3px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.length-picker__option.is-active {
+  border-color: var(--color-accent);
+}
+.length-picker__option[aria-selected='true'] {
+  color: var(--color-ink);
+  background: var(--color-accent);
+}
+.length-picker__check {
+  margin-left: auto;
+}
